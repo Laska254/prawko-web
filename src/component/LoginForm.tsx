@@ -1,17 +1,28 @@
 import {useState} from "react";
 import {Button, TextField} from "@mui/material";
+import axios from "axios";
+
+interface LoginDto {
+    email: string;
+    password: string;
+}
 
 function LoginForm() {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    function handleSubmit() {
+    function login() {
+        const dto: LoginDto = {
+            email,
+            password
+        }
+        axios.post("https://localhost:8080/auth/login", dto, {headers: {"Content-Type": "application/json"}});
     }
 
     return (
         <div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={login}>
                 <div>
                     <label htmlFor="email">
                         Email
