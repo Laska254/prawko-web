@@ -6,5 +6,5 @@ const headers = {
 }
 
 export async function login(loginDto: LoginDto) {
-    return await axios.post("https://localhost:8080/auth/login", loginDto, {headers});
+    return await axios.post("http://localhost:8080/auth", loginDto, {headers});
 }
