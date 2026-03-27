@@ -1,25 +1,27 @@
 import {useState} from "react";
 import {Button, TextField} from "@mui/material";
-import axios from "axios";
+import {login} from "./requests.tsx";
+import type {LoginDto} from "./interfaces.tsx";
 
 
 function LoginForm() {
 
-    const [username, setUsername] = useState('');
+    const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
 
-    async function login(e: React.FormEvent) {
+    async function onSubmit(e: React.FormEvent): Promise<void> {
         e.preventDefault()
-        await axios.post("https://localhost:8080/auth/login", document.querySelector('#loginForm'), {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
+        const dto: LoginDto = {
+            userName,
+            password
+        }
+        login(dto)
+            .then(console.log);
     }
 
     return (
         <div>
-            <form id={"loginForm"} onSubmit={login}>
+            <form id={"loginForm"} onSubmit={onSubmit}>
                 <div>
                     <label htmlFor="username">
                         Username
@@ -27,8 +29,8 @@ function LoginForm() {
                     <TextField
                         id="username"
                         type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
                         placeholder="username"
                     />
                 </div>
