@@ -10,36 +10,38 @@ function LoginForm() {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label htmlFor="email">
-                    Email
-                </label>
-                <TextField
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
+        <div>
+            <form onSubmit={handleSubmit}>
+                <div>
+                    <label htmlFor="email">
+                        Email
+                    </label>
+                    <TextField
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="password">
+                        Password
+                    </label>
+                    <TextField
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="password"
+                    />
+                </div>
+                <Button
+                    variant="contained"
+                    type="submit"
                 />
-            </div>
-            <div>
-                <label htmlFor="password">
-                    Password
-                </label>
-                <TextField
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="password"
-                />
-            </div>
-            <Button
-                variant="contained"
-                type="submit"
-            />
-        </form>
+            </form>
+        </div>
     );
 
 }
