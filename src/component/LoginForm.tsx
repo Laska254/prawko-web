@@ -11,12 +11,8 @@ function LoginForm() {
 
     async function onSubmit(e: React.FormEvent): Promise<void> {
         e.preventDefault()
-        const dto: LoginDto = {
-            userName,
-            password
-        }
-        login(dto)
-            .then(console.log);
+        login({userName, password})
+            .then(console.log)
     }
 
     return (
