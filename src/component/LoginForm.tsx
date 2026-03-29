@@ -67,6 +67,7 @@ function LoginForm() {
                 <Button variant="contained" type="submit" fullWidth size={"large"}>
                     Submit
                 </Button>
+                <Link to={"/changePassword"}>Forgot password?</Link>
             </form>
         </Container>
     );
