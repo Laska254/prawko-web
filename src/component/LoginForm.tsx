@@ -1,8 +1,7 @@
 import {useState} from "react";
 import {Button, TextField} from "@mui/material";
 import {login} from "./requests.tsx";
-import type {LoginDto} from "./interfaces.tsx";
-
+import './css/LoginForm.css'
 
 function LoginForm() {
 
@@ -19,33 +18,30 @@ function LoginForm() {
         <div>
             <form id={"loginForm"} onSubmit={onSubmit}>
                 <div>
-                    <label htmlFor="username">
-                        Username
-                    </label>
                     <TextField
-                        id="username"
+                        label={"Login"}
+                        id="login"
                         type="text"
                         value={userName}
                         onChange={(e) => setUserName(e.target.value)}
-                        placeholder="username"
+                        placeholder="Username or email"
+                        fullWidth
                     />
                 </div>
                 <div>
-                    <label htmlFor="password">
-                        Password
-                    </label>
                     <TextField
+                        label={"Password"}
                         id="password"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="password"
+                        placeholder="Password"
+                        fullWidth
                     />
                 </div>
-                <Button
-                    variant="contained"
-                    type="submit"
-                />
+                <Button variant="contained" type="submit" fullWidth size={"large"}>
+                    Submit
+                </Button>
             </form>
         </div>
     );
