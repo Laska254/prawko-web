@@ -1,11 +1,10 @@
 import {useState} from "react";
-import {Button, Container, IconButton, InputAdornment, TextField} from "@mui/material";
+import {Button, Container, IconButton, InputAdornment, Stack, TextField} from "@mui/material";
 import {login} from "../requests.tsx";
-import './css/LoginForm.css'
 import {Link, useNavigate} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
-function LoginForm() {
+export default function LoginForm() {
 
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
@@ -17,30 +16,26 @@ function LoginForm() {
     }
 
     async function onSubmit(e: React.FormEvent): Promise<void> {
-        e.preventDefault()
+        e.preventDefault();
         login({userName, password})
-            .then(() => navigate('/'))  // ← redirect on success
-            .catch(console.error)
+            .then(() => navigate('/'))
+            .catch(console.error);
     }
 
     return (
-        <Container fixed={true}>
-            <form id={"loginForm"} onSubmit={onSubmit}>
-                <div>
+        <Container fixed>
+            <form onSubmit={onSubmit}>
+                <Stack spacing={2}>
                     <TextField
                         label={"Login"}
-                        id="login"
                         type="text"
                         value={userName}
                         onChange={(e) => setUserName(e.target.value)}
                         placeholder="Username or email"
                         fullWidth
                     />
-                </div>
-                <div>
                     <TextField
-                        label={"Password"}
-                        id="password"
+                        label="Password"
                         type={isPasswordVisible ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -50,7 +45,7 @@ function LoginForm() {
                             input: {
                                 endAdornment: (
                                     <InputAdornment position="end">
-                                        <IconButton onClick={handleToggle} edge="end">
+                                        <IconButton onClick={handleToggle}>
                                             {isPasswordVisible ? <Visibility/> : <VisibilityOff/>}
                                         </IconButton>
                                     </InputAdornment>
@@ -58,15 +53,12 @@ function LoginForm() {
                             },
                         }}
                     />
-                </div>
-                <Button variant="contained" type="submit" fullWidth size={"large"}>
-                    Submit
-                </Button>
-                <Link to={"/changePassword"}>Forgot password?</Link>
+                    <Button variant="contained" type="submit" fullWidth size={"large"}>
+                        Submit
+                    </Button>
+                    <Link to={"/changePassword"}>Forgot password?</Link>
+                </Stack>
             </form>
         </Container>
     );
-
 }
-
-export default LoginForm;
