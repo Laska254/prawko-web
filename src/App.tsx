@@ -1,17 +1,20 @@
 import './App.css'
-import LoginForm from "./component/LoginForm.tsx";
+import {AuthPage} from "./page/AuthPage.tsx";
 import {BrowserRouter, Navigate, Route, Routes} from "react-router";
+import {ChangePassword} from "./component/ChangePassword.tsx";
 
 function App() {
 
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/login" element={<LoginForm/>}/>
-                <Route path="*" element={<Navigate to="/login" replace/>}/>
+                <Route path="/auth" element={<AuthPage/>}/>
+                <Route path="*" element={<Navigate to="/auth" replace/>}/>
+                <Route path="/change-password" element={<ChangePassword/>}/>
             </Routes>
         </BrowserRouter>
     )
+
 }
 
 export default App
