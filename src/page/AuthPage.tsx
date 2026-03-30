@@ -1,7 +1,8 @@
 import {useState} from "react";
 import LoginForm from "../component/LoginForm.tsx";
-import './css/AuthPage.css';
+import './css/AuthPage.scss';
 import {RegisterForm} from "../component/RegisterForm.tsx";
+import {Stack} from "@mui/material";
 
 type FormType = 'login' | 'register';
 
@@ -9,7 +10,7 @@ export function AuthPage() {
     const [active, setActive] = useState<FormType>('login');
 
     return (
-        <div className="auth-page">
+        <Stack minHeight="100vh" alignItems={"center"} justifyContent={"center"}>
             <div className="auth-stack">
                 {/*ACTIVE CARD*/}
                 <div className="auth-card auth-card--front">
@@ -30,7 +31,7 @@ export function AuthPage() {
                     </span>
                 </div>
             </div>
-        </div>
+        </Stack>
     );
 
 }
