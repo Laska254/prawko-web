@@ -9,18 +9,11 @@ function LoginForm() {
 
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [type, setType] = useState('password');
-    const [icon, setIcon] = useState(<VisibilityOff/>);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const navigate = useNavigate();
 
     function handleToggle() {
-        if (type === 'password') {
-            setIcon(<Visibility/>);
-            setType('text')
-        } else {
-            setIcon(<VisibilityOff/>)
-            setType('password')
-        }
+        setIsPasswordVisible(prevState => !prevState);
     }
 
     async function onSubmit(e: React.FormEvent): Promise<void> {
@@ -48,7 +41,7 @@ function LoginForm() {
                     <TextField
                         label={"Password"}
                         id="password"
-                        type={type}
+                        type={isPasswordVisible ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Password"
@@ -58,7 +51,7 @@ function LoginForm() {
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton onClick={handleToggle} edge="end">
-                                            {icon ? <Visibility/> : <VisibilityOff/>}
+                                            {isPasswordVisible ? <Visibility/> : <VisibilityOff/>}
                                         </IconButton>
                                     </InputAdornment>
                                 ),
