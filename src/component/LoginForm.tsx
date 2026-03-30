@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {Button, Container, IconButton, InputAdornment, TextField} from "@mui/material";
-import {login} from "./requests.tsx";
+import {login} from "../requests.tsx";
 import './css/LoginForm.css'
 import {Link} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
