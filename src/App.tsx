@@ -11,8 +11,8 @@ function App() {
             <Routes>
                 <Route path="/" element={<HomePage/>}/>
                 <Route path="/auth" element={<AuthPage/>}/>
-                <Route path="*" element={<Navigate to="/auth" replace/>}/>
                 <Route path="/change-password" element={<ChangePassword/>}/>
+                <Route path="*" element={<Navigate to="/auth" replace/>}/>
             </Routes>
         </BrowserRouter>
     )
