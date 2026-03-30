@@ -2,7 +2,7 @@ import {useState} from "react";
 import {Button, Container, IconButton, InputAdornment, TextField} from "@mui/material";
 import {login} from "../requests.tsx";
 import './css/LoginForm.css'
-import {Link} from "react-router";
+import {Link, useNavigate} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
 function LoginForm() {
@@ -11,6 +11,7 @@ function LoginForm() {
     const [password, setPassword] = useState('');
     const [type, setType] = useState('password');
     const [icon, setIcon] = useState(<VisibilityOff/>);
+    const navigate = useNavigate();
 
     function handleToggle() {
         if (type === 'password') {
@@ -25,7 +26,8 @@ function LoginForm() {
     async function onSubmit(e: React.FormEvent): Promise<void> {
         e.preventDefault()
         login({userName, password})
-            .then(console.log)
+            .then(() => navigate('/'))  // ← redirect on success
+            .catch(console.error)
     }
 
     return (
