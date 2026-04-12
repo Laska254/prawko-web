@@ -1,6 +1,6 @@
 import {Container} from "@mui/material";
 
-export function RegisterForm() {
+export default function RegisterForm() {
 
     return (
         <Container/>
