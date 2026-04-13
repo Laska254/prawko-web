@@ -1,13 +1,12 @@
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {Button, Container, IconButton, InputAdornment, Stack, TextField} from "@mui/material";
 import {login} from "../requests.tsx";
 import {Link, useNavigate} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
 export default function LoginForm() {
-
-    const [userName, setUserName] = useState('');
-    const [password, setPassword] = useState('');
+    const userNameRef = useRef<HTMLInputElement>(null);
+    const passwordRef = useRef<HTMLInputElement>(null);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const navigate = useNavigate();
 
@@ -17,6 +16,8 @@ export default function LoginForm() {
 
     async function onSubmit(e: React.FormEvent): Promise<void> {
         e.preventDefault();
+        const userName = userNameRef.current?.value ?? '';
+        const password = passwordRef.current?.value ?? '';
         login({userName, password})
             .then(() => navigate('/'))
             .catch(console.error);
@@ -27,18 +28,16 @@ export default function LoginForm() {
             <form onSubmit={onSubmit}>
                 <Stack spacing={2}>
                     <TextField
-                        label={"Login"}
+                        label="Login"
                         type="text"
-                        value={userName}
-                        onChange={(e) => setUserName(e.target.value)}
+                        inputRef={userNameRef}
                         placeholder="Username or email"
                         fullWidth
                     />
                     <TextField
                         label="Password"
                         type={isPasswordVisible ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        inputRef={passwordRef}
                         placeholder="Password"
                         fullWidth
                         slotProps={{
