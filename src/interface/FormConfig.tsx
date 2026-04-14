@@ -5,11 +5,11 @@ import RegisterForm from "../component/RegisterForm.tsx";
 export type FormType = "login" | "register";
 
 export interface FormConfig {
-    title: string;
-    peekLabel: string;
-    switchTo: FormType;
-    ariaLabel: string;
-    FormComponent: () => JSX.Element;
+    readonly title: string;
+    readonly peekLabel: string;
+    readonly switchTo: FormType;
+    readonly ariaLabel: string;
+    readonly FormComponent: () => JSX.Element;
 }
 
 export function getFormConfig(active: FormType): FormConfig {

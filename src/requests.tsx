@@ -1,6 +1,6 @@
 import axios from "axios";
-import type {LoginDto} from "./interface/LoginDto.tsx";
-import type {ChangePasswordDto} from "./interface/ChangePasswordDto.tsx";
+import type {LoginDto} from "./interface/dto/LoginDto.tsx";
+import type {ChangePasswordDto} from "./interface/dto/ChangePasswordDto.tsx";
 
 const headers = {
     'Content-Type': 'application/json'
