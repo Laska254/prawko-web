@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {Stack} from "@mui/material";
 import "./css/AuthPage.scss";
-import {type FormType} from "../interface/FormConfig";
+import {type FormType, getFormConfig} from "../interface/FormConfig";
 import {AuthForm} from "../component/AuthForm.tsx";
 
 export function AuthPage() {
@@ -9,7 +9,7 @@ export function AuthPage() {
 
     return (
         <Stack minHeight="100vh" alignItems="center" justifyContent="center">
-            <AuthForm active={active} setActive={setActive}/>
+            <AuthForm form={getFormConfig(active)} setActive={setActive}/>
         </Stack>
     );
 }

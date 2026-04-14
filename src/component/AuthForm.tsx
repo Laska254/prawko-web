@@ -1,9 +1,11 @@
-import type {AuthFormProps} from "../interface/AuthFormProps.tsx";
-import {getFormConfig} from "../interface/FormConfig.tsx";
+import {type FormConfig, type FormType} from "../interface/FormConfig.tsx";
 
-export function AuthForm({active, setActive}: AuthFormProps) {
-    const form = getFormConfig(active);
+interface AuthFormProps {
+    form: FormConfig;
+    setActive: (active: FormType) => void;
+}
 
+export function AuthForm({form, setActive}: AuthFormProps) {
     return (
         <div className="auth-stack">
             <div className="auth-card auth-card--front">
@@ -22,5 +24,4 @@ export function AuthForm({active, setActive}: AuthFormProps) {
             </div>
         </div>
     );
-
 }
