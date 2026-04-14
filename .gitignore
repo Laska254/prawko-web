@@ -11,3 +11,6 @@ node_modules
 dist
 dist-ssr
 *.local
+.idea/workspace.xml
+.idea/inspectionProfiles/Project_Default.xml
+/package-lock.json

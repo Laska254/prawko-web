@@ -1,0 +1,61 @@
+$card-back-hover-background: #8df6f6;
+$peek-label-color: #c18405;
+$color-back-card: #cfc0c0;
+$auth-form-title-color: #8df6f6;
+$auth-card-background: #e88ea4;
+$stack-offset: 100px;
+$card-radius: 30px;
+$card-padding: 40px;
+$transform: translateX(-50%) translateY(6px);
+
+.auth-stack {
+  position: relative;
+  padding-left: $stack-offset;
+  padding-bottom: $stack-offset;
+}
+
+.auth-form-title {
+  font-size: 2rem;
+  color: $auth-form-title-color;
+  margin-bottom: 25px;
+}
+
+.auth-card {
+  width: 100%;
+  border-radius: $card-radius;
+  background: $auth-card-background;
+
+  &__peek-label {
+    font-size: 1.5rem;
+    color: $peek-label-color
+  }
+
+  &--front {
+    position: relative;
+    z-index: 2;
+    padding: $card-padding;
+  }
+
+  &--back {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    height: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: $card-padding;
+    cursor: pointer;
+    background: $color-back-card;
+    border-radius: 24px;
+    transition: background 1s ease, transform 0.35s ease;
+
+    &:hover {
+      background: $card-back-hover-background;
+      transform: $transform;
+    }
+  }
+}
