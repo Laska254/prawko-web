@@ -1,73 +1,87 @@
-# React + TypeScript + Vite
+# Prawko Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Table of Contents
 
-Currently, two official plugins are available:
+* [Table of Contents](#table-of-contents)
+* [Overview](#overview)
+* [Prerequisites](#prerequisites)
+* [Installation](#installation)
+* [Usage](#usage)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Overview
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Prawko Web** is a web client created with React 19, TypeScript and Material UI for Prawko projects.
 
-## Expanding the ESLint configuration
+It is the frontend for [Prawko Server](https://github.com/Laska254/prawko-server). All data and authentication
+are handled by the server, so it must be running for the web client to work.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+* Node.js 20.19+ or 22.12+
+* npm
+* Running [Prawko Server](https://github.com/Laska254/prawko-server)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Debian 13
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+`sudo apt install nodejs npm`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Windows
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+`winget install OpenJS.NodeJS.LTS`
+
+---
+
+## Installation
+
+Run Prawko Server first. You can find instructions in
+its [README](https://github.com/Laska254/prawko-server/blob/main/README.md).
+
+Clone repository
+
+`git clone git@github.com:Laska254/prawko-web.git`
+
+`cd prawko-web`
+
+Install dependencies
+
+`npm install`
+
+Run
+
+`npm run dev`
+
+Build
+
+`npm run build`
+
+Lint
+
+`npm run lint`
+
+---
+
+## Usage
+
+Application URL: `http://localhost:5173/`
+
+Server URL: `http://localhost:8080/` (set in `src/requests.tsx`)
+
+Prawko Server must allow CORS requests from the application URL.
+
+### Pages
+
+* `/auth` sign in and create an account
+* `/` home page
+* `/change-password` change password
+
+### Used endpoints
+
+* `/auth`
+    + `POST` sign in
+* `/users`
+    + `POST` register new user
+    + `PATCH /me/password` change password
