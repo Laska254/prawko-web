@@ -14,3 +14,7 @@ dist-ssr
 .idea/workspace.xml
 .idea/inspectionProfiles/Project_Default.xml
 /package-lock.json
+
+CLAUDE.local.md
+/.idea/modules.xml
+/.idea/prawko-web.iml
