@@ -5,6 +5,7 @@ import {ChangePassword} from "./component/ChangePassword.tsx";
 import {HomePage} from "./page/HomePage.tsx";
 import {RequireAuth} from "./component/RequireAuth.tsx";
 import {ExamPage} from "./page/ExamPage.tsx";
+import {VerifyEmailPage} from "./page/VerifyEmailPage.tsx";
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
                     <Route path="/exam" element={<ExamPage/>}/>
                 </Route>
                 <Route path="/auth" element={<AuthPage/>}/>
+                <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
                 <Route path="/change-password" element={<ChangePassword/>}/>
                 <Route path="*" element={<Navigate to="/auth" replace/>}/>
             </Routes>
