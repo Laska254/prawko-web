@@ -87,7 +87,7 @@ export default function RegisterForm() {
                         },
                     }}
                 />
-                <Button variant="contained" type="submit" fullWidth size={"large"}>
+                <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}>
                     Register
                 </Button>
             </Stack>

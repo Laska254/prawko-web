@@ -51,7 +51,7 @@ export default function LoginForm() {
                         },
                     }}
                 />
-                <Button variant="contained" type="submit" fullWidth size={"large"}>
+                <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}>
                     Sign in
                 </Button>
                 <Link component={RouterLink} to="/change-password" underline="hover" alignSelf="flex-start">
