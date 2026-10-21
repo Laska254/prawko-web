@@ -29,7 +29,7 @@ export function AuthPagePanel() {
                     ))}
                 </Stack>
             </Stack>
-            <Typography variant="body2" color="grey.400">© {new Date().getFullYear()} Prawko</Typography>
+            <Typography variant="body2" color="grey.400">© {new Date().getFullYear()} Wojciech Turczak</Typography>
         </Stack>
     );
 }
