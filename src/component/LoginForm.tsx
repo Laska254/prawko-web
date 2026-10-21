@@ -54,7 +54,7 @@ export default function LoginForm() {
                 <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}>
                     Sign in
                 </Button>
-                <Link component={RouterLink} to="/change-password" underline="hover" alignSelf="flex-start">
+                <Link component={RouterLink} to="/auth/password/forgot" underline="hover" alignSelf="flex-start">
                     Forgot password?
                 </Link>
             </Stack>

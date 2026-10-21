@@ -4,6 +4,7 @@ import type {ChangePasswordDto} from "./interface/dto/ChangePasswordDto.tsx";
 import type {RegisterDto} from "./interface/dto/RegisterDto.tsx";
 import type {VerifyEmailDto} from "./interface/dto/VerifyEmailDto.tsx";
 import type {ResendVerificationDto} from "./interface/dto/ResendVerificationDto.tsx";
+import type {ForgotPasswordDto} from "./interface/dto/ForgotPasswordDto.tsx";
 import {clearCredentials, getCredentials, saveCredentials} from "./auth.tsx";
 
 const api = axios.create({
@@ -36,6 +37,10 @@ export async function verifyEmail(verifyEmailDto: VerifyEmailDto) {
 
 export async function resendVerification(resendVerificationDto: ResendVerificationDto) {
     return await api.post("/auth/verify/resend", resendVerificationDto);
+}
+
+export async function forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    return await api.post("/auth/password/forgot", forgotPasswordDto);
 }
 
 export async function changePassword(changePasswordDto: ChangePasswordDto) {
