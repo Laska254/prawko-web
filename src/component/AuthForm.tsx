@@ -9,7 +9,7 @@ interface AuthFormProps {
 export function AuthForm({form, setActive}: AuthFormProps) {
     return (
         <Stack spacing={4} width="100%" maxWidth={440} p={{xs: 3, sm: 5}}
-               border={1} borderColor="divider" borderRadius={2} bgcolor="background.paper">
+               border={1} borderColor="divider" borderRadius={2} bgcolor="background.paper" boxShadow={1}>
             <Stack spacing={1}>
                 <Typography variant="h4" fontWeight={700}>{form.title}</Typography>
                 <Typography color="text.secondary">{form.subtitle}</Typography>
