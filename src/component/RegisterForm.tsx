@@ -1,5 +1,5 @@
 import {useRef, useState} from "react";
-import {Button, Container, IconButton, InputAdornment, Stack, TextField} from "@mui/material";
+import {Button, IconButton, InputAdornment, Stack, TextField} from "@mui/material";
 import {login, register} from "../requests.tsx";
 import {useNavigate} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
@@ -34,65 +34,63 @@ export default function RegisterForm() {
     }
 
     return (
-        <Container fixed>
-            <form onSubmit={onSubmit}>
-                <Stack spacing={2}>
-                    <TextField
-                        label="First name"
-                        type="text"
-                        inputRef={firstNameRef}
-                        required
-                        fullWidth
-                        slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
-                    />
-                    <TextField
-                        label="Last name"
-                        type="text"
-                        inputRef={lastNameRef}
-                        required
-                        fullWidth
-                        slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
-                    />
-                    <TextField
-                        label="Username"
-                        type="text"
-                        inputRef={userNameRef}
-                        required
-                        fullWidth
-                        slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
-                    />
-                    <TextField
-                        label="Email"
-                        type="email"
-                        inputRef={emailRef}
-                        required
-                        fullWidth
-                        slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
-                    />
-                    <TextField
-                        label="Password"
-                        type={isPasswordVisible ? 'text' : 'password'}
-                        inputRef={passwordRef}
-                        required
-                        fullWidth
-                        slotProps={{
-                            htmlInput: {minLength: 7, maxLength: 63},
-                            input: {
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton onClick={handleToggle}>
-                                            {isPasswordVisible ? <Visibility/> : <VisibilityOff/>}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                    />
-                    <Button variant="contained" type="submit" fullWidth size={"large"}>
-                        Register
-                    </Button>
-                </Stack>
-            </form>
-        </Container>
+        <form onSubmit={onSubmit}>
+            <Stack spacing={2}>
+                <TextField
+                    label="First name"
+                    type="text"
+                    inputRef={firstNameRef}
+                    required
+                    fullWidth
+                    slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
+                />
+                <TextField
+                    label="Last name"
+                    type="text"
+                    inputRef={lastNameRef}
+                    required
+                    fullWidth
+                    slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
+                />
+                <TextField
+                    label="Username"
+                    type="text"
+                    inputRef={userNameRef}
+                    required
+                    fullWidth
+                    slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
+                />
+                <TextField
+                    label="Email"
+                    type="email"
+                    inputRef={emailRef}
+                    required
+                    fullWidth
+                    slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
+                />
+                <TextField
+                    label="Password"
+                    type={isPasswordVisible ? 'text' : 'password'}
+                    inputRef={passwordRef}
+                    required
+                    fullWidth
+                    slotProps={{
+                        htmlInput: {minLength: 7, maxLength: 63},
+                        input: {
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={handleToggle}>
+                                        {isPasswordVisible ? <Visibility/> : <VisibilityOff/>}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
+                />
+                <Button variant="contained" type="submit" fullWidth size={"large"}>
+                    Register
+                </Button>
+            </Stack>
+        </form>
     );
 }

@@ -6,9 +6,10 @@ export type FormType = "login" | "register";
 
 export interface FormConfig {
     readonly title: string;
-    readonly peekLabel: string;
+    readonly subtitle: string;
+    readonly switchPrompt: string;
+    readonly switchLabel: string;
     readonly switchTo: FormType;
-    readonly ariaLabel: string;
     readonly FormComponent: () => JSX.Element;
 }
 
@@ -16,16 +17,18 @@ export function getFormConfig(active: FormType): FormConfig {
     return active === "login"
         ? {
             title: "Sign in",
-            peekLabel: "Create an account",
+            subtitle: "Welcome back. Sign in to continue practicing.",
+            switchPrompt: "Don't have an account?",
+            switchLabel: "Create one",
             switchTo: "register",
-            ariaLabel: "Switch to Register",
             FormComponent: LoginForm,
         }
         : {
             title: "Create account",
-            peekLabel: "Sign in",
+            subtitle: "Start practicing for your exam in under a minute.",
+            switchPrompt: "Already have an account?",
+            switchLabel: "Sign in",
             switchTo: "login",
-            ariaLabel: "Switch to Sign In",
             FormComponent: RegisterForm,
         };
 }
