@@ -1,4 +1,3 @@
-
 import {AuthPage} from "./page/AuthPage.tsx";
 import {BrowserRouter, Navigate, Route, Routes} from "react-router";
 import {ChangePassword} from "./component/ChangePassword.tsx";
