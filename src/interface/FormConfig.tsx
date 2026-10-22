@@ -13,22 +13,21 @@ export interface FormConfig {
     readonly FormComponent: () => JSX.Element;
 }
 
-export function getFormConfig(active: FormType): FormConfig {
-    return active === "login"
-        ? {
-            title: "Sign in",
-            subtitle: "Welcome back. Sign in to continue practicing.",
-            switchPrompt: "Don't have an account?",
-            switchLabel: "Create one",
-            switchTo: "register",
-            FormComponent: LoginForm,
-        }
-        : {
-            title: "Create account",
-            subtitle: "Start practicing for your exam in under a minute.",
-            switchPrompt: "Already have an account?",
-            switchLabel: "Sign in",
-            switchTo: "login",
-            FormComponent: RegisterForm,
-        };
-}
+export const FORM_CONFIGS: Record<FormType, FormConfig> = {
+    login: {
+        title: "Sign in",
+        subtitle: "Welcome back. Sign in to continue practicing.",
+        switchPrompt: "Don't have an account?",
+        switchLabel: "Create one",
+        switchTo: "register",
+        FormComponent: LoginForm,
+    },
+    register: {
+        title: "Create account",
+        subtitle: "Start practicing for your exam in under a minute.",
+        switchPrompt: "Already have an account?",
+        switchLabel: "Sign in",
+        switchTo: "login",
+        FormComponent: RegisterForm,
+    },
+};
