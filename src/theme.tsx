@@ -11,8 +11,7 @@ export const theme = createTheme({
         divider: "#d3dbe7",
     },
     shape: {borderRadius: 6},
-    shadows: defaultShadows.map((shadow, index) =>
-        index === 1 ? "0 1px 2px rgba(30, 58, 138, 0.06), 0 8px 24px rgba(30, 58, 138, 0.08)" : shadow) as Shadows,
+    shadows: defaultShadows.with(1, "0 1px 2px rgba(30, 58, 138, 0.06), 0 8px 24px rgba(30, 58, 138, 0.08)") as Shadows,
     typography: {
         fontFamily: "system-ui, 'Segoe UI', Roboto, sans-serif",
     },
