@@ -3,8 +3,8 @@ import {CheckCircle} from "@mui/icons-material";
 import {Logo} from "./Logo.tsx";
 
 const FEATURES = [
-    {title: "Official exam format", description: "The exact same exam format as official one."},
-    {title: "Every licence category", description: "Practice for all categories."},
+    {title: "Official exam format", description: "The exact same exam format as the official one."},
+    {title: "Every license category", description: "Practice for all categories."},
     {title: "Track your progress", description: "Review past attempts and see how your scores improve."},
 ];
 
