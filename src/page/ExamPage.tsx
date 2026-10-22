@@ -5,5 +5,4 @@ export function ExamPage() {
     return (
         <Container/>
     )
-
 }

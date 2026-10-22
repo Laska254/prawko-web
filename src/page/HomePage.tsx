@@ -5,5 +5,4 @@ export function HomePage() {
     return (
         <Container/>
     )
-
 }
