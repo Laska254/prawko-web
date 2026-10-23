@@ -8,7 +8,6 @@ import {ExamPage} from "./page/ExamPage.tsx";
 import {VerifyEmailPage} from "./page/VerifyEmailPage.tsx";
 
 function App() {
-
     return (
         <BrowserRouter>
             <Routes>
@@ -25,7 +24,6 @@ function App() {
             </Routes>
         </BrowserRouter>
     )
-
 }
 
 export default App
