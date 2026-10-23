@@ -1,7 +1,7 @@
 import {useRef, useState} from "react";
-import {Button, Container, IconButton, InputAdornment, Stack, TextField} from "@mui/material";
+import {Button, IconButton, InputAdornment, Link, Stack, TextField} from "@mui/material";
 import {login} from "../requests.tsx";
-import {Link, useNavigate} from "react-router";
+import {Link as RouterLink, useNavigate} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
 export default function LoginForm() {
@@ -24,40 +24,40 @@ export default function LoginForm() {
     }
 
     return (
-        <Container fixed>
-            <form onSubmit={onSubmit}>
-                <Stack spacing={2}>
-                    <TextField
-                        label="Login"
-                        type="text"
-                        inputRef={userNameRef}
-                        placeholder="Username or email"
-                        fullWidth
-                    />
-                    <TextField
-                        label="Password"
-                        type={isPasswordVisible ? 'text' : 'password'}
-                        inputRef={passwordRef}
-                        placeholder="Password"
-                        fullWidth
-                        slotProps={{
-                            input: {
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton onClick={handleToggle}>
-                                            {isPasswordVisible ? <Visibility/> : <VisibilityOff/>}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                    />
-                    <Button variant="contained" type="submit" fullWidth size={"large"}>
-                        Submit
-                    </Button>
-                    <Link to={"/changePassword"}>Forgot password?</Link>
-                </Stack>
-            </form>
-        </Container>
+        <form onSubmit={onSubmit}>
+            <Stack spacing={2}>
+                <TextField
+                    label="Login"
+                    type="text"
+                    inputRef={userNameRef}
+                    placeholder="Username or email"
+                    fullWidth
+                />
+                <TextField
+                    label="Password"
+                    type={isPasswordVisible ? 'text' : 'password'}
+                    inputRef={passwordRef}
+                    placeholder="Password"
+                    fullWidth
+                    slotProps={{
+                        input: {
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={handleToggle}>
+                                        {isPasswordVisible ? <Visibility/> : <VisibilityOff/>}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
+                />
+                <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}>
+                    Sign in
+                </Button>
+                <Link component={RouterLink} to="/change-password" underline="hover" alignSelf="flex-start">
+                    Forgot password?
+                </Link>
+            </Stack>
+        </form>
     );
 }
