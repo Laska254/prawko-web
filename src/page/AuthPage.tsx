@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {FORM_CONFIGS, type FormType} from "../interface/FormConfig";
+import {FORM_CONFIGS, type FormType} from "../interface/FormConfig.tsx";
 import {AuthForm} from "../component/AuthForm.tsx";
 import {AuthPageLayout} from "../component/AuthPageLayout.tsx";
 

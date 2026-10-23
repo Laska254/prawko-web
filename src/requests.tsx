@@ -5,7 +5,7 @@ import type {RegisterDto} from "./interface/dto/RegisterDto.tsx";
 import {clearCredentials, getCredentials, saveCredentials} from "./auth.tsx";
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8080",
+    baseURL: import.meta.env.VITE_API_URL,
     headers: {'Content-Type': 'application/json'}
 });
 
