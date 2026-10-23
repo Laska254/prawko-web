@@ -1,4 +1,3 @@
-
 import {AuthPage} from "./page/AuthPage.tsx";
 import {BrowserRouter, Navigate, Route, Routes} from "react-router";
 import {ChangePassword} from "./component/ChangePassword.tsx";
@@ -17,7 +16,6 @@ function App() {
                     <Route path="/" element={<HomePage/>}/>
                     <Route path="/exam" element={<ExamPage/>}/>
                 </Route>
-                <Route path="/auth" element={<AuthPage/>}/>
                 <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
                 <Route element={<RequireGuest/>}>
                     <Route path="/auth" element={<AuthPage/>}/>
