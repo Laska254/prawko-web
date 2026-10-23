@@ -68,7 +68,7 @@ Lint
 
 Application URL: `http://localhost:5173/`
 
-Server URL: `http://localhost:8080/` (set in `src/requests.tsx`)
+Server URL: `http://localhost:8080/` (set via `VITE_API_URL` in `.env.development`; set it in the environment or a `.env.production` for production builds)
 
 Prawko Server must allow CORS requests from the application URL.
 
