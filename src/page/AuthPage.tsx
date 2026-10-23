@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {type FormType, getFormConfig} from "../interface/FormConfig";
+import {FORM_CONFIGS, type FormType} from "../interface/FormConfig.tsx";
 import {AuthForm} from "../component/AuthForm.tsx";
 import {AuthPageLayout} from "../component/AuthPageLayout.tsx";
 
@@ -8,7 +8,7 @@ export function AuthPage() {
 
     return (
         <AuthPageLayout>
-            <AuthForm form={getFormConfig(active)} setActive={setActive}/>
+            <AuthForm form={FORM_CONFIGS[active]} setActive={setActive}/>
         </AuthPageLayout>
     );
 }

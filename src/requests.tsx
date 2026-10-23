@@ -9,7 +9,7 @@ import type {ResetPasswordDto} from "./interface/dto/ResetPasswordDto.tsx";
 import {clearCredentials, getCredentials, saveCredentials} from "./auth.tsx";
 
 const api = axios.create({
-    baseURL: "http://localhost:8080",
+    baseURL: import.meta.env.VITE_API_URL,
     headers: {'Content-Type': 'application/json'}
 });
 
@@ -19,6 +19,14 @@ api.interceptors.request.use(config => {
         config.headers.Authorization = `Basic ${credentials}`;
     }
     return config;
+});
+
+api.interceptors.response.use(undefined, error => {
+    if (error.response?.status === 401 && getCredentials()) {
+        clearCredentials();
+        window.location.assign("/auth");
+    }
+    return Promise.reject(error);
 });
 
 export async function login(loginDto: LoginDto) {
@@ -49,5 +57,5 @@ export async function resetPassword(resetPasswordDto: ResetPasswordDto) {
 }
 
 export async function changePassword(changePasswordDto: ChangePasswordDto) {
-    return await api.post("/auth/forgottenPassword", changePasswordDto)
+    return await api.post("/auth/forgottenPassword", changePasswordDto);
 }
