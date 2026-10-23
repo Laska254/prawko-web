@@ -7,7 +7,6 @@ import {RequireGuest} from "./component/RequireGuest.tsx";
 import {ExamPage} from "./page/ExamPage.tsx";
 
 function App() {
-
     return (
         <BrowserRouter>
             <Routes>
@@ -23,7 +22,6 @@ function App() {
             </Routes>
         </BrowserRouter>
     )
-
 }
 
 export default App
