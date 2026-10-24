@@ -21,7 +21,6 @@ function App() {
                 <Route element={<RequireGuest/>}>
                     <Route path="/auth" element={<AuthPage/>}/>
                 </Route>
-                <Route path="/auth" element={<AuthPage/>}/>
                 <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
                 <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
                 <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
