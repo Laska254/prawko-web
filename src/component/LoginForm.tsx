@@ -23,6 +23,7 @@ export default function LoginForm() {
     const passwordRef = useRef<HTMLInputElement>(null);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [error, setError] = useState<LoginError | null>(null);
+    const [email, setEmail] = useState<string>();
     const navigate = useNavigate();
 
     function handleToggle() {
@@ -34,6 +35,7 @@ export default function LoginForm() {
         const userName = userNameRef.current?.value ?? '';
         const password = passwordRef.current?.value ?? '';
         setError(null);
+        setEmail(userName.includes("@") ? userName : undefined);
         login({userName, password})
             .then(() => navigate('/'))
             .catch(error => setError(STATUS_ERRORS[error.response?.status] ?? "failed"));
@@ -46,7 +48,7 @@ export default function LoginForm() {
                     <Alert severity="error">
                         {ERROR_MESSAGES[error]}{" "}
                         {error === "notVerified" && (
-                            <Link component={RouterLink} to="/auth/verify/sent">Send a new link.</Link>
+                            <Link component={RouterLink} to="/auth/verify/sent" state={{email}}>Send a new link.</Link>
                         )}
                     </Alert>
                 )}
