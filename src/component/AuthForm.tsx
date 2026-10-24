@@ -1,5 +1,6 @@
 import {Alert, Link, Stack, Typography} from "@mui/material";
 import {type FormConfig, type FormType} from "../interface/FormConfig.tsx";
+import {AuthCard} from "./AuthCard.tsx";
 
 interface AuthFormProps {
     form: FormConfig;
@@ -9,8 +10,7 @@ interface AuthFormProps {
 
 export function AuthForm({form, setActive, notice}: AuthFormProps) {
     return (
-        <Stack spacing={4} width="100%" maxWidth={440} p={{xs: 3, sm: 5}}
-               border={1} borderColor="divider" borderRadius={2} bgcolor="background.paper" boxShadow={1}>
+        <AuthCard>
             {notice && <Alert severity="success">{notice}</Alert>}
             <Stack spacing={1}>
                 <Typography variant="h4" fontWeight={700}>{form.title}</Typography>
@@ -24,6 +24,6 @@ export function AuthForm({form, setActive, notice}: AuthFormProps) {
                     {form.switchLabel}
                 </Link>
             </Typography>
-        </Stack>
+        </AuthCard>
     );
 }

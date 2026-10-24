@@ -1,9 +1,10 @@
 import {useEffect, useRef, useState} from "react";
 import {CircularProgress, Link, Stack, Typography} from "@mui/material";
 import {Link as RouterLink, useNavigate, useSearchParams} from "react-router";
-import {verifyEmail} from "../requests.tsx";
-import {ResendVerificationForm} from "../component/ResendVerificationForm.tsx";
+import {resendVerification, verifyEmail} from "../requests.tsx";
+import {EmailLinkForm} from "../component/EmailLinkForm.tsx";
 import {AuthPageLayout} from "../component/AuthPageLayout.tsx";
+import {AuthCard} from "../component/AuthCard.tsx";
 
 export function VerifyEmailPage() {
     const [searchParams] = useSearchParams();
@@ -16,15 +17,13 @@ export function VerifyEmailPage() {
         if (!token || isSentRef.current) return;
         isSentRef.current = true;
         verifyEmail({token})
-            .then(() => navigate("/auth", {replace: true, state: {isVerified: true}}))
+            .then(() => navigate("/auth", {replace: true, state: {notice: "verified"}}))
             .catch(() => setIsFailed(true));
     }, [token, navigate]);
 
     return (
         <AuthPageLayout>
-            <Stack spacing={3} alignItems="center" textAlign="center" width="100%" maxWidth={440}
-                   p={{xs: 3, sm: 5}} border={1} borderColor="divider" borderRadius={2}
-                   bgcolor="background.paper" boxShadow={1}>
+            <AuthCard spacing={3} alignItems="center" textAlign="center">
                 {isFailed ? (
                     <>
                         <Stack spacing={1}>
@@ -34,7 +33,11 @@ export function VerifyEmailPage() {
                                 new one.
                             </Typography>
                         </Stack>
-                        <ResendVerificationForm/>
+                        <EmailLinkForm
+                            submitLabel="Send new link"
+                            sentMessage="If an unverified account uses this email, a new link is on its way."
+                            send={email => resendVerification({email})}
+                        />
                         <Link component={RouterLink} to="/auth" underline="hover">
                             Back to sign in
                         </Link>
@@ -45,7 +48,7 @@ export function VerifyEmailPage() {
                         <Typography color="text.secondary">Verifying your email…</Typography>
                     </>
                 )}
-            </Stack>
+            </AuthCard>
         </AuthPageLayout>
     );
 }

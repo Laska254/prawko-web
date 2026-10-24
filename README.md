@@ -76,12 +76,18 @@ Prawko Server must allow CORS requests from the application URL.
 
 * `/auth` sign in and create an account
 * `/` home page
-* `/change-password` change password
+* `/exam` exam (placeholder)
+* `/auth/verify` verify email
+* `/auth/password/forgot` request a password reset link
+* `/auth/password/reset` set a new password
 
 ### Used endpoints
 
 * `/auth`
     + `POST` sign in
+    + `POST /verify` verify email
+    + `POST /verify/resend` resend verification link
+    + `POST /password/forgot` request a password reset link
+    + `POST /password/reset` set a new password
 * `/users`
     + `POST` register new user
-    + `PATCH /me/password` change password

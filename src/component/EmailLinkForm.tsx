@@ -1,27 +1,31 @@
 import {useRef, useState} from "react";
 import {Alert, type AlertColor, Button, Stack, TextField} from "@mui/material";
-import {resendVerification} from "../requests.tsx";
 
-type ResendStatus = "idle" | "sending" | "sent" | "error";
+type SendStatus = "idle" | "sending" | "sent" | "error";
 
-const STATUS_ALERTS: Partial<Record<ResendStatus, {severity: AlertColor; message: string}>> = {
-    sent: {severity: "success", message: "If an unverified account uses this email, a new link is on its way."},
-    error: {severity: "error", message: "Couldn't send a new link. Please try again later."},
-};
+interface EmailLinkFormProps {
+    submitLabel: string;
+    sentMessage: string;
+    send: (email: string) => Promise<unknown>;
+}
 
-export function ResendVerificationForm() {
+export function EmailLinkForm({submitLabel, sentMessage, send}: EmailLinkFormProps) {
     const emailRef = useRef<HTMLInputElement>(null);
-    const [status, setStatus] = useState<ResendStatus>("idle");
+    const [status, setStatus] = useState<SendStatus>("idle");
+
+    const statusAlerts: Partial<Record<SendStatus, {severity: AlertColor; message: string}>> = {
+        sent: {severity: "success", message: sentMessage},
+        error: {severity: "error", message: "Couldn't send the link. Please try again later."},
+    };
+    const alert = statusAlerts[status];
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
         setStatus("sending");
-        resendVerification({email: emailRef.current?.value ?? ''})
+        send(emailRef.current?.value ?? '')
             .then(() => setStatus("sent"))
             .catch(() => setStatus("error"));
     }
-
-    const alert = STATUS_ALERTS[status];
 
     return (
         <form onSubmit={onSubmit} style={{width: "100%"}}>
@@ -38,7 +42,7 @@ export function ResendVerificationForm() {
                 />
                 <Button variant="contained" color="secondary" type="submit" fullWidth size="large"
                         disabled={status === "sending"}>
-                    Send new link
+                    {submitLabel}
                 </Button>
             </Stack>
         </form>
