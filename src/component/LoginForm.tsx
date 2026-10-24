@@ -31,7 +31,7 @@ export default function LoginForm() {
         setIsPasswordVisible(prevState => !prevState);
     }
 
-    async function onSubmit(e: React.FormEvent): Promise<void> {
+    function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
         const userName = userNameRef.current?.value ?? '';
         const password = passwordRef.current?.value ?? '';
