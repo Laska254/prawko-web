@@ -4,6 +4,7 @@ import {Link as RouterLink, useNavigate, useSearchParams} from "react-router";
 import {resendVerification, verifyEmail} from "../requests.tsx";
 import {EmailLinkForm} from "../component/EmailLinkForm.tsx";
 import {AuthPageLayout} from "../component/AuthPageLayout.tsx";
+import {AuthCard} from "../component/AuthCard.tsx";
 
 export function VerifyEmailPage() {
     const [searchParams] = useSearchParams();
@@ -22,9 +23,7 @@ export function VerifyEmailPage() {
 
     return (
         <AuthPageLayout>
-            <Stack spacing={3} alignItems="center" textAlign="center" width="100%" maxWidth={440}
-                   p={{xs: 3, sm: 5}} border={1} borderColor="divider" borderRadius={2}
-                   bgcolor="background.paper" boxShadow={1}>
+            <AuthCard spacing={3} alignItems="center" textAlign="center">
                 {isFailed ? (
                     <>
                         <Stack spacing={1}>
@@ -49,7 +48,7 @@ export function VerifyEmailPage() {
                         <Typography color="text.secondary">Verifying your email…</Typography>
                     </>
                 )}
-            </Stack>
+            </AuthCard>
         </AuthPageLayout>
     );
 }
