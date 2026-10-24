@@ -24,6 +24,7 @@ export default function LoginForm() {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [error, setError] = useState<LoginError | null>(null);
     const [email, setEmail] = useState<string>();
+    const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
 
     function handleToggle() {
@@ -36,9 +37,11 @@ export default function LoginForm() {
         const password = passwordRef.current?.value ?? '';
         setError(null);
         setEmail(userName.includes("@") ? userName : undefined);
+        setIsSending(true);
         login({userName, password})
             .then(() => navigate('/'))
-            .catch(error => setError(STATUS_ERRORS[error.response?.status] ?? "failed"));
+            .catch(error => setError(STATUS_ERRORS[error.response?.status] ?? "failed"))
+            .finally(() => setIsSending(false));
     }
 
     return (
@@ -79,7 +82,8 @@ export default function LoginForm() {
                         },
                     }}
                 />
-                <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}>
+                <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}
+                        disabled={isSending}>
                     Sign in
                 </Button>
                 <Link component={RouterLink} to="/auth/password/forgot" underline="hover" alignSelf="flex-start">

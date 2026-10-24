@@ -12,6 +12,7 @@ export default function RegisterForm() {
     const passwordRef = useRef<HTMLInputElement>(null);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
+    const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
 
     function handleToggle() {
@@ -22,6 +23,7 @@ export default function RegisterForm() {
         e.preventDefault();
         const email = emailRef.current?.value ?? '';
         setErrors([]);
+        setIsSending(true);
         register({
             firstName: firstNameRef.current?.value ?? '',
             lastName: lastNameRef.current?.value ?? '',
@@ -32,7 +34,8 @@ export default function RegisterForm() {
             .then(() => navigate('/auth/verify/sent', {state: {email}}))
             .catch(error => setErrors(error.response?.data?.details
                 ? Object.values(error.response.data.details)
-                : ["Couldn't create the account. Please try again later."]));
+                : ["Couldn't create the account. Please try again later."]))
+            .finally(() => setIsSending(false));
     }
 
     return (
@@ -94,7 +97,8 @@ export default function RegisterForm() {
                         },
                     }}
                 />
-                <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}>
+                <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}
+                        disabled={isSending}>
                     Register
                 </Button>
             </Stack>
