@@ -5,6 +5,7 @@ import {RequireAuth} from "./component/RequireAuth.tsx";
 import {RequireGuest} from "./component/RequireGuest.tsx";
 import {ExamPage} from "./page/ExamPage.tsx";
 import {VerifyEmailPage} from "./page/VerifyEmailPage.tsx";
+import {VerificationSentPage} from "./page/VerificationSentPage.tsx";
 import {ForgotPasswordPage} from "./page/ForgotPasswordPage.tsx";
 import {ResetPasswordPage} from "./page/ResetPasswordPage.tsx";
 
@@ -20,6 +21,7 @@ function App() {
                     <Route path="/auth" element={<AuthPage/>}/>
                 </Route>
                 <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
+                <Route path="/auth/verify/sent" element={<VerificationSentPage/>}/>
                 <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
                 <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
                 <Route path="*" element={<Navigate to="/auth" replace/>}/>

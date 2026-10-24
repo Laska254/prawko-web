@@ -78,6 +78,7 @@ Prawko Server must allow CORS requests from the application URL.
 * `/` home page
 * `/exam` exam (placeholder)
 * `/auth/verify` verify email
+* `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
 * `/auth/password/reset` set a new password
 
