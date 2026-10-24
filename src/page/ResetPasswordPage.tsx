@@ -11,21 +11,27 @@ export function ResetPasswordPage() {
     return (
         <AuthPageLayout>
             <AuthCard>
-                <Stack spacing={1}>
-                    <Typography variant="h4" fontWeight={700}>Set new password</Typography>
-                    <Typography color="text.secondary">
-                        {token
-                            ? "Choose a new password for your account."
-                            : "This reset link is invalid. Request a new one to reset your password."}
-                    </Typography>
-                </Stack>
-                {token
-                    ? <ResetPasswordForm token={token}/>
-                    : (
+                {token ? (
+                    <>
+                        <Stack spacing={1}>
+                            <Typography variant="h4" fontWeight={700}>Set new password</Typography>
+                            <Typography color="text.secondary">Choose a new password for your account.</Typography>
+                        </Stack>
+                        <ResetPasswordForm token={token}/>
+                    </>
+                ) : (
+                    <>
+                        <Stack spacing={1}>
+                            <Typography variant="h4" fontWeight={700}>Set new password</Typography>
+                            <Typography color="text.secondary">
+                                This reset link is invalid. Request a new one to reset your password.
+                            </Typography>
+                        </Stack>
                         <Link component={RouterLink} to="/auth/password/forgot" underline="hover" fontWeight={600}>
                             Request a new link
                         </Link>
-                    )}
+                    </>
+                )}
                 <Link component={RouterLink} to="/auth" underline="hover" fontWeight={600} alignSelf="flex-start">
                     Back to sign in
                 </Link>
