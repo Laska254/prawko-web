@@ -4,11 +4,12 @@ import {Link as RouterLink, useNavigate} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {resetPassword} from "../requests.tsx";
 
-type ResetError = "mismatch" | "invalidToken";
+type ResetError = "mismatch" | "invalidToken" | "failed";
 
 const ERROR_MESSAGES: Record<ResetError, string> = {
     mismatch: "Passwords don't match.",
     invalidToken: "This reset link is invalid or has expired.",
+    failed: "Couldn't reset the password. Please try again later.",
 };
 
 interface ResetPasswordFormProps {
@@ -38,7 +39,7 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
         setIsSending(true);
         resetPassword({token, newPassword})
             .then(() => navigate("/auth", {replace: true}))
-            .catch(() => setError("invalidToken"))
+            .catch(error => setError(error.response?.status === 400 ? "invalidToken" : "failed"))
             .finally(() => setIsSending(false));
     }
 
