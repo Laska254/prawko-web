@@ -38,6 +38,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send}: EmailLinkFormPro
                     placeholder="Email"
                     required
                     fullWidth
+                    slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
                 />
                 <Button variant="contained" color="secondary" type="submit" fullWidth size="large"
                         disabled={status === "sending"}>
