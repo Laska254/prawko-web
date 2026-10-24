@@ -1,6 +1,5 @@
 import axios from "axios";
 import type {LoginDto} from "./interface/dto/LoginDto.tsx";
-import type {ChangePasswordDto} from "./interface/dto/ChangePasswordDto.tsx";
 import type {RegisterDto} from "./interface/dto/RegisterDto.tsx";
 import type {VerifyEmailDto} from "./interface/dto/VerifyEmailDto.tsx";
 import type {ResendVerificationDto} from "./interface/dto/ResendVerificationDto.tsx";
@@ -54,8 +53,4 @@ export async function forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
 
 export async function resetPassword(resetPasswordDto: ResetPasswordDto) {
     return await api.post("/auth/password/reset", resetPasswordDto);
-}
-
-export async function changePassword(changePasswordDto: ChangePasswordDto) {
-    return await api.post("/auth/forgottenPassword", changePasswordDto);
 }

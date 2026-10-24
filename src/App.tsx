@@ -1,6 +1,5 @@
 import {AuthPage} from "./page/AuthPage.tsx";
 import {BrowserRouter, Navigate, Route, Routes} from "react-router";
-import {ChangePassword} from "./component/ChangePassword.tsx";
 import {HomePage} from "./page/HomePage.tsx";
 import {RequireAuth} from "./component/RequireAuth.tsx";
 import {RequireGuest} from "./component/RequireGuest.tsx";
@@ -10,7 +9,6 @@ import {ForgotPasswordPage} from "./page/ForgotPasswordPage.tsx";
 import {ResetPasswordPage} from "./page/ResetPasswordPage.tsx";
 
 function App() {
-
     return (
         <BrowserRouter>
             <Routes>
@@ -24,12 +22,10 @@ function App() {
                 <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
                 <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
                 <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
-                <Route path="/change-password" element={<ChangePassword/>}/>
                 <Route path="*" element={<Navigate to="/auth" replace/>}/>
             </Routes>
         </BrowserRouter>
     )
-
 }
 
 export default App
