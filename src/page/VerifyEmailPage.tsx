@@ -1,8 +1,8 @@
 import {useEffect, useRef, useState} from "react";
 import {CircularProgress, Link, Stack, Typography} from "@mui/material";
 import {Link as RouterLink, useNavigate, useSearchParams} from "react-router";
-import {verifyEmail} from "../requests.tsx";
-import {ResendVerificationForm} from "../component/ResendVerificationForm.tsx";
+import {resendVerification, verifyEmail} from "../requests.tsx";
+import {EmailLinkForm} from "../component/EmailLinkForm.tsx";
 import {AuthPageLayout} from "../component/AuthPageLayout.tsx";
 
 export function VerifyEmailPage() {
@@ -34,7 +34,11 @@ export function VerifyEmailPage() {
                                 new one.
                             </Typography>
                         </Stack>
-                        <ResendVerificationForm/>
+                        <EmailLinkForm
+                            submitLabel="Send new link"
+                            sentMessage="If an unverified account uses this email, a new link is on its way."
+                            send={email => resendVerification({email})}
+                        />
                         <Link component={RouterLink} to="/auth" underline="hover">
                             Back to sign in
                         </Link>
