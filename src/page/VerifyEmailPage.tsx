@@ -16,7 +16,7 @@ export function VerifyEmailPage() {
         if (!token || isSentRef.current) return;
         isSentRef.current = true;
         verifyEmail({token})
-            .then(() => navigate("/auth", {replace: true, state: {isVerified: true}}))
+            .then(() => navigate("/auth", {replace: true, state: {notice: "verified"}}))
             .catch(() => setIsFailed(true));
     }, [token, navigate]);
 
