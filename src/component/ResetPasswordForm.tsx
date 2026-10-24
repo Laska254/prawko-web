@@ -39,7 +39,9 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
         setIsSending(true);
         resetPassword({token, newPassword})
             .then(() => navigate("/auth", {replace: true, state: {notice: "passwordReset"}}))
-            .catch(error => setError(error.response?.status === 400 ? "invalidToken" : "failed"))
+            .catch(error => setError(error.response?.status === 400 && !error.response.data?.details
+                ? "invalidToken"
+                : "failed"))
             .finally(() => setIsSending(false));
     }
 
