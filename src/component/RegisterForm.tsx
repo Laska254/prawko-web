@@ -1,5 +1,5 @@
 import {useRef, useState} from "react";
-import {Button, IconButton, InputAdornment, Stack, TextField} from "@mui/material";
+import {Alert, Button, IconButton, InputAdornment, Stack, TextField} from "@mui/material";
 import {register} from "../requests.tsx";
 import {useNavigate} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
@@ -11,6 +11,7 @@ export default function RegisterForm() {
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [errors, setErrors] = useState<string[]>([]);
     const navigate = useNavigate();
 
     function handleToggle() {
@@ -20,6 +21,7 @@ export default function RegisterForm() {
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
         const email = emailRef.current?.value ?? '';
+        setErrors([]);
         register({
             firstName: firstNameRef.current?.value ?? '',
             lastName: lastNameRef.current?.value ?? '',
@@ -28,12 +30,19 @@ export default function RegisterForm() {
             password: passwordRef.current?.value ?? '',
         })
             .then(() => navigate('/auth/verify/sent', {state: {email}}))
-            .catch(console.error);
+            .catch(error => setErrors(error.response?.data?.details
+                ? Object.values(error.response.data.details)
+                : ["Couldn't create the account. Please try again later."]));
     }
 
     return (
         <form onSubmit={onSubmit}>
             <Stack spacing={2}>
+                {errors.length > 0 && (
+                    <Alert severity="error">
+                        {errors.map(error => <div key={error}>{error}</div>)}
+                    </Alert>
+                )}
                 <TextField
                     label="First name"
                     type="text"
