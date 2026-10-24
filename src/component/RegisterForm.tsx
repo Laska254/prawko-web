@@ -1,6 +1,6 @@
 import {useRef, useState} from "react";
 import {Button, IconButton, InputAdornment, Stack, TextField} from "@mui/material";
-import {login, register} from "../requests.tsx";
+import {register} from "../requests.tsx";
 import {useNavigate} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
@@ -19,17 +19,15 @@ export default function RegisterForm() {
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
-        const userName = userNameRef.current?.value ?? '';
-        const password = passwordRef.current?.value ?? '';
+        const email = emailRef.current?.value ?? '';
         register({
             firstName: firstNameRef.current?.value ?? '',
             lastName: lastNameRef.current?.value ?? '',
-            userName,
-            email: emailRef.current?.value ?? '',
-            password,
+            userName: userNameRef.current?.value ?? '',
+            email,
+            password: passwordRef.current?.value ?? '',
         })
-            .then(() => login({userName, password}))
-            .then(() => navigate('/'))
+            .then(() => navigate('/auth/verify/sent', {state: {email}}))
             .catch(console.error);
     }
 

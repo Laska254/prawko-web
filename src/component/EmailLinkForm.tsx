@@ -7,9 +7,10 @@ interface EmailLinkFormProps {
     submitLabel: string;
     sentMessage: string;
     send: (email: string) => Promise<unknown>;
+    defaultEmail?: string;
 }
 
-export function EmailLinkForm({submitLabel, sentMessage, send}: EmailLinkFormProps) {
+export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: EmailLinkFormProps) {
     const emailRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState<SendStatus>("idle");
 
@@ -35,6 +36,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send}: EmailLinkFormPro
                     label="Email"
                     type="email"
                     inputRef={emailRef}
+                    defaultValue={defaultEmail}
                     placeholder="Email"
                     required
                     fullWidth
