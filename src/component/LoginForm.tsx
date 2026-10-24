@@ -13,6 +13,7 @@ const ERROR_MESSAGES: Record<LoginError, string> = {
 };
 
 const STATUS_ERRORS: Partial<Record<number, LoginError>> = {
+    400: "invalidCredentials",
     401: "invalidCredentials",
     403: "notVerified",
 };
