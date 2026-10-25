@@ -27,7 +27,12 @@ are handled by the server, so it must be running for the web client to work.
 
 ### Debian 13
 
-`sudo apt install nodejs npm`
+Debian's own `nodejs` package is too old, use [NodeSource](https://github.com/nodesource/distributions) instead
+(it includes npm)
+
+`curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -`
+
+`sudo apt install nodejs`
 
 ### Windows
 
