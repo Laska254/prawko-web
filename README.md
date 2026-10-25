@@ -21,13 +21,18 @@ are handled by the server, so it must be running for the web client to work.
 
 ## Prerequisites
 
-* Node.js 20.19+ or 22.12+
+* Node.js 22.22.2+ or 24.15+
 * npm
 * Running [Prawko Server](https://github.com/Laska254/prawko-server)
 
 ### Debian 13
 
-`sudo apt install nodejs npm`
+Debian's own `nodejs` package is too old, use [NodeSource](https://github.com/nodesource/distributions) instead
+(it includes npm)
+
+`curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -`
+
+`sudo apt install nodejs`
 
 ### Windows
 
@@ -61,6 +66,14 @@ Build
 Lint
 
 `npm run lint`
+
+Test
+
+`npm test`
+
+Coverage (report in `coverage/`)
+
+`npm run coverage`
 
 ---
 
