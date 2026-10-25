@@ -62,6 +62,14 @@ Lint
 
 `npm run lint`
 
+Test
+
+`npm test`
+
+Coverage (report in `coverage/`)
+
+`npm run coverage`
+
 ---
 
 ## Usage
