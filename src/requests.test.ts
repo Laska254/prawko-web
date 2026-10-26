@@ -1,5 +1,5 @@
 import {http, HttpResponse} from "msw/http";
-import {apiUrl, server} from "./test/server.ts";
+import {apiUrl, mockPost, server} from "./test/server.ts";
 import {getCredentials, saveCredentials} from "./auth.tsx";
 import {forgotPassword, login, register, resendVerification, resetPassword, verifyEmail} from "./requests.tsx";
 
@@ -18,29 +18,21 @@ describe("requests", () => {
         ["/auth/password/forgot", () => forgotPassword(emailDto), emailDto],
         ["/auth/password/reset", () => resetPassword(resetPasswordDto), resetPasswordDto],
     ])("posts the body to %s", async (path, send, body) => {
-        let received: unknown;
-        server.use(http.post(apiUrl(path), async ({request}) => {
-            received = await request.json();
-            return new HttpResponse(null, {status: 204});
-        }));
+        const requests = mockPost(path);
 
         const response = await send();
 
         expect(response.status).toBe(204);
-        expect(received).toEqual(body);
+        expect(requests).toEqual([body]);
     });
 
     describe("login", () => {
         it("saves the credentials after signing in", async () => {
-            let received: unknown;
-            server.use(http.post(apiUrl("/auth"), async ({request}) => {
-                received = await request.json();
-                return new HttpResponse(null, {status: 204});
-            }));
+            const requests = mockPost("/auth");
 
             await login(credentials);
 
-            expect(received).toEqual(credentials);
+            expect(requests).toEqual([credentials]);
             expect(getCredentials()).toBe(btoa("jan:secret"));
         });
 
@@ -58,7 +50,7 @@ describe("requests", () => {
         });
 
         it("doesn't save the credentials when signing in fails", async () => {
-            server.use(http.post(apiUrl("/auth"), () => new HttpResponse(null, {status: 401})));
+            mockPost("/auth", 401);
             saveCredentials({userName: "old", password: "old"});
 
             await expect(login(credentials)).rejects.toMatchObject({response: {status: 401}});
