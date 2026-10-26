@@ -21,15 +21,15 @@ export default function RegisterForm() {
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
-        const email = emailRef.current?.value ?? '';
+        const email = emailRef.current!.value;
         setErrors([]);
         setIsSending(true);
         register({
-            firstName: firstNameRef.current?.value ?? '',
-            lastName: lastNameRef.current?.value ?? '',
-            userName: userNameRef.current?.value ?? '',
+            firstName: firstNameRef.current!.value,
+            lastName: lastNameRef.current!.value,
+            userName: userNameRef.current!.value,
             email,
-            password: passwordRef.current?.value ?? '',
+            password: passwordRef.current!.value,
         })
             .then(() => navigate('/auth/verify/sent', {state: {email}}))
             .catch(error => setErrors(error.response?.data?.details
