@@ -21,7 +21,7 @@ are handled by the server, so it must be running for the web client to work.
 
 ## Prerequisites
 
-* Node.js 22.22.2+ or 24.15+
+* Node.js 24.15+ (CI runs the version in `.nvmrc`)
 * npm
 * Running [Prawko Server](https://github.com/Laska254/prawko-server)
 
