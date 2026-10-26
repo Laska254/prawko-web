@@ -20,7 +20,7 @@ export function mockPost(path: string, status = 204, body?: JsonBodyType): unkno
 
 // Like `mockPost`, but holds the response until `respond()` is called, to check the UI while sending.
 export function mockPendingPost(path: string, status = 204) {
-    let respond = () => {};
+    let respond!: () => void;
     const responded = new Promise<void>(resolve => respond = resolve);
     let requestCount = 0;
     server.use(http.post(apiUrl(path), async () => {

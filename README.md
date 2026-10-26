@@ -71,7 +71,7 @@ Test
 
 `npm test`
 
-Coverage (report in `coverage/`)
+Coverage (fails below 100%, report in `coverage/`)
 
 `npm run coverage`
 

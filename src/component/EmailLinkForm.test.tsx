@@ -42,7 +42,7 @@ describe("EmailLinkForm", () => {
     });
 
     it("sends once while sending", async () => {
-        let respond = () => {};
+        let respond!: () => void;
         const send = vi.fn(() => new Promise<void>(resolve => respond = resolve));
         renderForm(send, "jan@example.com");
 
