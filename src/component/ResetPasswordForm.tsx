@@ -30,8 +30,8 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
-        const newPassword = passwordRef.current?.value ?? '';
-        if (newPassword !== confirmPasswordRef.current?.value) {
+        const newPassword = passwordRef.current!.value;
+        if (newPassword !== confirmPasswordRef.current!.value) {
             setError("mismatch");
             return;
         }

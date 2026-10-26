@@ -23,7 +23,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: Em
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
         setStatus("sending");
-        send(emailRef.current?.value ?? '')
+        send(emailRef.current!.value)
             .then(() => setStatus("sent"))
             .catch(() => setStatus("error"));
     }

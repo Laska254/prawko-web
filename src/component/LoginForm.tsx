@@ -33,8 +33,8 @@ export default function LoginForm() {
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
-        const userName = userNameRef.current?.value ?? '';
-        const password = passwordRef.current?.value ?? '';
+        const userName = userNameRef.current!.value;
+        const password = passwordRef.current!.value;
         setError(null);
         setEmail(userName.includes("@") ? userName : undefined);
         setIsSending(true);
