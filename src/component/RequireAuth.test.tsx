@@ -3,6 +3,7 @@ import {Route, Routes} from "react-router";
 import {RequireAuth} from "./RequireAuth.tsx";
 import {renderWithProviders} from "../test/render.tsx";
 import {saveCredentials} from "../auth.tsx";
+import {credentials} from "../test/data.ts";
 
 function renderRoutes() {
     renderWithProviders(
@@ -17,7 +18,7 @@ function renderRoutes() {
 
 describe("RequireAuth", () => {
     it("shows the page with a session", () => {
-        saveCredentials({userName: "jan", password: "secret"});
+        saveCredentials(credentials);
 
         renderRoutes();
 

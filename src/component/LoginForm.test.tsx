@@ -3,8 +3,9 @@ import userEvent, {type UserEvent} from "@testing-library/user-event";
 import LoginForm from "./LoginForm.tsx";
 import {currentLocation, renderAtRoute} from "../test/render.tsx";
 import {mockNetworkError, mockPendingPost, mockPost} from "../test/server.ts";
+import {credentials} from "../test/data.ts";
 
-async function signIn(user: UserEvent, login = "jan", password = "secret") {
+async function signIn(user: UserEvent, login = credentials.userName, password = credentials.password) {
     await user.type(screen.getByRole("textbox", {name: "Login"}), login);
     await user.type(screen.getByLabelText(/^Password/), password);
     await user.click(screen.getByRole("button", {name: "Sign in"}));
@@ -25,7 +26,7 @@ describe("LoginForm", () => {
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation().pathname).toBe("/");
-        expect(requests).toEqual([{userName: "jan", password: "secret"}]);
+        expect(requests).toEqual([credentials]);
     });
 
     it.each([400, 401])("shows wrong credentials on %i", async status => {

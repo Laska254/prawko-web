@@ -3,13 +3,14 @@ import userEvent, {type UserEvent} from "@testing-library/user-event";
 import RegisterForm from "./RegisterForm.tsx";
 import {currentLocation, renderAtRoute} from "../test/render.tsx";
 import {mockNetworkError, mockPendingPost, mockPost} from "../test/server.ts";
+import {registerDto} from "../test/data.ts";
 
 async function register(user: UserEvent) {
-    await user.type(screen.getByRole("textbox", {name: "First name"}), "Jan");
-    await user.type(screen.getByRole("textbox", {name: "Last name"}), "Kowalski");
-    await user.type(screen.getByRole("textbox", {name: "Username"}), "jan");
-    await user.type(screen.getByRole("textbox", {name: "Email"}), "jan@example.com");
-    await user.type(screen.getByLabelText(/^Password/), "secret1");
+    await user.type(screen.getByRole("textbox", {name: "First name"}), registerDto.firstName);
+    await user.type(screen.getByRole("textbox", {name: "Last name"}), registerDto.lastName);
+    await user.type(screen.getByRole("textbox", {name: "Username"}), registerDto.userName);
+    await user.type(screen.getByRole("textbox", {name: "Email"}), registerDto.email);
+    await user.type(screen.getByLabelText(/^Password/), registerDto.password);
     await user.click(screen.getByRole("button", {name: "Register"}));
 }
 
@@ -27,10 +28,8 @@ describe("RegisterForm", () => {
         await register(user);
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
-        expect(currentLocation()).toMatchObject({pathname: "/auth/verify/sent", state: {email: "jan@example.com"}});
-        expect(requests).toEqual([
-            {firstName: "Jan", lastName: "Kowalski", userName: "jan", email: "jan@example.com", password: "secret1"},
-        ]);
+        expect(currentLocation()).toMatchObject({pathname: "/auth/verify/sent", state: {email: registerDto.email}});
+        expect(requests).toEqual([registerDto]);
     });
 
     it("shows the field errors from the server", async () => {

@@ -1,4 +1,5 @@
 import {clearCredentials, getCredentials, isAuthenticated, saveCredentials} from "./auth.tsx";
+import {credentials} from "./test/data.ts";
 
 function decode(credentials: string): string {
     return new TextDecoder().decode(Uint8Array.from(atob(credentials), char => char.charCodeAt(0)));
@@ -11,7 +12,7 @@ describe("auth", () => {
     });
 
     it("saves the credentials as Base64", () => {
-        saveCredentials({userName: "jan", password: "secret"});
+        saveCredentials(credentials);
 
         expect(getCredentials()).toBe(btoa("jan:secret"));
         expect(isAuthenticated()).toBe(true);
@@ -24,7 +25,7 @@ describe("auth", () => {
     });
 
     it("clears the credentials", () => {
-        saveCredentials({userName: "jan", password: "secret"});
+        saveCredentials(credentials);
 
         clearCredentials();
 

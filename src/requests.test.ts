@@ -1,12 +1,10 @@
 import {http, HttpResponse} from "msw/http";
 import {apiUrl, mockPost, server} from "./test/server.ts";
+import {credentials, registerDto} from "./test/data.ts";
 import {getCredentials, saveCredentials} from "./auth.tsx";
 import {forgotPassword, login, register, resendVerification, resetPassword, verifyEmail} from "./requests.tsx";
 
-const credentials = {userName: "jan", password: "secret"};
-
 describe("requests", () => {
-    const registerDto = {firstName: "Jan", lastName: "Kowalski", userName: "jan", email: "jan@example.com", password: "secret"};
     const verifyEmailDto = {token: "token"};
     const emailDto = {email: "jan@example.com"};
     const resetPasswordDto = {token: "token", newPassword: "secret"};

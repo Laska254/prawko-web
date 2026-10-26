@@ -3,6 +3,7 @@ import {Route, Routes} from "react-router";
 import {RequireGuest} from "./RequireGuest.tsx";
 import {renderWithProviders} from "../test/render.tsx";
 import {saveCredentials} from "../auth.tsx";
+import {credentials} from "../test/data.ts";
 
 function renderRoutes() {
     renderWithProviders(
@@ -24,7 +25,7 @@ describe("RequireGuest", () => {
     });
 
     it("redirects to / with a session", () => {
-        saveCredentials({userName: "jan", password: "secret"});
+        saveCredentials(credentials);
 
         renderRoutes();
 

@@ -1,6 +1,7 @@
 import {render, screen} from "@testing-library/react";
 import App from "./App.tsx";
 import {saveCredentials} from "./auth.tsx";
+import {credentials} from "./test/data.ts";
 
 function renderAt(path: string) {
     window.history.pushState({}, "", path);
@@ -24,7 +25,7 @@ describe("App", () => {
         ["/exam", "/exam"],
         ["/auth", "/"],
     ])("sends a signed in user from %s to %s", (path, expected) => {
-        saveCredentials({userName: "jan", password: "secret"});
+        saveCredentials(credentials);
 
         renderAt(path);
 
@@ -43,7 +44,7 @@ describe("App", () => {
             ["/auth/password/reset", "Invalid reset link"],
         ])("shows %s", (path, heading) => {
             if (isSignedIn) {
-                saveCredentials({userName: "jan", password: "secret"});
+                saveCredentials(credentials);
             }
 
             renderAt(path);
