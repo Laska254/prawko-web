@@ -32,16 +32,23 @@ describe("App", () => {
         expect(screen.queryByRole("heading", {name: "Sign in"})).not.toBeInTheDocument();
     });
 
-    it.each([
-        ["/auth/verify", "Verification failed"],
-        ["/auth/verify/sent", "Check your email"],
-        ["/auth/password/forgot", "Forgot password?"],
-        ["/auth/password/reset", "Invalid reset link"],
-    ])("shows %s to everyone", (path, heading) => {
-        saveCredentials({userName: "jan", password: "secret"});
+    describe.each([
+        ["a guest", false],
+        ["a signed in user", true],
+    ])("for %s", (_, isSignedIn) => {
+        it.each([
+            ["/auth/verify", "Verification failed"],
+            ["/auth/verify/sent", "Check your email"],
+            ["/auth/password/forgot", "Forgot password?"],
+            ["/auth/password/reset", "Invalid reset link"],
+        ])("shows %s", (path, heading) => {
+            if (isSignedIn) {
+                saveCredentials({userName: "jan", password: "secret"});
+            }
 
-        renderAt(path);
+            renderAt(path);
 
-        expect(screen.getByRole("heading", {name: heading})).toBeInTheDocument();
+            expect(screen.getByRole("heading", {name: heading})).toBeInTheDocument();
+        });
     });
 });
