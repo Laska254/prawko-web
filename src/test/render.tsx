@@ -36,5 +36,5 @@ export function renderAtRoute(ui: ReactElement, route = "/", state?: unknown) {
 }
 
 export function currentLocation(): {pathname: string; search: string; state: unknown} {
-    return JSON.parse(screen.getByTestId("location").textContent ?? "");
+    return JSON.parse(screen.getByTestId("location").textContent!);
 }
