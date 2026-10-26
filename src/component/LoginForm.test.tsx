@@ -52,7 +52,7 @@ describe("LoginForm", () => {
         expect(await screen.findByText(/Verify your email before signing in./)).toBeInTheDocument();
         await user.click(screen.getByRole("link", {name: "Send a new link."}));
 
-        expect(currentLocation()).toMatchObject({pathname: "/auth/verify/sent", state: {}});
+        expect(currentLocation()).toEqual({pathname: "/auth/verify/sent", search: "", state: {}});
     });
 
     it("shows a generic error on a server error", async () => {
