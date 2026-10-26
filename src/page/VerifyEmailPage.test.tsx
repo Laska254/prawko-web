@@ -1,4 +1,4 @@
-import {screen} from "@testing-library/react";
+import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {VerifyEmailPage} from "./VerifyEmailPage.tsx";
 import {currentLocation, renderAtRoute} from "../test/render.tsx";
@@ -15,13 +15,15 @@ describe("VerifyEmailPage", () => {
         expect(requests).toEqual([{token: "token"}]);
     });
 
-    it("shows progress while verifying", () => {
+    it("shows progress while verifying", async () => {
         const request = mockPendingPost("/auth/verify");
 
         renderAtRoute(<VerifyEmailPage/>, "/auth/verify?token=token");
 
         expect(screen.getByText("Verifying your email…")).toBeInTheDocument();
+        await waitFor(() => expect(request.requestCount()).toBe(1));
         request.respond();
+        expect(await screen.findByTestId("location")).toBeInTheDocument();
     });
 
     it("offers a new link when verification fails", async () => {
