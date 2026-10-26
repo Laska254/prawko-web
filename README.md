@@ -1,5 +1,7 @@
 # Prawko Web
 
+[![codecov](https://codecov.io/gh/Laska254/prawko-web/graph/badge.svg)](https://codecov.io/gh/Laska254/prawko-web)
+
 ## Table of Contents
 
 * [Table of Contents](#table-of-contents)
