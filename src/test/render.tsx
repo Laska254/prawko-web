@@ -1,8 +1,9 @@
 import type {ReactElement} from "react";
-import {render} from "@testing-library/react";
+import {render, screen} from "@testing-library/react";
 import {CssBaseline, ThemeProvider} from "@mui/material";
-import {MemoryRouter} from "react-router";
+import {MemoryRouter, Route, Routes} from "react-router";
 import {theme} from "../theme.tsx";
+import {ShowLocation} from "./ShowLocation.tsx";
 
 interface RenderOptions {
     readonly route?: string;
@@ -17,4 +18,19 @@ export function renderWithProviders(ui: ReactElement, {route = "/"}: RenderOptio
             </MemoryRouter>
         </ThemeProvider>
     );
+}
+
+// Renders the UI at `route`; any other path shows `ShowLocation`.
+export function renderAtRoute(ui: ReactElement, route = "/") {
+    return renderWithProviders(
+        <Routes>
+            <Route path={route.split("?")[0]} element={ui}/>
+            <Route path="*" element={<ShowLocation/>}/>
+        </Routes>,
+        {route}
+    );
+}
+
+export function currentLocation(): {pathname: string; search: string; state: unknown} {
+    return JSON.parse(screen.getByTestId("location").textContent ?? "");
 }
