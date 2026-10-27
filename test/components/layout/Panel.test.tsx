@@ -1,4 +1,5 @@
 import {screen} from "@testing-library/react";
+import {theme} from "@/app/theme.tsx";
 import {Panel} from "@/components/layout/Panel.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 
@@ -7,7 +8,15 @@ describe("Panel", () => {
         renderWithProviders(<Panel data-testid="panel">Content</Panel>);
 
         expect(screen.getByTestId("panel")).toHaveTextContent("Content");
-        expect(screen.getByTestId("panel")).toHaveStyle({borderWidth: "1px", borderStyle: "solid", backgroundColor: "#ffffff"});
+        expect(screen.getByTestId("panel")).toHaveStyle({
+            borderWidth: "1px",
+            borderStyle: "solid",
+            borderColor: "#d3dbe7",
+            borderRadius: "12px",
+            backgroundColor: "#ffffff",
+        });
+        // jsdom drops the space between the two shadows, so `toHaveStyle` can't match the theme value.
+        expect(getComputedStyle(screen.getByTestId("panel")).boxShadow).toBe(theme.shadows[1].replaceAll("), ", "),"));
     });
 
     it("lets the caller override its props", () => {
