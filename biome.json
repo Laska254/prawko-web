@@ -32,5 +32,155 @@
         }
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/features/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/app/**"],
+                    "message": "features/ can't import app/."
+                  },
+                  {
+                    "group": ["@/features/**", "../../*/**"],
+                    "message": "Imports outside this feature use @/ and never point to another feature."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/features/*/*.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/app/**"],
+                    "message": "features/ can't import app/."
+                  },
+                  {
+                    "group": ["@/features/**", "../*/**"],
+                    "message": "Imports outside this feature use @/ and never point to another feature."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/session/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/app/**", "**/features/**", "**/components/**"],
+                    "message": "session/ can only import api/ and i18n/."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/components/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/app/**", "**/features/**", "**/session/**", "**/api/**"],
+                    "message": "components/ can only import i18n/ and utils/."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/api/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/app/**", "**/features/**", "**/session/**", "**/components/**", "**/i18n/**"],
+                    "message": "api/ can only import utils/."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/i18n/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/app/**", "**/features/**", "**/session/**", "**/components/**", "**/api/**", "**/utils/**"],
+                    "message": "i18n/ can't import other parts of src/."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/utils/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/app/**", "**/features/**", "**/session/**", "**/components/**", "**/api/**", "**/i18n/**"],
+                    "message": "utils/ can't import other parts of src/."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

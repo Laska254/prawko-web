@@ -4,13 +4,16 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./test/support/setup.tsx'],
     coverage: {
       provider: 'v8',
-      include: ['src/**/*.{ts,tsx}'],
+      include: ['src/**/*.{ts,tsx}', 'test/support/**/*.{ts,tsx}'],
       reporter: ['text', 'html', 'lcov'],
       thresholds: {
         100: true,
