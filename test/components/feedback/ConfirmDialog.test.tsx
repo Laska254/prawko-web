@@ -4,19 +4,17 @@ import {theme} from "@/app/theme.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 
-const onConfirm = vi.fn();
-const onCancel = vi.fn();
-
 function renderDialog({open = true, loading = false, confirmColor}: {open?: boolean; loading?: boolean; confirmColor?: "error"} = {}) {
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
     renderWithProviders(
         <ConfirmDialog open={open} title="Delete account?" text="This can't be undone." confirmLabel="Delete"
                        confirmColor={confirmColor} loading={loading} onConfirm={onConfirm} onCancel={onCancel}/>
     );
+    return {onConfirm, onCancel};
 }
 
 describe("ConfirmDialog", () => {
-    afterEach(() => vi.clearAllMocks());
-
     it("shows the title and text", () => {
         renderDialog();
 
@@ -42,7 +40,7 @@ describe("ConfirmDialog", () => {
     });
 
     it("confirms", async () => {
-        renderDialog();
+        const {onConfirm, onCancel} = renderDialog();
 
         await userEvent.setup().click(screen.getByRole("button", {name: "Delete"}));
 
@@ -51,7 +49,7 @@ describe("ConfirmDialog", () => {
     });
 
     it("cancels with the button", async () => {
-        renderDialog();
+        const {onConfirm, onCancel} = renderDialog();
 
         await userEvent.setup().click(screen.getByRole("button", {name: "Cancel"}));
 
@@ -60,7 +58,7 @@ describe("ConfirmDialog", () => {
     });
 
     it("cancels with Escape", async () => {
-        renderDialog();
+        const {onCancel} = renderDialog();
 
         await userEvent.setup().keyboard("{Escape}");
 
@@ -68,7 +66,7 @@ describe("ConfirmDialog", () => {
     });
 
     it("can't be closed while loading", async () => {
-        renderDialog({loading: true});
+        const {onCancel} = renderDialog({loading: true});
 
         await userEvent.setup().keyboard("{Escape}");
 
