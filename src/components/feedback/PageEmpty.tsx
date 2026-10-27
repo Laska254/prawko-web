@@ -1,6 +1,7 @@
 import type {ReactNode} from "react";
-import {Stack, Typography} from "@mui/material";
+import {Typography} from "@mui/material";
 import {Inbox} from "@mui/icons-material";
+import {PageState} from "./PageState.tsx";
 
 interface PageEmptyProps {
     message: string;
@@ -9,10 +10,10 @@ interface PageEmptyProps {
 
 export function PageEmpty({message, action}: PageEmptyProps) {
     return (
-        <Stack alignItems="center" justifyContent="center" spacing={2} py={8} textAlign="center">
+        <PageState>
             <Inbox color="disabled" fontSize="large"/>
             <Typography color="text.secondary">{message}</Typography>
             {action}
-        </Stack>
+        </PageState>
     );
 }

@@ -1,9 +1,10 @@
-import {CircularProgress, Stack} from "@mui/material";
+import {CircularProgress} from "@mui/material";
+import {PageState} from "./PageState.tsx";
 
 export function PageLoading() {
     return (
-        <Stack alignItems="center" justifyContent="center" py={8}>
+        <PageState>
             <CircularProgress aria-label="Loading"/>
-        </Stack>
+        </PageState>
     );
 }
