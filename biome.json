@@ -18,6 +18,10 @@
     "enabled": true,
     "rules": {
       "preset": "recommended",
+      "correctness": {
+        "noNestedComponentDefinitions": "error",
+        "noReactPropAssignments": "error"
+      },
       "style": {
         "noNonNullAssertion": "off",
         "useComponentExportOnlyModules": {
