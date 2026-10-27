@@ -1,5 +1,5 @@
 import {type ComponentProps, useState} from "react";
-import {IconButton, InputAdornment, type SvgIcon} from "@mui/material";
+import {IconButton, InputAdornment, type SvgIcon, type TextFieldProps} from "@mui/material";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {FormTextField} from "./FormTextField.tsx";
 
@@ -17,8 +17,9 @@ const VISIBILITY_CONFIGS: Record<PasswordVisibility, VisibilityConfig> = {
     shown: {type: "text", toggleLabel: "Hide password", Icon: Visibility, next: "hidden"},
 };
 
-// The `input` slot holds the visibility toggle, so only `htmlInput` and other slots can be passed.
-type PasswordFieldProps = Omit<ComponentProps<typeof FormTextField>, "type">;
+type PasswordFieldProps = Omit<ComponentProps<typeof FormTextField>, "type" | "slotProps"> & {
+    slotProps?: Omit<NonNullable<TextFieldProps["slotProps"]>, "input">;
+};
 
 export function PasswordField({slotProps, ...props}: PasswordFieldProps) {
     const [visibility, setVisibility] = useState<PasswordVisibility>("hidden");

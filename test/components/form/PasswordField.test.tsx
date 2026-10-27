@@ -23,6 +23,13 @@ describe("PasswordField", () => {
         expect(screen.getByLabelText(/^Password/)).toHaveAttribute("minLength", "7");
     });
 
+    it("keeps the input slot for the toggle", () => {
+        // @ts-expect-error The input slot holds the visibility toggle.
+        renderWithProviders(<PasswordField label="Password" slotProps={{input: {endAdornment: "Hint"}}}/>);
+
+        expect(screen.getByRole("button", {name: "Show password"})).toBeInTheDocument();
+    });
+
     it("shows the error under the field", () => {
         renderWithProviders(<PasswordField label="Password" errorText="Too short."/>);
 
