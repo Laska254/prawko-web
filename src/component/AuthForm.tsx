@@ -1,5 +1,5 @@
 import {Alert, Link, Stack, Typography} from "@mui/material";
-import {type FormConfig, type FormType} from "../interface/FormConfig.tsx";
+import type {FormConfig, FormType} from "../interface/FormConfig.tsx";
 import {AuthCard} from "./AuthCard.tsx";
 
 interface AuthFormProps {
