@@ -6,6 +6,8 @@ import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
+const NAME_LENGTH = {minLength: 3, maxLength: 31};
+
 export function RegisterForm() {
     const firstNameRef = useRef<HTMLInputElement>(null);
     const lastNameRef = useRef<HTMLInputElement>(null);
@@ -48,21 +50,21 @@ export function RegisterForm() {
                     type="text"
                     inputRef={firstNameRef}
                     required
-                    slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
+                    slotProps={{htmlInput: NAME_LENGTH}}
                 />
                 <FormTextField
                     label="Last name"
                     type="text"
                     inputRef={lastNameRef}
                     required
-                    slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
+                    slotProps={{htmlInput: NAME_LENGTH}}
                 />
                 <FormTextField
                     label="Username"
                     type="text"
                     inputRef={userNameRef}
                     required
-                    slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
+                    slotProps={{htmlInput: NAME_LENGTH}}
                 />
                 <FormTextField
                     label="Email"
