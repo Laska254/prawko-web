@@ -18,3 +18,4 @@ CLAUDE.local.md
 /.idea/modules.xml
 /.idea/prawko-web.iml
 /coverage
+/.idea/biome.xml
