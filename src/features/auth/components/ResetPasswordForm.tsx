@@ -1,16 +1,18 @@
 import {useRef, useState} from "react";
-import {Alert, Button, IconButton, InputAdornment, Link, Stack, TextField} from "@mui/material";
+import {Alert, Link, Stack} from "@mui/material";
 import {Link as RouterLink, useNavigate} from "react-router";
-import {Visibility, VisibilityOff} from "@mui/icons-material";
 import {resetPassword} from "@/api/requests.tsx";
+import {PasswordField} from "@/components/form/PasswordField.tsx";
+import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
-type ResetError = "mismatch" | "invalidToken" | "failed";
+type ResetError = "invalidToken" | "failed";
 
 const ERROR_MESSAGES: Record<ResetError, string> = {
-    mismatch: "Passwords don't match.",
     invalidToken: "This reset link is invalid or has expired.",
     failed: "Couldn't reset the password. Please try again later.",
 };
+
+const MISMATCH_MESSAGE = "Passwords don't match.";
 
 interface ResetPasswordFormProps {
     token: string;
@@ -19,23 +21,20 @@ interface ResetPasswordFormProps {
 export function ResetPasswordForm({token}: ResetPasswordFormProps) {
     const passwordRef = useRef<HTMLInputElement>(null);
     const confirmPasswordRef = useRef<HTMLInputElement>(null);
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [confirmError, setConfirmError] = useState<string>();
     const [error, setError] = useState<ResetError | null>(null);
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
 
-    function handleToggle() {
-        setIsPasswordVisible(prevState => !prevState);
-    }
-
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
         const newPassword = passwordRef.current!.value;
+        setError(null);
         if (newPassword !== confirmPasswordRef.current!.value) {
-            setError("mismatch");
+            setConfirmError(MISMATCH_MESSAGE);
             return;
         }
-        setError(null);
+        setConfirmError(undefined);
         setIsSending(true);
         resetPassword({token, newPassword})
             .then(() => navigate("/auth", {replace: true, state: {notice: "passwordReset"}}))
@@ -44,14 +43,6 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
                 : "failed"))
             .finally(() => setIsSending(false));
     }
-
-    const visibilityToggle = (
-        <InputAdornment position="end">
-            <IconButton onClick={handleToggle}>
-                {isPasswordVisible ? <Visibility/> : <VisibilityOff/>}
-            </IconButton>
-        </InputAdornment>
-    );
 
     return (
         <form onSubmit={onSubmit}>
@@ -64,30 +55,21 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
                         )}
                     </Alert>
                 )}
-                <TextField
+                <PasswordField
                     label="New password"
-                    type={isPasswordVisible ? 'text' : 'password'}
                     inputRef={passwordRef}
                     placeholder="At least 7 characters"
                     required
-                    fullWidth
-                    slotProps={{
-                        input: {endAdornment: visibilityToggle},
-                        htmlInput: {minLength: 7, maxLength: 63},
-                    }}
+                    slotProps={{htmlInput: {minLength: 7, maxLength: 63}}}
                 />
-                <TextField
+                <PasswordField
                     label="Confirm new password"
-                    type={isPasswordVisible ? 'text' : 'password'}
                     inputRef={confirmPasswordRef}
                     placeholder="Repeat new password"
                     required
-                    fullWidth
+                    errorText={confirmError}
                 />
-                <Button variant="contained" color="secondary" type="submit" fullWidth size="large"
-                        disabled={isSending}>
-                    Set new password
-                </Button>
+                <SubmitButton loading={isSending}>Set new password</SubmitButton>
             </Stack>
         </form>
     );

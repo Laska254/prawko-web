@@ -35,8 +35,34 @@ describe("ResetPasswordForm", () => {
 
         await resetPassword(user, "secret1", "secret2");
 
-        expect(screen.getByText("Passwords don't match.")).toBeInTheDocument();
+        expect(screen.getByLabelText(/^Confirm new password/)).toHaveAccessibleDescription("Passwords don't match.");
         expect(requests).toEqual([]);
+    });
+
+    it("clears the mismatch once the passwords match", async () => {
+        mockPost("/auth/password/reset", 500);
+        await resetPassword(user, "secret1", "secret2");
+        const confirmation = screen.getByLabelText(/^Confirm new password/);
+
+        await user.clear(confirmation);
+        await user.type(confirmation, "secret1");
+        await user.click(screen.getByRole("button", {name: "Set new password"}));
+
+        expect(await screen.findByText(genericError)).toBeInTheDocument();
+        expect(confirmation).not.toHaveAccessibleDescription();
+        expect(confirmation).toHaveAttribute("aria-invalid", "false");
+    });
+
+    it("hides an earlier error on a mismatch", async () => {
+        mockPost("/auth/password/reset", 500);
+        await resetPassword(user);
+        expect(await screen.findByText(genericError)).toBeInTheDocument();
+
+        await user.clear(screen.getByLabelText(/^Confirm new password/));
+        await user.type(screen.getByLabelText(/^Confirm new password/), "secret2");
+        await user.click(screen.getByRole("button", {name: "Set new password"}));
+
+        expect(screen.queryByText(genericError)).not.toBeInTheDocument();
     });
 
     it("links an invalid token to a new reset link", async () => {
@@ -85,13 +111,14 @@ describe("ResetPasswordForm", () => {
         expect(request.requestCount()).toBe(1);
     });
 
-    it("shows and hides both passwords", async () => {
-        await user.click(screen.getByTestId("VisibilityOffIcon"));
-        expect(screen.getByLabelText(/^New password/)).toHaveAttribute("type", "text");
+    it("shows and hides each password", async () => {
+        const [showPassword, showConfirmation] = screen.getAllByRole("button", {name: "Show password"});
+
+        await user.click(showConfirmation);
+        expect(screen.getByLabelText(/^New password/)).toHaveAttribute("type", "password");
         expect(screen.getByLabelText(/^Confirm new password/)).toHaveAttribute("type", "text");
 
-        await user.click(screen.getByTestId("VisibilityIcon"));
-        expect(screen.getByLabelText(/^New password/)).toHaveAttribute("type", "password");
-        expect(screen.getByLabelText(/^Confirm new password/)).toHaveAttribute("type", "password");
+        await user.click(showPassword);
+        expect(screen.getByLabelText(/^New password/)).toHaveAttribute("type", "text");
     });
 });

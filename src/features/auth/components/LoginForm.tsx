@@ -1,8 +1,10 @@
 import {useRef, useState} from "react";
-import {Alert, Button, IconButton, InputAdornment, Link, Stack, TextField} from "@mui/material";
+import {Alert, Link, Stack} from "@mui/material";
 import {login} from "@/api/requests.tsx";
 import {Link as RouterLink, useNavigate} from "react-router";
-import {Visibility, VisibilityOff} from "@mui/icons-material";
+import {FormTextField} from "@/components/form/FormTextField.tsx";
+import {PasswordField} from "@/components/form/PasswordField.tsx";
+import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
 type LoginError = "invalidCredentials" | "notVerified" | "failed";
 
@@ -21,15 +23,10 @@ const STATUS_ERRORS: Partial<Record<number, LoginError>> = {
 export function LoginForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [error, setError] = useState<LoginError | null>(null);
     const [email, setEmail] = useState<string>();
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
-
-    function handleToggle() {
-        setIsPasswordVisible(prevState => !prevState);
-    }
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
@@ -55,37 +52,20 @@ export function LoginForm() {
                         )}
                     </Alert>
                 )}
-                <TextField
+                <FormTextField
                     label="Login"
                     type="text"
                     inputRef={userNameRef}
                     placeholder="Username or email"
                     required
-                    fullWidth
                 />
-                <TextField
+                <PasswordField
                     label="Password"
-                    type={isPasswordVisible ? 'text' : 'password'}
                     inputRef={passwordRef}
                     placeholder="Password"
                     required
-                    fullWidth
-                    slotProps={{
-                        input: {
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton onClick={handleToggle}>
-                                        {isPasswordVisible ? <Visibility/> : <VisibilityOff/>}
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                        },
-                    }}
                 />
-                <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}
-                        disabled={isSending}>
-                    Sign in
-                </Button>
+                <SubmitButton loading={isSending}>Sign in</SubmitButton>
                 <Link component={RouterLink} to="/auth/password/forgot" underline="hover" alignSelf="flex-start">
                     Forgot password?
                 </Link>

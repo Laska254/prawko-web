@@ -1,8 +1,12 @@
 import {useRef, useState} from "react";
-import {Alert, Button, IconButton, InputAdornment, Stack, TextField} from "@mui/material";
+import {Alert, Stack} from "@mui/material";
 import {register} from "@/api/requests.tsx";
 import {useNavigate} from "react-router";
-import {Visibility, VisibilityOff} from "@mui/icons-material";
+import {FormTextField} from "@/components/form/FormTextField.tsx";
+import {PasswordField} from "@/components/form/PasswordField.tsx";
+import {SubmitButton} from "@/components/form/SubmitButton.tsx";
+
+const NAME_LENGTH = {minLength: 3, maxLength: 31};
 
 export function RegisterForm() {
     const firstNameRef = useRef<HTMLInputElement>(null);
@@ -10,14 +14,9 @@ export function RegisterForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [errors, setErrors] = useState<string[]>([]);
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
-
-    function handleToggle() {
-        setIsPasswordVisible(prevState => !prevState);
-    }
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
@@ -46,61 +45,41 @@ export function RegisterForm() {
                         {errors.map(error => <div key={error}>{error}</div>)}
                     </Alert>
                 )}
-                <TextField
+                <FormTextField
                     label="First name"
                     type="text"
                     inputRef={firstNameRef}
                     required
-                    fullWidth
-                    slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
+                    slotProps={{htmlInput: NAME_LENGTH}}
                 />
-                <TextField
+                <FormTextField
                     label="Last name"
                     type="text"
                     inputRef={lastNameRef}
                     required
-                    fullWidth
-                    slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
+                    slotProps={{htmlInput: NAME_LENGTH}}
                 />
-                <TextField
+                <FormTextField
                     label="Username"
                     type="text"
                     inputRef={userNameRef}
                     required
-                    fullWidth
-                    slotProps={{htmlInput: {minLength: 3, maxLength: 31}}}
+                    slotProps={{htmlInput: NAME_LENGTH}}
                 />
-                <TextField
+                <FormTextField
                     label="Email"
                     type="email"
                     inputRef={emailRef}
                     required
-                    fullWidth
                     slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
                 />
-                <TextField
+                <PasswordField
                     label="Password"
-                    type={isPasswordVisible ? 'text' : 'password'}
                     inputRef={passwordRef}
                     required
-                    fullWidth
-                    slotProps={{
-                        htmlInput: {minLength: 7, maxLength: 63},
-                        input: {
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton onClick={handleToggle}>
-                                        {isPasswordVisible ? <Visibility/> : <VisibilityOff/>}
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                        },
-                    }}
+                    slotProps={{htmlInput: {minLength: 7, maxLength: 63}}}
                 />
-                <Button variant="contained" color="secondary" type="submit" fullWidth size={"large"}
-                        disabled={isSending}>
-                    Register
-                </Button>
+                <SubmitButton loading={isSending}>Register</SubmitButton>
             </Stack>
         </form>
     );

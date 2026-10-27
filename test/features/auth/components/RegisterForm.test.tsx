@@ -72,10 +72,10 @@ describe("RegisterForm", () => {
     it("shows and hides the password", async () => {
         const password = screen.getByLabelText(/^Password/);
 
-        await user.click(screen.getByTestId("VisibilityOffIcon"));
+        await user.click(screen.getByRole("button", {name: "Show password"}));
         expect(password).toHaveAttribute("type", "text");
 
-        await user.click(screen.getByTestId("VisibilityIcon"));
+        await user.click(screen.getByRole("button", {name: "Hide password"}));
         expect(password).toHaveAttribute("type", "password");
     });
 });
