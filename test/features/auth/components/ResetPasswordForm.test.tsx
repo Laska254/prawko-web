@@ -39,6 +39,20 @@ describe("ResetPasswordForm", () => {
         expect(requests).toEqual([]);
     });
 
+    it("clears the mismatch once the passwords match", async () => {
+        mockPost("/auth/password/reset", 500);
+        await resetPassword(user, "secret1", "secret2");
+        const confirmation = screen.getByLabelText(/^Confirm new password/);
+
+        await user.clear(confirmation);
+        await user.type(confirmation, "secret1");
+        await user.click(screen.getByRole("button", {name: "Set new password"}));
+
+        expect(await screen.findByText(genericError)).toBeInTheDocument();
+        expect(confirmation).not.toHaveAccessibleDescription();
+        expect(confirmation).toHaveAttribute("aria-invalid", "false");
+    });
+
     it("hides an earlier error on a mismatch", async () => {
         mockPost("/auth/password/reset", 500);
         await resetPassword(user);
