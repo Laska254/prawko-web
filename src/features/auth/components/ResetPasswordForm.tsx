@@ -12,6 +12,8 @@ const ERROR_MESSAGES: Record<ResetError, string> = {
     failed: "Couldn't reset the password. Please try again later.",
 };
 
+const MISMATCH_MESSAGE = "Passwords don't match.";
+
 interface ResetPasswordFormProps {
     token: string;
 }
@@ -29,7 +31,7 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
         const newPassword = passwordRef.current!.value;
         setError(null);
         if (newPassword !== confirmPasswordRef.current!.value) {
-            setConfirmError("Passwords don't match.");
+            setConfirmError(MISMATCH_MESSAGE);
             return;
         }
         setConfirmError(undefined);
