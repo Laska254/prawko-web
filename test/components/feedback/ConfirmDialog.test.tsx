@@ -1,15 +1,16 @@
 import {screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {theme} from "@/app/theme.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 
 const onConfirm = vi.fn();
 const onCancel = vi.fn();
 
-function renderDialog({open = true, loading = false} = {}) {
+function renderDialog({open = true, loading = false, confirmColor}: {open?: boolean; loading?: boolean; confirmColor?: "error"} = {}) {
     renderWithProviders(
         <ConfirmDialog open={open} title="Delete account?" text="This can't be undone." confirmLabel="Delete"
-                       loading={loading} onConfirm={onConfirm} onCancel={onCancel}/>
+                       confirmColor={confirmColor} loading={loading} onConfirm={onConfirm} onCancel={onCancel}/>
     );
 }
 
@@ -20,6 +21,18 @@ describe("ConfirmDialog", () => {
         renderDialog();
 
         expect(screen.getByRole("dialog", {name: "Delete account?", description: "This can't be undone."})).toBeInTheDocument();
+    });
+
+    it("shows the confirm button in green by default", () => {
+        renderDialog();
+
+        expect(screen.getByRole("button", {name: "Delete"})).toHaveStyle({"--variant-containedBg": theme.palette.secondary.main});
+    });
+
+    it("shows a destructive confirm button in red", () => {
+        renderDialog({confirmColor: "error"});
+
+        expect(screen.getByRole("button", {name: "Delete"})).toHaveStyle({"--variant-containedBg": theme.palette.error.main});
     });
 
     it("is hidden when closed", () => {

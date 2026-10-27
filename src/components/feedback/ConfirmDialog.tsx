@@ -6,13 +6,15 @@ interface ConfirmDialogProps {
     title: string;
     text: string;
     confirmLabel: string;
+    // `error` (red) marks a destructive action such as a delete.
+    confirmColor?: "secondary" | "error";
     loading: boolean;
     onConfirm: () => void;
     onCancel: () => void;
 }
 
 // MUI links the title to the dialog itself; the text is linked through `aria-describedby`.
-export function ConfirmDialog({open, title, text, confirmLabel, loading, onConfirm, onCancel}: ConfirmDialogProps) {
+export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "secondary", loading, onConfirm, onCancel}: ConfirmDialogProps) {
     const textId = useId();
 
     // Escape and backdrop clicks can't close the dialog while the action is running.
@@ -30,7 +32,7 @@ export function ConfirmDialog({open, title, text, confirmLabel, loading, onConfi
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel} disabled={loading}>Cancel</Button>
-                <Button variant="contained" onClick={onConfirm} loading={loading}>{confirmLabel}</Button>
+                <Button variant="contained" color={confirmColor} onClick={onConfirm} loading={loading}>{confirmLabel}</Button>
             </DialogActions>
         </Dialog>
     );
