@@ -2,7 +2,7 @@ import {screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {VerificationSentPage} from "@/features/auth/pages/VerificationSentPage.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockPost} from "@test/support/server.ts";
+import {mockPost} from "@test/support/server.tsx";
 
 describe("VerificationSentPage", () => {
     it("shows the email and resends the link to it", async () => {

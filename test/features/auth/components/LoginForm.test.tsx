@@ -1,9 +1,9 @@
 import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
-import LoginForm from "@/features/auth/components/LoginForm.tsx";
+import {LoginForm} from "@/features/auth/components/LoginForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.ts";
-import {credentials} from "@test/support/data.ts";
+import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.tsx";
+import {credentials} from "@test/support/data.tsx";
 
 async function signIn(user: UserEvent, login = credentials.userName, password = credentials.password) {
     await user.type(screen.getByRole("textbox", {name: "Login"}), login);

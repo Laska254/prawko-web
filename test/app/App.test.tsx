@@ -1,7 +1,7 @@
 import {render, screen} from "@testing-library/react";
-import App from "@/app/App.tsx";
+import {App} from "@/app/App.tsx";
 import {saveCredentials} from "@/api/credentials.tsx";
-import {credentials} from "@test/support/data.ts";
+import {credentials} from "@test/support/data.tsx";
 
 function renderAt(path: string) {
     window.history.pushState({}, "", path);

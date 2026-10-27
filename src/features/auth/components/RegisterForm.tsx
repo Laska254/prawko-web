@@ -4,7 +4,7 @@ import {register} from "@/api/requests.tsx";
 import {useNavigate} from "react-router";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 
-export default function RegisterForm() {
+export function RegisterForm() {
     const firstNameRef = useRef<HTMLInputElement>(null);
     const lastNameRef = useRef<HTMLInputElement>(null);
     const userNameRef = useRef<HTMLInputElement>(null);

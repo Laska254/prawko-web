@@ -18,7 +18,7 @@ const STATUS_ERRORS: Partial<Record<number, LoginError>> = {
     403: "notVerified",
 };
 
-export default function LoginForm() {
+export function LoginForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);

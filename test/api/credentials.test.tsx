@@ -1,5 +1,5 @@
 import {clearCredentials, getCredentials, isAuthenticated, saveCredentials} from "@/api/credentials.tsx";
-import {credentials} from "@test/support/data.ts";
+import {credentials} from "@test/support/data.tsx";
 
 function decode(credentials: string): string {
     return new TextDecoder().decode(Uint8Array.from(atob(credentials), char => char.charCodeAt(0)));

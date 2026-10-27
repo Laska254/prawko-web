@@ -1,9 +1,9 @@
 import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
-import RegisterForm from "@/features/auth/components/RegisterForm.tsx";
+import {RegisterForm} from "@/features/auth/components/RegisterForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.ts";
-import {registerDto} from "@test/support/data.ts";
+import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.tsx";
+import {registerDto} from "@test/support/data.tsx";
 
 async function register(user: UserEvent) {
     await user.type(screen.getByRole("textbox", {name: "First name"}), registerDto.firstName);

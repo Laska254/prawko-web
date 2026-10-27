@@ -2,7 +2,7 @@ import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {VerifyEmailPage} from "@/features/auth/pages/VerifyEmailPage.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockPendingPost, mockPost} from "@test/support/server.ts";
+import {mockPendingPost, mockPost} from "@test/support/server.tsx";
 
 describe("VerifyEmailPage", () => {
     it("verifies the token once and goes to sign in with a notice", async () => {

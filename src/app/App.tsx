@@ -9,7 +9,7 @@ import {VerificationSentPage} from "@/features/auth/pages/VerificationSentPage.t
 import {ForgotPasswordPage} from "@/features/auth/pages/ForgotPasswordPage.tsx";
 import {ResetPasswordPage} from "@/features/auth/pages/ResetPasswordPage.tsx";
 
-function App() {
+export function App() {
     return (
         <BrowserRouter>
             <Routes>
@@ -29,5 +29,3 @@ function App() {
         </BrowserRouter>
     )
 }
-
-export default App

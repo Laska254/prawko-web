@@ -1,6 +1,6 @@
 import {http, HttpResponse} from "msw/http";
-import {apiUrl, mockPost, server} from "@test/support/server.ts";
-import {credentials, registerDto} from "@test/support/data.ts";
+import {apiUrl, mockPost, server} from "@test/support/server.tsx";
+import {credentials, registerDto} from "@test/support/data.tsx";
 import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
 import {forgotPassword, login, register, resendVerification, resetPassword, verifyEmail} from "@/api/requests.tsx";
 

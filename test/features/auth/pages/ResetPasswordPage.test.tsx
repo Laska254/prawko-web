@@ -2,7 +2,7 @@ import {screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {ResetPasswordPage} from "@/features/auth/pages/ResetPasswordPage.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockPost} from "@test/support/server.ts";
+import {mockPost} from "@test/support/server.tsx";
 
 describe("ResetPasswordPage", () => {
     it("resets the password with the token from the link", async () => {

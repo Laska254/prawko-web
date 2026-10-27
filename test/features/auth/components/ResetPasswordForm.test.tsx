@@ -2,7 +2,7 @@ import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {ResetPasswordForm} from "@/features/auth/components/ResetPasswordForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.ts";
+import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.tsx";
 
 const genericError = "Couldn't reset the password. Please try again later.";
 

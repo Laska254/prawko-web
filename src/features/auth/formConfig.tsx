@@ -1,6 +1,6 @@
 import type {JSX} from "react";
-import LoginForm from "./components/LoginForm.tsx";
-import RegisterForm from "./components/RegisterForm.tsx";
+import {LoginForm} from "./components/LoginForm.tsx";
+import {RegisterForm} from "./components/RegisterForm.tsx";
 
 export type FormType = "login" | "register";
 

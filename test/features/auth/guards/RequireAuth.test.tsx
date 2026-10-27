@@ -3,7 +3,7 @@ import {Route, Routes} from "react-router";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {saveCredentials} from "@/api/credentials.tsx";
-import {credentials} from "@test/support/data.ts";
+import {credentials} from "@test/support/data.tsx";
 
 function renderRoutes() {
     renderWithProviders(

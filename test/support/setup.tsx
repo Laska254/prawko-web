@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import {server} from "./server.ts";
+import {server} from "./server.tsx";
 
 beforeAll(() => server.listen({onUnhandledFrame: "error"}));
 afterEach(() => {
