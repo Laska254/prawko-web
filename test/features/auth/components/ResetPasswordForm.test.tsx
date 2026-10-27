@@ -39,6 +39,18 @@ describe("ResetPasswordForm", () => {
         expect(requests).toEqual([]);
     });
 
+    it("hides an earlier error on a mismatch", async () => {
+        mockPost("/auth/password/reset", 500);
+        await resetPassword(user);
+        expect(await screen.findByText(genericError)).toBeInTheDocument();
+
+        await user.clear(screen.getByLabelText(/^Confirm new password/));
+        await user.type(screen.getByLabelText(/^Confirm new password/), "secret2");
+        await user.click(screen.getByRole("button", {name: "Set new password"}));
+
+        expect(screen.queryByText(genericError)).not.toBeInTheDocument();
+    });
+
     it("links an invalid token to a new reset link", async () => {
         mockPost("/auth/password/reset", 400, {title: "Bad Request"});
 

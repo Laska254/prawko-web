@@ -27,12 +27,12 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
         const newPassword = passwordRef.current!.value;
+        setError(null);
         if (newPassword !== confirmPasswordRef.current!.value) {
             setConfirmError("Passwords don't match.");
             return;
         }
         setConfirmError(undefined);
-        setError(null);
         setIsSending(true);
         resetPassword({token, newPassword})
             .then(() => navigate("/auth", {replace: true, state: {notice: "passwordReset"}}))
