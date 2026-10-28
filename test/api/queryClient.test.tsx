@@ -9,12 +9,16 @@ function httpError(status: number) {
     return new AxiosError("Request failed", undefined, undefined, undefined, {status} as AxiosResponse);
 }
 
-// Answers GET and POST `/test` with `status`; returns how many requests came in.
-function mockStatus(status: number) {
+function emptyResponse(status: number) {
+    return () => new HttpResponse(null, {status});
+}
+
+// Answers GET and POST `/test` with what `response` returns; returns how many requests came in.
+function mockResponse(response: () => Response) {
     let requestCount = 0;
     const respond = () => {
         requestCount++;
-        return status === 0 ? HttpResponse.error() : new HttpResponse(null, {status});
+        return response();
     };
     server.use(http.get(apiUrl("/test"), respond), http.post(apiUrl("/test"), respond));
     return () => requestCount;
@@ -51,11 +55,11 @@ describe("queryClient", () => {
         });
 
         it.each([
-            [0, 4],
-            [500, 4],
-            [404, 1],
-        ])("sends a query answered with %i %i times", async (status, expected) => {
-            const requestCount = mockStatus(status);
+            ["a network error", 4, () => HttpResponse.error()],
+            ["a 500", 4, emptyResponse(500)],
+            ["a 404", 1, emptyResponse(404)],
+        ])("sends a query that fails with %s %i times", async (_, expected, response) => {
+            const requestCount = mockResponse(response);
 
             const query = createTestQueryClient().fetchQuery({
                 queryKey: ["test"],
@@ -67,7 +71,7 @@ describe("queryClient", () => {
         });
 
         it("doesn't retry a mutation", async () => {
-            const requestCount = mockStatus(500);
+            const requestCount = mockResponse(emptyResponse(500));
             const mutation = new MutationObserver(createTestQueryClient(), {
                 mutationFn: () => axios.post(apiUrl("/test")),
             });
