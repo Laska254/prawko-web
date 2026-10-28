@@ -3,6 +3,7 @@ import {BrowserRouter, Route, Routes} from "react-router";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {RequireGuest} from "@/features/auth/guards/RequireGuest.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
+import {PageErrorBoundary} from "@/components/feedback/PageErrorBoundary.tsx";
 import {SignedInLayout} from "./layout/SignedInLayout.tsx";
 import {lazyPage} from "./lazyPage.tsx";
 
@@ -26,30 +27,32 @@ const NotFoundPage = lazyPage(() => import("./pages/NotFoundPage.tsx"), "NotFoun
 export function App() {
     return (
         <BrowserRouter>
-            <Suspense fallback={<PageLoading/>}>
-                <Routes>
-                    {/* Signed in: guests go to /auth; pages share the app bar layout. */}
-                    <Route element={<RequireAuth/>}>
-                        <Route element={<SignedInLayout/>}>
-                            <Route path="/" element={<HomePage/>}/>
-                            <Route path="/exam" element={<ExamPage/>}/>
-                            <Route path="/history" element={<HistoryPage/>}/>
-                            <Route path="/profile" element={<ProfilePage/>}/>
-                            <Route path="/settings" element={<SettingsPage/>}/>
+            <PageErrorBoundary>
+                <Suspense fallback={<PageLoading/>}>
+                    <Routes>
+                        {/* Signed in: guests go to /auth; pages share the app bar layout. */}
+                        <Route element={<RequireAuth/>}>
+                            <Route element={<SignedInLayout/>}>
+                                <Route path="/" element={<HomePage/>}/>
+                                <Route path="/exam" element={<ExamPage/>}/>
+                                <Route path="/history" element={<HistoryPage/>}/>
+                                <Route path="/profile" element={<ProfilePage/>}/>
+                                <Route path="/settings" element={<SettingsPage/>}/>
+                            </Route>
                         </Route>
-                    </Route>
-                    {/* Guests: signed-in users go home. */}
-                    <Route element={<RequireGuest/>}>
-                        <Route path="/auth" element={<AuthPage/>}/>
-                    </Route>
-                    {/* Public: email verification, password recovery and 404, signed in or not. */}
-                    <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
-                    <Route path="/auth/verify/sent" element={<VerificationSentPage/>}/>
-                    <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
-                    <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
-                    <Route path="*" element={<NotFoundPage/>}/>
-                </Routes>
-            </Suspense>
+                        {/* Guests: signed-in users go home. */}
+                        <Route element={<RequireGuest/>}>
+                            <Route path="/auth" element={<AuthPage/>}/>
+                        </Route>
+                        {/* Public: email verification, password recovery and 404, signed in or not. */}
+                        <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
+                        <Route path="/auth/verify/sent" element={<VerificationSentPage/>}/>
+                        <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
+                        <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
+                        <Route path="*" element={<NotFoundPage/>}/>
+                    </Routes>
+                </Suspense>
+            </PageErrorBoundary>
         </BrowserRouter>
     )
 }

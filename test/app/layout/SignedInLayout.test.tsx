@@ -7,6 +7,8 @@ import {renderWithProviders} from "@test/support/render.tsx";
 
 // A page whose code never finishes loading.
 const LoadingPage = lazy(() => new Promise<never>(() => {}));
+// A page whose code fails to load.
+const BrokenPage = lazy(() => Promise.reject(new Error("Failed to fetch dynamically imported module")));
 
 function renderLayout(route: string) {
     renderWithProviders(
@@ -17,6 +19,7 @@ function renderLayout(route: string) {
                 <Route path="/history/:id" element={<p>Exam page</p>}/>
                 <Route path="/profile" element={<p>Profile page</p>}/>
                 <Route path="/loading" element={<LoadingPage/>}/>
+                <Route path="/broken" element={<BrokenPage/>}/>
             </Route>
         </Routes>,
         {route}
@@ -28,6 +31,10 @@ function appBarNav() {
 }
 
 describe("SignedInLayout", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it("shows the page inside the layout", () => {
         renderLayout("/");
 
@@ -41,6 +48,19 @@ describe("SignedInLayout", () => {
 
         expect(within(screen.getByRole("main")).getByRole("progressbar", {name: "Loading"})).toBeInTheDocument();
         expect(within(screen.getByRole("banner")).getByRole("button", {name: "Account"})).toBeInTheDocument();
+    });
+
+    it("keeps the app bar when the page fails to load and clears the error on another section", async () => {
+        // React reports the caught error to the console.
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        renderLayout("/broken");
+
+        expect(await within(screen.getByRole("main")).findByRole("alert"))
+            .toHaveTextContent("This page couldn't be loaded.");
+        await userEvent.setup().click(within(appBarNav()).getByRole("link", {name: "History"}));
+
+        expect(screen.getByText("History page")).toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
     it.each([

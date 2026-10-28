@@ -1,9 +1,10 @@
 import {Suspense, useState} from "react";
 import {AppBar, Box, Button, Container, IconButton, Stack, Toolbar} from "@mui/material";
 import {Menu} from "@mui/icons-material";
-import {Link, NavLink, Outlet} from "react-router";
+import {Link, NavLink, Outlet, useLocation} from "react-router";
 import {Logo} from "@/components/Logo.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
+import {PageErrorBoundary} from "@/components/feedback/PageErrorBoundary.tsx";
 import {ThemeModeSwitch} from "@/components/ThemeModeSwitch.tsx";
 import {NAV_ITEMS} from "./navItems.tsx";
 import {NavDrawer} from "./NavDrawer.tsx";
@@ -12,6 +13,7 @@ import {UserMenu} from "./UserMenu.tsx";
 // Frame of every signed-in page: the app bar on top (sections move into a drawer below `md`), the page below.
 export function SignedInLayout() {
     const [isDrawerOpen, setDrawerOpen] = useState(false);
+    const {pathname} = useLocation();
 
     return (
         <>
@@ -41,10 +43,12 @@ export function SignedInLayout() {
             </AppBar>
             <NavDrawer open={isDrawerOpen} onClose={() => setDrawerOpen(false)}/>
             <Container component="main" sx={{py: 4}}>
-                {/* Inside the layout, so the app bar stays while a page loads. */}
-                <Suspense fallback={<PageLoading/>}>
-                    <Outlet/>
-                </Suspense>
+                {/* Inside the layout, so the app bar stays while a page loads or fails; a new path clears the error. */}
+                <PageErrorBoundary key={pathname}>
+                    <Suspense fallback={<PageLoading/>}>
+                        <Outlet/>
+                    </Suspense>
+                </PageErrorBoundary>
             </Container>
         </>
     );
