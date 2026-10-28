@@ -10,8 +10,8 @@ const MODES = {
 // Cycles light → dark → system; MUI stores the mode in localStorage (`mui-mode`).
 export function ThemeModeSwitch() {
     const {mode, setMode} = useColorScheme();
-    // `noSsr` on the ThemeProvider sets `mode` from the first render; without it MUI leaves it unset until mounted.
-    const {label, icon, next} = MODES[mode!];
+    // MUI passes on whatever `mui-mode` holds (and nothing before mount without `noSsr`), so anything else shows as system.
+    const {label, icon, next} = MODES[mode as keyof typeof MODES] ?? MODES.system;
 
     return (
         <Tooltip title={label}>

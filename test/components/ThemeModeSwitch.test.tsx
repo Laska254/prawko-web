@@ -30,6 +30,14 @@ describe("ThemeModeSwitch", () => {
         expect(document.documentElement).toHaveClass("light");
     });
 
+    it("shows an unknown stored mode as system", () => {
+        stubSystemDark(false);
+        localStorage.setItem("mui-mode", "auto");
+        renderWithProviders(<ThemeModeSwitch/>);
+
+        expect(screen.getByRole("button", {name: "Theme: system"})).toBeInTheDocument();
+    });
+
     it("cycles light, dark and system and stores the mode", async () => {
         const user = userEvent.setup();
         stubSystemDark(false);
