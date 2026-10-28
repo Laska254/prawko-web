@@ -33,7 +33,7 @@ export async function getUsers(page: number): Promise<PagedModel<UserDto>> {
     return (await api.get<PagedModel<UserDto>>("/users", {params: {page}})).data;
 }
 
-// Admin only, or the user themselves.
+// Admin only; users read themselves with `getCurrentUser`.
 export async function getUser(id: number): Promise<UserDto> {
     return (await api.get<UserDto>(`/users/${id}`)).data;
 }
