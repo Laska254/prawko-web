@@ -196,3 +196,14 @@ Prawko Server must allow CORS requests from the application URL.
     + `GET` list users (admin)
     + `GET /{id}` get a user (admin)
     + `DELETE /{id}` delete a user (admin)
+* `/exams`
+    + `POST` create an exam
+    + `GET /{id}` get an exam
+    + `GET` list a user's exams
+    + `POST /{id}/answers` submit an answer
+    + `POST /{id}/finish` finish an exam
+* `/questions`
+    + `GET /random` get a random question
+    + `GET` list questions (admin)
+    + `GET /{id}` get a question
+    + `POST` upload questions from CSV (admin)
