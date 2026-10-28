@@ -1,4 +1,4 @@
-import {IconButton, Tooltip, useColorScheme} from "@mui/material";
+import {IconButton, type IconButtonProps, Tooltip, useColorScheme} from "@mui/material";
 import {BrightnessAuto, DarkMode, LightMode} from "@mui/icons-material";
 
 const MODES = {
@@ -7,15 +7,20 @@ const MODES = {
     system: {label: "Theme: system", icon: <BrightnessAuto/>, next: "light"},
 } as const;
 
+interface ThemeModeSwitchProps {
+    // `inherit` on coloured bars such as the app bar.
+    readonly color?: IconButtonProps["color"];
+}
+
 // Cycles light → dark → system; MUI stores the mode in localStorage (`mui-mode`).
-export function ThemeModeSwitch() {
+export function ThemeModeSwitch({color}: ThemeModeSwitchProps) {
     const {mode, setMode} = useColorScheme();
     // MUI passes on whatever `mui-mode` holds (and nothing before mount without `noSsr`), so anything else shows as system.
     const {label, icon, next} = MODES[mode as keyof typeof MODES] ?? MODES.system;
 
     return (
         <Tooltip title={label}>
-            <IconButton onClick={() => setMode(next)}>{icon}</IconButton>
+            <IconButton color={color} onClick={() => setMode(next)}>{icon}</IconButton>
         </Tooltip>
     );
 }

@@ -1,4 +1,4 @@
-import {render, screen} from "@testing-library/react";
+import {render, screen, within} from "@testing-library/react";
 import {App} from "@/app/App.tsx";
 import {ThemeProviders} from "@/app/ThemeProviders.tsx";
 import {saveCredentials} from "@/api/credentials.tsx";
@@ -13,6 +13,9 @@ describe("App", () => {
     it.each([
         ["/", "/auth"],
         ["/exam", "/auth"],
+        ["/history", "/auth"],
+        ["/profile", "/auth"],
+        ["/settings", "/auth"],
         ["/unknown", "/auth"],
     ])("sends a guest from %s to %s", (path, expected) => {
         renderAt(path);
@@ -32,6 +35,19 @@ describe("App", () => {
 
         expect(window.location.pathname).toBe(expected);
         expect(screen.queryByRole("heading", {name: "Sign in"})).not.toBeInTheDocument();
+        expect(screen.getByRole("banner")).toBeInTheDocument();
+    });
+
+    it.each([
+        ["/history", "History"],
+        ["/profile", "Profile"],
+        ["/settings", "Settings"],
+    ])("shows a signed in user %s in the layout", (path, heading) => {
+        saveCredentials(credentials);
+
+        renderAt(path);
+
+        expect(within(screen.getByRole("main")).getByRole("heading", {name: heading})).toBeInTheDocument();
     });
 
     describe.each([
