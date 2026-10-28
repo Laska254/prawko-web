@@ -6,8 +6,6 @@ function rootStyle(property: string) {
 
 // Emotion strips the spaces after commas, so the shadows are written without them.
 describe("theme", () => {
-    afterEach(() => document.documentElement.classList.remove("dark"));
-
     it("uses the light colours by default", () => {
         renderWithProviders(<div/>);
 

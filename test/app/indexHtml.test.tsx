@@ -20,7 +20,6 @@ describe("index.html", () => {
         style.remove();
         vi.unstubAllGlobals();
         vi.restoreAllMocks();
-        document.documentElement.className = "";
     });
 
     it.each([

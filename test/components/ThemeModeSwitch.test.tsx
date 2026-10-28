@@ -8,10 +8,7 @@ function stubSystemDark(matches: boolean) {
 }
 
 describe("ThemeModeSwitch", () => {
-    afterEach(() => {
-        vi.unstubAllGlobals();
-        document.documentElement.className = "";
-    });
+    afterEach(() => vi.unstubAllGlobals());
 
     it("follows the system by default", () => {
         stubSystemDark(true);
