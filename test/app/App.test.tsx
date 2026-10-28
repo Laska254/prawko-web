@@ -16,7 +16,6 @@ describe("App", () => {
         ["/history", "/auth"],
         ["/profile", "/auth"],
         ["/settings", "/auth"],
-        ["/unknown", "/auth"],
     ])("sends a guest from %s to %s", (path, expected) => {
         renderAt(path);
 
@@ -54,6 +53,18 @@ describe("App", () => {
         ["a guest", false],
         ["a signed in user", true],
     ])("for %s", (_, isSignedIn) => {
+        it.each(["/unknown", "/auth/unknown", "/history/unknown"])("shows the 404 page at %s", path => {
+            if (isSignedIn) {
+                saveCredentials(credentials);
+            }
+
+            renderAt(path);
+
+            expect(window.location.pathname).toBe(path);
+            expect(screen.getByRole("heading", {name: "Page not found"})).toBeInTheDocument();
+            expect(screen.queryByRole("banner")).not.toBeInTheDocument();
+        });
+
         it.each([
             ["/auth/verify", "Verification failed"],
             ["/auth/verify/sent", "Check your email"],

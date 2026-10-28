@@ -1,5 +1,5 @@
 import {AuthPage} from "@/features/auth/pages/AuthPage.tsx";
-import {BrowserRouter, Navigate, Route, Routes} from "react-router";
+import {BrowserRouter, Route, Routes} from "react-router";
 import {HomePage} from "@/features/home/pages/HomePage.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {RequireGuest} from "@/features/auth/guards/RequireGuest.tsx";
@@ -12,6 +12,7 @@ import {HistoryPage} from "@/features/exam/pages/HistoryPage.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
 import {SettingsPage} from "@/features/profile/pages/SettingsPage.tsx";
 import {SignedInLayout} from "./layout/SignedInLayout.tsx";
+import {NotFoundPage} from "./pages/NotFoundPage.tsx";
 
 export function App() {
     return (
@@ -33,7 +34,7 @@ export function App() {
                 <Route path="/auth/verify/sent" element={<VerificationSentPage/>}/>
                 <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
                 <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
-                <Route path="*" element={<Navigate to="/auth" replace/>}/>
+                <Route path="*" element={<NotFoundPage/>}/>
             </Routes>
         </BrowserRouter>
     )
