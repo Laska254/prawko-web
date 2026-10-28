@@ -5,5 +5,6 @@ beforeAll(() => server.listen({onUnhandledFrame: "error"}));
 afterEach(() => {
     server.resetHandlers();
     sessionStorage.clear();
+    localStorage.clear();
 });
 afterAll(() => server.close());

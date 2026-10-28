@@ -13,7 +13,6 @@ function runScript({mode, systemDark = false}: {mode?: string; systemDark?: bool
 
 describe("index.html", () => {
     afterEach(() => {
-        localStorage.clear();
         vi.unstubAllGlobals();
         vi.restoreAllMocks();
         document.documentElement.className = "";

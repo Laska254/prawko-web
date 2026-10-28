@@ -6,7 +6,7 @@ import {theme} from "./theme.tsx";
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={theme} noSsr>
             <CssBaseline/>
             <App/>
         </ThemeProvider>

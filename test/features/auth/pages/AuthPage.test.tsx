@@ -9,6 +9,7 @@ describe("AuthPage", () => {
 
         expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
         expect(screen.getByRole("heading", {name: "Prepare for your driving theory exam."})).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Theme: system"})).toBeInTheDocument();
     });
 
     it("switches between sign in and registration", async () => {
