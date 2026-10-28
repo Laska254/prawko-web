@@ -40,7 +40,7 @@ describe("client", () => {
 
     describe("createdId", () => {
         it("returns the ID at the end of Location", async () => {
-            mockRequest("post", "/users", {status: 201, headers: {Location: "http://localhost:8080/users/5"}});
+            mockRequest("post", "/users", {status: 201, headers: {Location: apiUrl("/users/5")}});
 
             expect(createdId(await api.post("/users"))).toBe(5);
         });
@@ -53,10 +53,10 @@ describe("client", () => {
         });
 
         it.each([
-            "http://localhost:8080/users/",
-            "http://localhost:8080/users/abc",
-            "http://localhost:8080/users/1.5",
-            "http://localhost:8080/users/0",
+            apiUrl("/users/"),
+            apiUrl("/users/abc"),
+            apiUrl("/users/1.5"),
+            apiUrl("/users/0"),
         ])("throws when Location is %s", async location => {
             mockRequest("post", "/users", {status: 201, headers: {Location: location}});
             const response = await api.post("/users");

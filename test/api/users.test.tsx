@@ -1,4 +1,4 @@
-import {mockRequest} from "@test/support/server.tsx";
+import {apiUrl, mockRequest} from "@test/support/server.tsx";
 import {registerDto} from "@test/support/data.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {
@@ -27,7 +27,7 @@ describe("users", () => {
 
     it("registers and returns the new user's ID from Location", async () => {
         const requests = mockRequest("post", "/users",
-            {status: 201, headers: {Location: "http://localhost:8080/users/5"}});
+            {status: 201, headers: {Location: apiUrl("/users/5")}});
 
         expect(await register(registerDto)).toBe(5);
         expect(requests).toEqual([{search: "", body: registerDto}]);
