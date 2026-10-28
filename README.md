@@ -102,7 +102,8 @@ Biome problems then show in the editor, with quick fixes under Alt+Enter.
 
 ```
 src/
-  app/          entry (main), route tree (App), theme, layout/ (signed-in app bar and navigation)
+  app/          entry (main), route tree (App), theme, layout/ (signed-in app bar and navigation),
+                pages/ (pages outside any feature: 404)
   api/          axios setup and requests, credentials, dto/
   session/      signed-in session: context, current user (planned)
   i18n/         translations setup, locales/<language>/<namespace>.json (planned)
@@ -143,7 +144,7 @@ Folders are created when their first file is added.
   in the feature.
 * Types live next to the code that owns them; there is no `types/` folder.
 * A component's SCSS and imported assets sit next to it. `public/` is only for files served as-is.
-* All routes are defined in `app/`.
+* All routes are defined in `app/`; their pages are loaded on demand with `lazyPage`.
 
 ### Naming
 
@@ -174,6 +175,7 @@ Prawko Server must allow CORS requests from the application URL.
 * `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
 * `/auth/password/reset` set a new password
+* any other path: 404 page, with a link home (or to sign in when signed out)
 
 ### Used endpoints
 
