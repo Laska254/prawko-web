@@ -24,7 +24,7 @@ describe("parseInstants", () => {
         expect(parseInstants(data)).toEqual(data);
     });
 
-    it.each([null, "", "text", 1, true])("returns %j unchanged", data => {
+    it.each([null, "", "text", 1, true, new Blob(), new ArrayBuffer(1)])("returns %j unchanged", data => {
         expect(parseInstants(data)).toBe(data);
     });
 });
