@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>prawko-web</title>
+    <!-- Sets MUI's colour scheme class before the app loads, so a dark mode doesn't flash light (as MUI's InitColorSchemeScript). -->
+    <style>html.dark { color-scheme: dark; }</style>
+    <script>
+      try {
+        let scheme = localStorage.getItem("mui-mode") || "system";
+        if (scheme === "system") {
+          scheme = "light";
+          if (matchMedia("(prefers-color-scheme: dark)").matches) {
+            scheme = "dark";
+          }
+        }
+        document.documentElement.classList.add(scheme);
+      } catch {
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

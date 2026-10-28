@@ -1,6 +1,5 @@
 import {screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {theme} from "@/app/theme.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 
@@ -24,13 +23,13 @@ describe("ConfirmDialog", () => {
     it("shows the confirm button in green by default", () => {
         renderDialog();
 
-        expect(screen.getByRole("button", {name: "Delete"})).toHaveStyle({"--variant-containedBg": theme.palette.secondary.main});
+        expect(screen.getByRole("button", {name: "Delete"})).toHaveStyle({"--variant-containedBg": "var(--mui-palette-secondary-main)"});
     });
 
     it("shows a destructive confirm button in red", () => {
         renderDialog({confirmColor: "error"});
 
-        expect(screen.getByRole("button", {name: "Delete"})).toHaveStyle({"--variant-containedBg": theme.palette.error.main});
+        expect(screen.getByRole("button", {name: "Delete"})).toHaveStyle({"--variant-containedBg": "var(--mui-palette-error-main)"});
     });
 
     it("is hidden when closed", () => {
