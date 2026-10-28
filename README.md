@@ -175,6 +175,7 @@ Prawko Server must allow CORS requests from the application URL.
 * `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
 * `/auth/password/reset` set a new password
+* any other path: 404 page, with a link home (or to sign in when signed out)
 
 ### Used endpoints
 
