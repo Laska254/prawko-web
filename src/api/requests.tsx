@@ -6,8 +6,9 @@ import type {ResendVerificationDto} from "./dto/ResendVerificationDto.tsx";
 import type {ForgotPasswordDto} from "./dto/ForgotPasswordDto.tsx";
 import type {ResetPasswordDto} from "./dto/ResetPasswordDto.tsx";
 import {clearCredentials, getCredentials, saveCredentials} from "./credentials.tsx";
+import {parseInstants} from "./instants.tsx";
 
-const api = axios.create({
+export const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     headers: {'Content-Type': 'application/json'}
 });
@@ -20,7 +21,10 @@ api.interceptors.request.use(config => {
     return config;
 });
 
-api.interceptors.response.use(undefined, error => {
+api.interceptors.response.use(response => {
+    response.data = parseInstants(response.data);
+    return response;
+}, error => {
     if (error.response?.status === 401 && getCredentials()) {
         clearCredentials();
         window.location.assign("/auth");
