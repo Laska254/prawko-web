@@ -1,8 +1,8 @@
 import {type ReactElement, StrictMode} from "react";
 import {render, screen} from "@testing-library/react";
 import {MemoryRouter, parsePath, Route, Routes} from "react-router";
+import {ThemeProviders} from "@/app/ThemeProviders.tsx";
 import {ShowLocation} from "./ShowLocation.tsx";
-import {ThemeProviders} from "./ThemeProviders.tsx";
 
 interface RenderOptions {
     readonly route?: string;
