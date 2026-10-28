@@ -17,7 +17,7 @@ export function SignedInLayout() {
             <AppBar position="sticky" elevation={0} enableColorOnDark
                     sx={{bgcolor: "primary.dark", color: "common.white"}}>
                 <Toolbar>
-                    <IconButton color="inherit" edge="start" aria-label="Open navigation"
+                    <IconButton color="inherit" edge="start" aria-label="Open navigation" aria-expanded={isDrawerOpen}
                                 onClick={() => setDrawerOpen(true)} sx={{display: {md: "none"}, mr: 1}}>
                         <Menu/>
                     </IconButton>

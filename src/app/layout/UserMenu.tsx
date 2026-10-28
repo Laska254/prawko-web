@@ -10,7 +10,8 @@ export function UserMenu() {
     return (
         <>
             <Tooltip title="Account">
-                <IconButton color="inherit" aria-haspopup="menu" onClick={event => setAnchor(event.currentTarget)}>
+                <IconButton color="inherit" aria-haspopup="menu" aria-expanded={anchor !== null}
+                            onClick={event => setAnchor(event.currentTarget)}>
                     <AccountCircle/>
                 </IconButton>
             </Tooltip>

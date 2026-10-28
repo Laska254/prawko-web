@@ -66,7 +66,10 @@ describe("SignedInLayout", () => {
         const user = userEvent.setup();
         renderLayout("/");
 
-        await user.click(screen.getByRole("button", {name: "Open navigation"}));
+        const button = screen.getByRole("button", {name: "Open navigation"});
+        expect(button).toHaveAttribute("aria-expanded", "false");
+        await user.click(button);
+        expect(button).toHaveAttribute("aria-expanded", "true");
         const drawer = within(screen.getByRole("presentation")).getByRole("navigation", {name: "Sections"});
         expect(within(drawer).getByRole("link", {name: "Home"})).toHaveAttribute("aria-current", "page");
 
@@ -74,5 +77,6 @@ describe("SignedInLayout", () => {
 
         expect(screen.getByText("Profile page")).toBeInTheDocument();
         await waitFor(() => expect(drawer).not.toBeVisible());
+        expect(button).toHaveAttribute("aria-expanded", "false");
     });
 });

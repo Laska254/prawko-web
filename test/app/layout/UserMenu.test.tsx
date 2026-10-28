@@ -8,6 +8,7 @@ describe("UserMenu", () => {
         renderAtRoute(<UserMenu/>);
 
         expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Account"})).toHaveAttribute("aria-expanded", "false");
     });
 
     it.each([
@@ -27,10 +28,13 @@ describe("UserMenu", () => {
         const user = userEvent.setup();
         renderAtRoute(<UserMenu/>);
 
-        await user.click(screen.getByRole("button", {name: "Account"}));
+        const button = screen.getByRole("button", {name: "Account"});
+        await user.click(button);
         const menu = screen.getByRole("menu");
+        expect(button).toHaveAttribute("aria-expanded", "true");
         await user.keyboard("{Escape}");
 
         await waitFor(() => expect(menu).not.toBeVisible());
+        expect(button).toHaveAttribute("aria-expanded", "false");
     });
 });
