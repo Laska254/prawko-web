@@ -1,4 +1,4 @@
-import {mockRequest} from "@test/support/server.tsx";
+import {apiUrl, mockRequest} from "@test/support/server.tsx";
 import {createExam, finishExam, getExam, getExams, submitAnswer} from "@/api/exams.tsx";
 
 describe("exams", () => {
@@ -23,7 +23,7 @@ describe("exams", () => {
 
     it("creates an exam and returns its ID from Location", async () => {
         const requests = mockRequest("post", "/exams",
-            {status: 201, headers: {Location: "http://localhost:8080/exams/3"}});
+            {status: 201, headers: {Location: apiUrl("/exams/3")}});
 
         expect(await createExam({userId: 1, categoryName: "B"})).toBe(3);
         expect(requests).toEqual([{search: "", body: {userId: 1, categoryName: "B"}}]);
