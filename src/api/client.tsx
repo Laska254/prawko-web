@@ -27,6 +27,12 @@ api.interceptors.response.use(response => {
 });
 
 // The ID at the end of a `201 Created` response's `Location` header (`…/users/5` → 5).
+// Throws when the header is missing or doesn't end in an ID.
 export function createdId(response: AxiosResponse): number {
-    return Number(String(response.headers.location).split("/").at(-1));
+    const location = response.headers.location;
+    const id = Number(String(location).split("/").at(-1));
+    if (!Number.isInteger(id) || id < 1) {
+        throw new Error(`No created ID in Location: ${location}`);
+    }
+    return id;
 }

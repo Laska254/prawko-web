@@ -1,10 +1,10 @@
 import {http, HttpResponse} from "msw/http";
-import {apiUrl, server} from "@test/support/server.tsx";
+import {apiUrl, mockRequest, server} from "@test/support/server.tsx";
 import {credentials} from "@test/support/data.tsx";
 import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
 import type {ExamSummaryDto} from "@/api/dto/ExamSummaryDto.tsx";
 import type {PagedModel} from "@/api/dto/PagedModel.tsx";
-import {api} from "@/api/client.tsx";
+import {api, createdId} from "@/api/client.tsx";
 
 describe("client", () => {
     it("parses a paged response with its instants as dates", async () => {
@@ -35,6 +35,33 @@ describe("client", () => {
                 active: false,
             }],
             page,
+        });
+    });
+
+    describe("createdId", () => {
+        it("returns the ID at the end of Location", async () => {
+            mockRequest("post", "/users", {status: 201, headers: {Location: apiUrl("/users/5")}});
+
+            expect(createdId(await api.post("/users"))).toBe(5);
+        });
+
+        it("throws without Location", async () => {
+            mockRequest("post", "/users", {status: 201});
+            const response = await api.post("/users");
+
+            expect(() => createdId(response)).toThrow("No created ID in Location: undefined");
+        });
+
+        it.each([
+            apiUrl("/users/"),
+            apiUrl("/users/abc"),
+            apiUrl("/users/1.5"),
+            apiUrl("/users/0"),
+        ])("throws when Location is %s", async location => {
+            mockRequest("post", "/users", {status: 201, headers: {Location: location}});
+            const response = await api.post("/users");
+
+            expect(() => createdId(response)).toThrow(`No created ID in Location: ${location}`);
         });
     });
 

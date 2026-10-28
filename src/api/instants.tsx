@@ -9,6 +9,10 @@ export function parseInstants(data: unknown): unknown {
     if (data === null || typeof data !== "object") {
         return data;
     }
+    // Leaves non-JSON objects (a `Blob`, an `ArrayBuffer`) as they are.
+    if (Object.getPrototypeOf(data) !== Object.prototype) {
+        return data;
+    }
     return Object.fromEntries(Object.entries(data).map(([key, value]) => {
         if (instantFields.has(key) && typeof value === "string") {
             return [key, new Date(value)];
