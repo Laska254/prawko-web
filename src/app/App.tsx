@@ -8,14 +8,23 @@ import {VerifyEmailPage} from "@/features/auth/pages/VerifyEmailPage.tsx";
 import {VerificationSentPage} from "@/features/auth/pages/VerificationSentPage.tsx";
 import {ForgotPasswordPage} from "@/features/auth/pages/ForgotPasswordPage.tsx";
 import {ResetPasswordPage} from "@/features/auth/pages/ResetPasswordPage.tsx";
+import {HistoryPage} from "@/features/exam/pages/HistoryPage.tsx";
+import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
+import {SettingsPage} from "@/features/profile/pages/SettingsPage.tsx";
+import {SignedInLayout} from "./layout/SignedInLayout.tsx";
 
 export function App() {
     return (
         <BrowserRouter>
             <Routes>
                 <Route element={<RequireAuth/>}>
-                    <Route path="/" element={<HomePage/>}/>
-                    <Route path="/exam" element={<ExamPage/>}/>
+                    <Route element={<SignedInLayout/>}>
+                        <Route path="/" element={<HomePage/>}/>
+                        <Route path="/exam" element={<ExamPage/>}/>
+                        <Route path="/history" element={<HistoryPage/>}/>
+                        <Route path="/profile" element={<ProfilePage/>}/>
+                        <Route path="/settings" element={<SettingsPage/>}/>
+                    </Route>
                 </Route>
                 <Route element={<RequireGuest/>}>
                     <Route path="/auth" element={<AuthPage/>}/>

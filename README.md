@@ -102,7 +102,7 @@ Biome problems then show in the editor, with quick fixes under Alt+Enter.
 
 ```
 src/
-  app/          entry (main), route tree (App), theme
+  app/          entry (main), route tree (App), theme, layout/ (signed-in app bar and navigation)
   api/          axios setup and requests, credentials, dto/
   session/      signed-in session: context, current user (planned)
   i18n/         translations setup, locales/<language>/<namespace>.json (planned)
@@ -167,6 +167,9 @@ Prawko Server must allow CORS requests from the application URL.
 * `/auth` sign in and create an account
 * `/` home page
 * `/exam` exam (placeholder)
+* `/history` past exams (placeholder)
+* `/profile` account (placeholder)
+* `/settings` preferences (placeholder)
 * `/auth/verify` verify email
 * `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
