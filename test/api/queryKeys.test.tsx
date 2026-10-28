@@ -1,3 +1,4 @@
+import {hashKey} from "@tanstack/react-query";
 import {screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {http, HttpResponse} from "msw/http";
@@ -30,11 +31,25 @@ describe("queryKeys", () => {
         [userKeys.detail(1), ["users", "detail", 1]],
         [examKeys.list(1, 2), ["exams", "list", 1, 2]],
         [examKeys.detail(3), ["exams", "detail", 3]],
-        [questionKeys.random(), ["questions", "random"]],
+        [questionKeys.random(), ["questions", "random", {}]],
+        [questionKeys.random("B"), ["questions", "random", {category: "B"}]],
+        [questionKeys.random("B", "BASIC"), ["questions", "random", {category: "B", type: "BASIC"}]],
         [questionKeys.list(2), ["questions", "list", 2]],
         [questionKeys.detail(4), ["questions", "detail", 4]],
     ])("builds %j", (key, expected) => {
         expect(key).toEqual(expected);
+    });
+
+    it("caches random questions of different categories and types apart", () => {
+        const hashes = [
+            questionKeys.random(),
+            questionKeys.random("B"),
+            questionKeys.random("C"),
+            questionKeys.random("B", "BASIC"),
+            questionKeys.random(undefined, "BASIC"),
+        ].map(key => hashKey(key));
+
+        expect(new Set(hashes).size).toBe(hashes.length);
     });
 
     it("loads a query and refetches it after a mutation invalidates the resource", async () => {

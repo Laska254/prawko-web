@@ -16,7 +16,8 @@ export const examKeys = {
 
 export const questionKeys = {
     all: ["questions"] as const,
-    random: () => [...questionKeys.all, "random"] as const,
+    // A missing category or type is picked at random by the server.
+    random: (category?: string, type?: string) => [...questionKeys.all, "random", {category, type}] as const,
     list: (page: number) => [...questionKeys.all, "list", page] as const,
     detail: (id: number) => [...questionKeys.all, "detail", id] as const,
 };
