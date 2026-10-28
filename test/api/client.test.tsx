@@ -1,63 +1,12 @@
 import {http, HttpResponse} from "msw/http";
-import {apiUrl, mockPost, server} from "@test/support/server.tsx";
-import {credentials, registerDto} from "@test/support/data.tsx";
+import {apiUrl, mockRequest, server} from "@test/support/server.tsx";
+import {credentials} from "@test/support/data.tsx";
 import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
 import type {ExamSummaryDto} from "@/api/dto/ExamSummaryDto.tsx";
 import type {PagedModel} from "@/api/dto/PagedModel.tsx";
-import {api, forgotPassword, login, register, resendVerification, resetPassword, verifyEmail} from "@/api/requests.tsx";
+import {api, createdId} from "@/api/client.tsx";
 
-describe("requests", () => {
-    const verifyEmailDto = {token: "token"};
-    const emailDto = {email: "jan@example.com"};
-    const resetPasswordDto = {token: "token", newPassword: "secret"};
-
-    it.each([
-        ["/users", () => register(registerDto), registerDto],
-        ["/auth/verify", () => verifyEmail(verifyEmailDto), verifyEmailDto],
-        ["/auth/verify/resend", () => resendVerification(emailDto), emailDto],
-        ["/auth/password/forgot", () => forgotPassword(emailDto), emailDto],
-        ["/auth/password/reset", () => resetPassword(resetPasswordDto), resetPasswordDto],
-    ])("posts the body to %s", async (path, send, body) => {
-        const requests = mockPost(path);
-
-        const response = await send();
-
-        expect(response.status).toBe(204);
-        expect(requests).toEqual([body]);
-    });
-
-    describe("login", () => {
-        it("saves the credentials after signing in", async () => {
-            const requests = mockPost("/auth");
-
-            await login(credentials);
-
-            expect(requests).toEqual([credentials]);
-            expect(getCredentials()).toBe(btoa("jan:secret"));
-        });
-
-        it("doesn't send the previous credentials", async () => {
-            let authorization: string | null = "";
-            server.use(http.post(apiUrl("/auth"), ({request}) => {
-                authorization = request.headers.get("Authorization");
-                return new HttpResponse(null, {status: 204});
-            }));
-            saveCredentials({userName: "old", password: "old"});
-
-            await login(credentials);
-
-            expect(authorization).toBeNull();
-        });
-
-        it("doesn't save the credentials when signing in fails", async () => {
-            mockPost("/auth", 401);
-            saveCredentials({userName: "old", password: "old"});
-
-            await expect(login(credentials)).rejects.toMatchObject({response: {status: 401}});
-            expect(getCredentials()).toBeNull();
-        });
-    });
-
+describe("client", () => {
     it("parses a paged response with its instants as dates", async () => {
         const page = {size: 20, number: 0, totalElements: 1, totalPages: 1};
         server.use(http.get(apiUrl("/exams"), () => HttpResponse.json({
@@ -89,6 +38,33 @@ describe("requests", () => {
         });
     });
 
+    describe("createdId", () => {
+        it("returns the ID at the end of Location", async () => {
+            mockRequest("post", "/users", {status: 201, headers: {Location: apiUrl("/users/5")}});
+
+            expect(createdId(await api.post("/users"))).toBe(5);
+        });
+
+        it("throws without Location", async () => {
+            mockRequest("post", "/users", {status: 201});
+            const response = await api.post("/users");
+
+            expect(() => createdId(response)).toThrow("No created ID in Location: undefined");
+        });
+
+        it.each([
+            apiUrl("/users/"),
+            apiUrl("/users/abc"),
+            apiUrl("/users/1.5"),
+            apiUrl("/users/0"),
+        ])("throws when Location is %s", async location => {
+            mockRequest("post", "/users", {status: 201, headers: {Location: location}});
+            const response = await api.post("/users");
+
+            expect(() => createdId(response)).toThrow(`No created ID in Location: ${location}`);
+        });
+    });
+
     describe("interceptors", () => {
         const assign = vi.fn();
 
@@ -114,7 +90,7 @@ describe("requests", () => {
             const authorization = respondWith(204);
             saveCredentials(credentials);
 
-            await verifyEmail({token: "token"});
+            await api.post("/auth/verify");
 
             expect(authorization()).toBe(`Basic ${btoa("jan:secret")}`);
         });
@@ -122,7 +98,7 @@ describe("requests", () => {
         it("sends no Authorization header without credentials", async () => {
             const authorization = respondWith(204);
 
-            await verifyEmail({token: "token"});
+            await api.post("/auth/verify");
 
             expect(authorization()).toBeNull();
         });
@@ -131,7 +107,7 @@ describe("requests", () => {
             respondWith(401);
             saveCredentials(credentials);
 
-            await expect(verifyEmail({token: "token"})).rejects.toMatchObject({response: {status: 401}});
+            await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 401}});
             expect(getCredentials()).toBeNull();
             expect(assign).toHaveBeenCalledWith("/auth");
         });
@@ -139,7 +115,7 @@ describe("requests", () => {
         it("doesn't redirect on 401 without credentials", async () => {
             respondWith(401);
 
-            await expect(verifyEmail({token: "token"})).rejects.toMatchObject({response: {status: 401}});
+            await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 401}});
             expect(assign).not.toHaveBeenCalled();
         });
 
@@ -147,7 +123,7 @@ describe("requests", () => {
             respondWith(500);
             saveCredentials(credentials);
 
-            await expect(verifyEmail({token: "token"})).rejects.toMatchObject({response: {status: 500}});
+            await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 500}});
             expect(getCredentials()).toBe(btoa("jan:secret"));
             expect(assign).not.toHaveBeenCalled();
         });

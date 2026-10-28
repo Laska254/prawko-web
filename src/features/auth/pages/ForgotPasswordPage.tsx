@@ -1,6 +1,6 @@
 import {Link, Stack, Typography} from "@mui/material";
 import {Link as RouterLink} from "react-router";
-import {forgotPassword} from "@/api/requests.tsx";
+import {forgotPassword} from "@/api/auth.tsx";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 import {AuthCard} from "../components/AuthCard.tsx";
 import {EmailLinkForm} from "../components/EmailLinkForm.tsx";
