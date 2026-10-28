@@ -1,8 +1,7 @@
 import {type ReactElement, StrictMode} from "react";
 import {render, screen} from "@testing-library/react";
-import {CssBaseline, ThemeProvider} from "@mui/material";
 import {MemoryRouter, parsePath, Route, Routes} from "react-router";
-import {theme} from "@/app/theme.tsx";
+import {ThemeProviders} from "@/app/ThemeProviders.tsx";
 import {ShowLocation} from "./ShowLocation.tsx";
 
 interface RenderOptions {
@@ -14,12 +13,11 @@ interface RenderOptions {
 export function renderWithProviders(ui: ReactElement, {route = "/", state}: RenderOptions = {}) {
     return render(
         <StrictMode>
-            <ThemeProvider theme={theme}>
-                <CssBaseline/>
+            <ThemeProviders>
                 <MemoryRouter initialEntries={[{...parsePath(route), state}]}>
                     {ui}
                 </MemoryRouter>
-            </ThemeProvider>
+            </ThemeProviders>
         </StrictMode>
     );
 }

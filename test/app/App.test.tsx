@@ -1,11 +1,12 @@
 import {render, screen} from "@testing-library/react";
 import {App} from "@/app/App.tsx";
+import {ThemeProviders} from "@/app/ThemeProviders.tsx";
 import {saveCredentials} from "@/api/credentials.tsx";
 import {credentials} from "@test/support/data.tsx";
 
 function renderAt(path: string) {
     window.history.pushState({}, "", path);
-    render(<App/>);
+    render(<App/>, {wrapper: ThemeProviders});
 }
 
 describe("App", () => {

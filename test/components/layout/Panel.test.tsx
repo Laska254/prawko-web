@@ -1,7 +1,7 @@
 import {screen} from "@testing-library/react";
-import {theme} from "@/app/theme.tsx";
 import {Panel} from "@/components/layout/Panel.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
+import {cssRules} from "@test/support/styles.tsx";
 
 describe("Panel", () => {
     it("shows its content in a bordered panel", () => {
@@ -11,17 +11,16 @@ describe("Panel", () => {
         expect(screen.getByTestId("panel")).toHaveStyle({
             borderWidth: "1px",
             borderStyle: "solid",
-            borderColor: "#d3dbe7",
-            borderRadius: "12px",
-            backgroundColor: "#ffffff",
+            borderRadius: "calc(2 * var(--mui-shape-borderRadius))",
+            backgroundColor: "var(--mui-palette-background-paper)",
+            boxShadow: "var(--mui-shadows-1)",
         });
-        // jsdom drops the space between the two shadows, so `toHaveStyle` can't match the theme value.
-        expect(getComputedStyle(screen.getByTestId("panel")).boxShadow).toBe(theme.shadows[1].replaceAll("), ", "),"));
+        expect(cssRules(screen.getByTestId("panel"))).toContain("border-color: var(--mui-palette-divider);");
     });
 
     it("lets the caller override its props", () => {
         renderWithProviders(<Panel data-testid="panel" bgcolor="primary.dark"/>);
 
-        expect(screen.getByTestId("panel")).toHaveStyle({backgroundColor: "#1e3a8a"});
+        expect(screen.getByTestId("panel")).toHaveStyle({backgroundColor: "var(--mui-palette-primary-dark)"});
     });
 });
