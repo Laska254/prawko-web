@@ -2,7 +2,7 @@ import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {RegisterForm} from "@/features/auth/components/RegisterForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.tsx";
+import {mockNetworkError, mockPendingPost, mockPost, mockRequest} from "@test/support/server.tsx";
 import {registerDto} from "@test/support/data.tsx";
 
 async function register(user: UserEvent) {
@@ -23,13 +23,14 @@ describe("RegisterForm", () => {
     });
 
     it("creates the account and shows the verification notice", async () => {
-        const requests = mockPost("/users", 201);
+        const requests = mockRequest("post", "/users",
+            {status: 201, headers: {Location: "http://localhost:8080/users/5"}});
 
         await register(user);
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation()).toMatchObject({pathname: "/auth/verify/sent", state: {email: registerDto.email}});
-        expect(requests).toEqual([registerDto]);
+        expect(requests).toEqual([{search: "", body: registerDto}]);
     });
 
     it("shows the field errors from the server", async () => {
