@@ -1,8 +1,12 @@
+import {lazy} from "react";
 import {screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {Route, Routes} from "react-router";
 import {SignedInLayout} from "@/app/layout/SignedInLayout.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
+
+// A page whose code never finishes loading.
+const LoadingPage = lazy(() => new Promise<never>(() => {}));
 
 function renderLayout(route: string) {
     renderWithProviders(
@@ -12,6 +16,7 @@ function renderLayout(route: string) {
                 <Route path="/history" element={<p>History page</p>}/>
                 <Route path="/history/:id" element={<p>Exam page</p>}/>
                 <Route path="/profile" element={<p>Profile page</p>}/>
+                <Route path="/loading" element={<LoadingPage/>}/>
             </Route>
         </Routes>,
         {route}
@@ -28,6 +33,13 @@ describe("SignedInLayout", () => {
 
         expect(within(screen.getByRole("main")).getByText("Home page")).toBeInTheDocument();
         expect(within(screen.getByRole("banner")).getByRole("button", {name: "Theme: system"})).toBeInTheDocument();
+        expect(within(screen.getByRole("banner")).getByRole("button", {name: "Account"})).toBeInTheDocument();
+    });
+
+    it("keeps the app bar while the page loads", () => {
+        renderLayout("/loading");
+
+        expect(within(screen.getByRole("main")).getByRole("progressbar", {name: "Loading"})).toBeInTheDocument();
         expect(within(screen.getByRole("banner")).getByRole("button", {name: "Account"})).toBeInTheDocument();
     });
 

@@ -144,7 +144,7 @@ Folders are created when their first file is added.
   in the feature.
 * Types live next to the code that owns them; there is no `types/` folder.
 * A component's SCSS and imported assets sit next to it. `public/` is only for files served as-is.
-* All routes are defined in `app/`.
+* All routes are defined in `app/`; their pages are loaded on demand with `lazyPage`.
 
 ### Naming
 

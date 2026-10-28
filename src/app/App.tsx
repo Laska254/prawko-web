@@ -1,41 +1,49 @@
-import {AuthPage} from "@/features/auth/pages/AuthPage.tsx";
+import {Suspense} from "react";
 import {BrowserRouter, Route, Routes} from "react-router";
-import {HomePage} from "@/features/home/pages/HomePage.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {RequireGuest} from "@/features/auth/guards/RequireGuest.tsx";
-import {ExamPage} from "@/features/exam/pages/ExamPage.tsx";
-import {VerifyEmailPage} from "@/features/auth/pages/VerifyEmailPage.tsx";
-import {VerificationSentPage} from "@/features/auth/pages/VerificationSentPage.tsx";
-import {ForgotPasswordPage} from "@/features/auth/pages/ForgotPasswordPage.tsx";
-import {ResetPasswordPage} from "@/features/auth/pages/ResetPasswordPage.tsx";
-import {HistoryPage} from "@/features/exam/pages/HistoryPage.tsx";
-import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
-import {SettingsPage} from "@/features/profile/pages/SettingsPage.tsx";
+import {PageLoading} from "@/components/feedback/PageLoading.tsx";
 import {SignedInLayout} from "./layout/SignedInLayout.tsx";
-import {NotFoundPage} from "./pages/NotFoundPage.tsx";
+import {lazyPage} from "./lazyPage.tsx";
+
+const HomePage = lazyPage(() => import("@/features/home/pages/HomePage.tsx"), "HomePage");
+const ExamPage = lazyPage(() => import("@/features/exam/pages/ExamPage.tsx"), "ExamPage");
+const HistoryPage = lazyPage(() => import("@/features/exam/pages/HistoryPage.tsx"), "HistoryPage");
+const ProfilePage = lazyPage(() => import("@/features/profile/pages/ProfilePage.tsx"), "ProfilePage");
+const SettingsPage = lazyPage(() => import("@/features/profile/pages/SettingsPage.tsx"), "SettingsPage");
+const AuthPage = lazyPage(() => import("@/features/auth/pages/AuthPage.tsx"), "AuthPage");
+const VerifyEmailPage = lazyPage(() => import("@/features/auth/pages/VerifyEmailPage.tsx"), "VerifyEmailPage");
+const VerificationSentPage = lazyPage(() => import("@/features/auth/pages/VerificationSentPage.tsx"),
+    "VerificationSentPage");
+const ForgotPasswordPage = lazyPage(() => import("@/features/auth/pages/ForgotPasswordPage.tsx"),
+    "ForgotPasswordPage");
+const ResetPasswordPage = lazyPage(() => import("@/features/auth/pages/ResetPasswordPage.tsx"), "ResetPasswordPage");
+const NotFoundPage = lazyPage(() => import("./pages/NotFoundPage.tsx"), "NotFoundPage");
 
 export function App() {
     return (
         <BrowserRouter>
-            <Routes>
-                <Route element={<RequireAuth/>}>
-                    <Route element={<SignedInLayout/>}>
-                        <Route path="/" element={<HomePage/>}/>
-                        <Route path="/exam" element={<ExamPage/>}/>
-                        <Route path="/history" element={<HistoryPage/>}/>
-                        <Route path="/profile" element={<ProfilePage/>}/>
-                        <Route path="/settings" element={<SettingsPage/>}/>
+            <Suspense fallback={<PageLoading/>}>
+                <Routes>
+                    <Route element={<RequireAuth/>}>
+                        <Route element={<SignedInLayout/>}>
+                            <Route path="/" element={<HomePage/>}/>
+                            <Route path="/exam" element={<ExamPage/>}/>
+                            <Route path="/history" element={<HistoryPage/>}/>
+                            <Route path="/profile" element={<ProfilePage/>}/>
+                            <Route path="/settings" element={<SettingsPage/>}/>
+                        </Route>
                     </Route>
-                </Route>
-                <Route element={<RequireGuest/>}>
-                    <Route path="/auth" element={<AuthPage/>}/>
-                </Route>
-                <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
-                <Route path="/auth/verify/sent" element={<VerificationSentPage/>}/>
-                <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
-                <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
-                <Route path="*" element={<NotFoundPage/>}/>
-            </Routes>
+                    <Route element={<RequireGuest/>}>
+                        <Route path="/auth" element={<AuthPage/>}/>
+                    </Route>
+                    <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
+                    <Route path="/auth/verify/sent" element={<VerificationSentPage/>}/>
+                    <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
+                    <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
+                    <Route path="*" element={<NotFoundPage/>}/>
+                </Routes>
+            </Suspense>
         </BrowserRouter>
     )
 }

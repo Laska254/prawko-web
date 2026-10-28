@@ -8,6 +8,6 @@ describe("main", () => {
 
         await act(() => import("@/app/main.tsx"));
 
-        expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
     });
 });
