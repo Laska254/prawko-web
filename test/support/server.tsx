@@ -34,3 +34,34 @@ export function mockPendingPost(path: string, status = 204) {
 export function mockNetworkError(path: string): void {
     server.use(http.post(apiUrl(path), () => HttpResponse.error()));
 }
+
+interface MockResponse {
+    readonly status?: number;
+    readonly body?: JsonBodyType;
+    readonly headers?: Record<string, string>;
+}
+
+interface ReceivedRequest {
+    readonly search: string;
+    readonly body: unknown;
+}
+
+// Answers `method` `path` with `status`, `headers` (and `body` as JSON); returns each received request's query
+// string and JSON body (`undefined` without one).
+export function mockRequest(method: "get" | "post" | "patch" | "delete", path: string,
+                            {status = 200, body, headers}: MockResponse = {}): ReceivedRequest[] {
+    const requests: ReceivedRequest[] = [];
+    server.use(http[method](apiUrl(path), async ({request}) => {
+        const text = await request.text();
+        let requestBody: unknown;
+        if (text) {
+            requestBody = JSON.parse(text);
+        }
+        requests.push({search: new URL(request.url).search, body: requestBody});
+        if (body === undefined) {
+            return new HttpResponse(null, {status, headers});
+        }
+        return HttpResponse.json(body, {status, headers});
+    }));
+    return requests;
+}

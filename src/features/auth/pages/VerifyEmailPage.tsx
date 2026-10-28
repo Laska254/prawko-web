@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from "react";
 import {CircularProgress, Link, Stack, Typography} from "@mui/material";
 import {Link as RouterLink, useNavigate, useSearchParams} from "react-router";
-import {resendVerification, verifyEmail} from "@/api/requests.tsx";
+import {resendVerification, verifyEmail} from "@/api/auth.tsx";
 import {EmailLinkForm} from "../components/EmailLinkForm.tsx";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 import {AuthCard} from "../components/AuthCard.tsx";

@@ -1,6 +1,6 @@
 import {useRef, useState} from "react";
 import {Alert, Link, Stack} from "@mui/material";
-import {login} from "@/api/requests.tsx";
+import {login} from "@/api/auth.tsx";
 import {Link as RouterLink, useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";

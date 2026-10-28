@@ -1,46 +1,16 @@
-import axios from "axios";
+import {api} from "./client.tsx";
 import type {LoginDto} from "./dto/LoginDto.tsx";
-import type {RegisterDto} from "./dto/RegisterDto.tsx";
 import type {VerifyEmailDto} from "./dto/VerifyEmailDto.tsx";
 import type {ResendVerificationDto} from "./dto/ResendVerificationDto.tsx";
 import type {ForgotPasswordDto} from "./dto/ForgotPasswordDto.tsx";
 import type {ResetPasswordDto} from "./dto/ResetPasswordDto.tsx";
-import {clearCredentials, getCredentials, saveCredentials} from "./credentials.tsx";
-import {parseInstants} from "./instants.tsx";
-
-export const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
-    headers: {'Content-Type': 'application/json'}
-});
-
-api.interceptors.request.use(config => {
-    const credentials = getCredentials();
-    if (credentials) {
-        config.headers.Authorization = `Basic ${credentials}`;
-    }
-    return config;
-});
-
-api.interceptors.response.use(response => {
-    response.data = parseInstants(response.data);
-    return response;
-}, error => {
-    if (error.response?.status === 401 && getCredentials()) {
-        clearCredentials();
-        window.location.assign("/auth");
-    }
-    return Promise.reject(error);
-});
+import {clearCredentials, saveCredentials} from "./credentials.tsx";
 
 export async function login(loginDto: LoginDto) {
     clearCredentials();
     const response = await api.post("/auth", loginDto);
     saveCredentials(loginDto);
     return response;
-}
-
-export async function register(registerDto: RegisterDto) {
-    return await api.post("/users", registerDto);
 }
 
 export async function verifyEmail(verifyEmailDto: VerifyEmailDto) {

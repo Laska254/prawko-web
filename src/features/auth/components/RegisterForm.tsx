@@ -1,6 +1,6 @@
 import {useRef, useState} from "react";
 import {Alert, Stack} from "@mui/material";
-import {register} from "@/api/requests.tsx";
+import {register} from "@/api/users.tsx";
 import {useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
