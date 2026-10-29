@@ -39,6 +39,7 @@ describe("SignedInLayout", () => {
         renderLayout("/");
 
         expect(within(screen.getByRole("main")).getByText("Home page")).toBeInTheDocument();
+        expect(within(screen.getByRole("banner")).getByRole("button", {name: "Language"})).toBeInTheDocument();
         expect(within(screen.getByRole("banner")).getByRole("button", {name: "Theme: system"})).toBeInTheDocument();
         expect(within(screen.getByRole("banner")).getByRole("button", {name: "Account"})).toBeInTheDocument();
     });
