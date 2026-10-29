@@ -57,11 +57,12 @@ describe("LoginForm", () => {
         const password = await screen.findByLabelText(/^Password/);
         expect(password).toBeInvalid();
 
-        mockPost("/auth", 401);
+        const request = mockPendingPost("/auth", 401);
         await user.click(screen.getByRole("button", {name: "Sign in"}));
 
-        expect(await screen.findByText("Wrong login or password.")).toBeInTheDocument();
         expect(password).toBeValid();
+        request.respond();
+        expect(await screen.findByText("Wrong login or password.")).toBeInTheDocument();
     });
 
     it("shows a generic error when no field of the form is invalid", async () => {

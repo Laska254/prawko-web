@@ -76,12 +76,26 @@ describe("RegisterForm", () => {
         const userName = await screen.findByRole("textbox", {name: "Username"});
         expect(userName).toBeInvalid();
 
-        mockPost("/users", 500);
+        const request = mockPendingPost("/users", 500);
         await user.click(screen.getByRole("button", {name: "Register"}));
 
-        expect(await screen.findByText("Couldn't create the account. Please try again later.")).toBeInTheDocument();
         expect(userName).toBeValid();
         expect(userName).not.toHaveAccessibleDescription();
+        request.respond();
+        expect(await screen.findByText("Couldn't create the account. Please try again later.")).toBeInTheDocument();
+    });
+
+    it("hides the generic error when sending again", async () => {
+        mockPost("/users", 500);
+        await register(user);
+        expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+        const request = mockPendingPost("/users", 500);
+        await user.click(screen.getByRole("button", {name: "Register"}));
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        request.respond();
+        expect(await screen.findByRole("alert")).toBeInTheDocument();
     });
 
     it("shows a generic error when no field of the form is invalid", async () => {
