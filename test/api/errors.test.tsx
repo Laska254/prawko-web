@@ -54,6 +54,9 @@ describe("toApiError", () => {
         ["a text body", 502, () => new HttpResponse("Bad gateway", {status: 502})],
         ["JSON that isn't a ProblemDetail", 500, () => HttpResponse.json({error: "Bad"}, {status: 500})],
         ["a ProblemDetail without a title", 500, () => HttpResponse.json({status: 500}, {status: 500})],
+        ["a ProblemDetail without a type", 500, () => HttpResponse.json({title: "Title", status: 500}, {status: 500})],
+        ["details that aren't an object", 400, () => HttpResponse.json(problem(400, {details: "oops"}), {status: 400})],
+        ["null details", 400, () => HttpResponse.json(problem(400, {details: null}), {status: 400})],
     ])("returns only the status of a response with %s", async (_, status, resolver) => {
         const error = await rejectionOf(resolver);
 

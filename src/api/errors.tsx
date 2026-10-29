@@ -10,10 +10,17 @@ export type ApiError =
     | {readonly kind: "http"; readonly status: number; readonly problem?: ProblemDetail}
     | {readonly kind: "unknown"; readonly cause: unknown};
 
+function isObject(data: unknown): data is object {
+    return typeof data === "object" && data !== null;
+}
+
 function isProblemDetail(data: unknown): data is ProblemDetail {
-    return typeof data === "object" && data !== null
-        && typeof (data as ProblemDetail).status === "number"
-        && typeof (data as ProblemDetail).title === "string";
+    if (!isObject(data)) {
+        return false;
+    }
+    const {type, title, status, details} = data as ProblemDetail;
+    return typeof type === "string" && typeof title === "string" && typeof status === "number"
+        && (details === undefined || isObject(details));
 }
 
 // Turns whatever a request rejected with into an `ApiError`.
