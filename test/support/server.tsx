@@ -1,6 +1,7 @@
 import type {JsonBodyType} from "msw";
 import {http, HttpResponse} from "msw/http";
 import {setupServer} from "msw/node";
+import {problem} from "./data.tsx";
 
 export const server = setupServer();
 
@@ -16,6 +17,11 @@ export function mockPost(path: string, status = 204, body?: JsonBodyType): unkno
         return body === undefined ? new HttpResponse(null, {status}) : HttpResponse.json(body, {status});
     }));
     return requests;
+}
+
+// Answers POST `path` with a ProblemDetail of `status`; `details` are the errors per field of a `400`/`409`.
+export function mockProblem(path: string, status: number, details?: Readonly<Record<string, string>>): void {
+    mockPost(path, status, problem(status, details));
 }
 
 // Like `mockPost`, but holds the response until `respond()` is called, to check the UI while sending.

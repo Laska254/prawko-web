@@ -2,7 +2,7 @@ import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {RegisterForm} from "@/features/auth/components/RegisterForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {apiUrl, mockNetworkError, mockPendingPost, mockPost, mockRequest} from "@test/support/server.tsx";
+import {apiUrl, mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
 import {registerDto} from "@test/support/data.tsx";
 
 async function register(user: UserEvent) {
@@ -33,13 +33,77 @@ describe("RegisterForm", () => {
         expect(requests).toEqual([{search: "", body: registerDto}]);
     });
 
-    it("shows the field errors from the server", async () => {
-        mockPost("/users", 400, {details: {userName: "Username is taken.", email: "Email is taken."}});
+    it("marks the invalid fields on a 400", async () => {
+        mockProblem("/users", 400, {
+            firstName: "First name is required.",
+            lastName: "Last name is required.",
+            userName: "Username must not contain '@'.",
+            email: "Email format is not valid.",
+            password: "Password must be at least 7 characters.",
+        });
 
         await register(user);
 
-        expect(await screen.findByText("Username is taken.")).toBeInTheDocument();
-        expect(screen.getByText("Email is taken.")).toBeInTheDocument();
+        expect(await screen.findByRole("textbox", {name: "First name"}))
+            .toHaveAccessibleDescription("First name must be 3 to 31 characters.");
+        expect(screen.getByRole("textbox", {name: "Last name"}))
+            .toHaveAccessibleDescription("Last name must be 3 to 31 characters.");
+        expect(screen.getByRole("textbox", {name: "Username"}))
+            .toHaveAccessibleDescription("Username must be 3 to 31 characters, without @.");
+        expect(screen.getByRole("textbox", {name: "Email"})).toHaveAccessibleDescription("Enter a valid email address.");
+        expect(screen.getByLabelText(/^Password/)).toHaveAccessibleDescription("Password must be 7 to 63 characters.");
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("marks the taken fields on a 409", async () => {
+        mockProblem("/users", 409, {
+            userName: "User with username 'jan' already exists.",
+            email: "User with email 'jan@example.com' already exists.",
+        });
+
+        await register(user);
+
+        expect(await screen.findByRole("textbox", {name: "Username"}))
+            .toHaveAccessibleDescription("This username is taken.");
+        expect(screen.getByRole("textbox", {name: "Email"}))
+            .toHaveAccessibleDescription("An account with this email already exists.");
+        expect(screen.getByRole("textbox", {name: "First name"})).not.toHaveAccessibleDescription();
+    });
+
+    it("clears the field errors when sending again", async () => {
+        mockProblem("/users", 409, {userName: "Exists."});
+        await register(user);
+        const userName = await screen.findByRole("textbox", {name: "Username"});
+        expect(userName).toBeInvalid();
+
+        const request = mockPendingPost("/users", 500);
+        await user.click(screen.getByRole("button", {name: "Register"}));
+
+        expect(userName).toBeValid();
+        expect(userName).not.toHaveAccessibleDescription();
+        request.respond();
+        expect(await screen.findByText("Couldn't create the account. Please try again later.")).toBeInTheDocument();
+    });
+
+    it("hides the generic error when sending again", async () => {
+        mockPost("/users", 500);
+        await register(user);
+        expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+        const request = mockPendingPost("/users", 500);
+        await user.click(screen.getByRole("button", {name: "Register"}));
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        request.respond();
+        expect(await screen.findByRole("alert")).toBeInTheDocument();
+    });
+
+    it("shows a generic error when no field of the form is invalid", async () => {
+        mockProblem("/users", 400, {role: "Role is required."});
+
+        await register(user);
+
+        expect(await screen.findByText("Couldn't create the account. Please try again later.")).toBeInTheDocument();
     });
 
     it("shows a generic error on a server error", async () => {

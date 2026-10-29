@@ -1,6 +1,8 @@
 import {useRef, useState} from "react";
 import {Alert, Stack} from "@mui/material";
 import {register} from "@/api/users.tsx";
+import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
+import {type FieldErrors, type FieldMessages, fieldErrors, hasFieldErrors, toApiError} from "@/api/errors.tsx";
 import {useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
@@ -8,20 +10,30 @@ import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
 const NAME_LENGTH = {minLength: 3, maxLength: 31};
 
+const FIELD_MESSAGES: FieldMessages<keyof RegisterDto> = {
+    firstName: {400: "First name must be 3 to 31 characters."},
+    lastName: {400: "Last name must be 3 to 31 characters."},
+    userName: {400: "Username must be 3 to 31 characters, without @.", 409: "This username is taken."},
+    email: {400: "Enter a valid email address.", 409: "An account with this email already exists."},
+    password: {400: "Password must be 7 to 63 characters."},
+};
+
 export function RegisterForm() {
     const firstNameRef = useRef<HTMLInputElement>(null);
     const lastNameRef = useRef<HTMLInputElement>(null);
     const userNameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
-    const [errors, setErrors] = useState<string[]>([]);
+    const [errors, setErrors] = useState<FieldErrors<keyof RegisterDto>>({});
+    const [failed, setFailed] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
         const email = emailRef.current!.value;
-        setErrors([]);
+        setErrors({});
+        setFailed(false);
         setIsSending(true);
         register({
             firstName: firstNameRef.current!.value,
@@ -31,24 +43,23 @@ export function RegisterForm() {
             password: passwordRef.current!.value,
         })
             .then(() => navigate('/auth/verify/sent', {state: {email}}))
-            .catch(error => setErrors(error.response?.data?.details
-                ? Object.values(error.response.data.details)
-                : ["Couldn't create the account. Please try again later."]))
+            .catch(caught => {
+                const marked = fieldErrors(toApiError(caught), FIELD_MESSAGES);
+                setErrors(marked);
+                setFailed(!hasFieldErrors(marked));
+            })
             .finally(() => setIsSending(false));
     }
 
     return (
         <form onSubmit={onSubmit}>
             <Stack spacing={2}>
-                {errors.length > 0 && (
-                    <Alert severity="error">
-                        {errors.map(error => <div key={error}>{error}</div>)}
-                    </Alert>
-                )}
+                {failed && <Alert severity="error">Couldn't create the account. Please try again later.</Alert>}
                 <FormTextField
                     label="First name"
                     type="text"
                     inputRef={firstNameRef}
+                    errorText={errors.firstName}
                     required
                     slotProps={{htmlInput: NAME_LENGTH}}
                 />
@@ -56,6 +67,7 @@ export function RegisterForm() {
                     label="Last name"
                     type="text"
                     inputRef={lastNameRef}
+                    errorText={errors.lastName}
                     required
                     slotProps={{htmlInput: NAME_LENGTH}}
                 />
@@ -63,6 +75,7 @@ export function RegisterForm() {
                     label="Username"
                     type="text"
                     inputRef={userNameRef}
+                    errorText={errors.userName}
                     required
                     slotProps={{htmlInput: NAME_LENGTH}}
                 />
@@ -70,12 +83,14 @@ export function RegisterForm() {
                     label="Email"
                     type="email"
                     inputRef={emailRef}
+                    errorText={errors.email}
                     required
                     slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
                 />
                 <PasswordField
                     label="Password"
                     inputRef={passwordRef}
+                    errorText={errors.password}
                     required
                     slotProps={{htmlInput: {minLength: 7, maxLength: 63}}}
                 />

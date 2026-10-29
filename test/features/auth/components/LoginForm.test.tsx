@@ -2,7 +2,7 @@ import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {LoginForm} from "@/features/auth/components/LoginForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.tsx";
+import {mockNetworkError, mockPendingPost, mockPost, mockProblem} from "@test/support/server.tsx";
 import {credentials} from "@test/support/data.tsx";
 
 async function signIn(user: UserEvent, login = credentials.userName, password = credentials.password) {
@@ -29,12 +29,48 @@ describe("LoginForm", () => {
         expect(requests).toEqual([credentials]);
     });
 
-    it.each([400, 401])("shows wrong credentials on %i", async status => {
-        mockPost("/auth", status);
+    it("shows wrong credentials on a 401", async () => {
+        mockPost("/auth", 401);
 
         await signIn(user);
 
         expect(await screen.findByText("Wrong login or password.")).toBeInTheDocument();
+    });
+
+    it("marks the invalid fields on a 400", async () => {
+        mockProblem("/auth", 400, {
+            userName: "Username or email must not be blank and between 3 and 63 characters.",
+            password: "Password must not be blank and between 7 and 63 characters.",
+        });
+
+        await signIn(user, "ja", "short");
+
+        expect(await screen.findByRole("textbox", {name: "Login"}))
+            .toHaveAccessibleDescription("Enter a username or email of 3 to 63 characters.");
+        expect(screen.getByLabelText(/^Password/)).toHaveAccessibleDescription("Password must be 7 to 63 characters.");
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("clears the field errors when sending again", async () => {
+        mockProblem("/auth", 400, {password: "Password must not be blank."});
+        await signIn(user);
+        const password = await screen.findByLabelText(/^Password/);
+        expect(password).toBeInvalid();
+
+        const request = mockPendingPost("/auth", 401);
+        await user.click(screen.getByRole("button", {name: "Sign in"}));
+
+        expect(password).toBeValid();
+        request.respond();
+        expect(await screen.findByText("Wrong login or password.")).toBeInTheDocument();
+    });
+
+    it("shows a generic error when no field of the form is invalid", async () => {
+        mockProblem("/auth", 400, {token: "Token is required."});
+
+        await signIn(user);
+
+        expect(await screen.findByText("Couldn't sign in. Please try again later.")).toBeInTheDocument();
     });
 
     it("links an unverified email login to a new verification link", async () => {
