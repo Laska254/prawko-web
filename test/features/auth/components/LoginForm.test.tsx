@@ -2,8 +2,8 @@ import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {LoginForm} from "@/features/auth/components/LoginForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.tsx";
-import {credentials, validationProblem} from "@test/support/data.tsx";
+import {mockNetworkError, mockPendingPost, mockPost, mockProblem} from "@test/support/server.tsx";
+import {credentials} from "@test/support/data.tsx";
 
 async function signIn(user: UserEvent, login = credentials.userName, password = credentials.password) {
     await user.type(screen.getByRole("textbox", {name: "Login"}), login);
@@ -38,10 +38,10 @@ describe("LoginForm", () => {
     });
 
     it("marks the invalid fields on a 400", async () => {
-        mockPost("/auth", 400, validationProblem(400, {
+        mockProblem("/auth", 400, {
             userName: "Username or email must not be blank and between 3 and 63 characters.",
             password: "Password must not be blank and between 7 and 63 characters.",
-        }));
+        });
 
         await signIn(user, "ja", "short");
 
@@ -52,7 +52,7 @@ describe("LoginForm", () => {
     });
 
     it("clears the field errors when sending again", async () => {
-        mockPost("/auth", 400, validationProblem(400, {password: "Password must not be blank."}));
+        mockProblem("/auth", 400, {password: "Password must not be blank."});
         await signIn(user);
         const password = await screen.findByLabelText(/^Password/);
         expect(password).toBeInvalid();
@@ -66,7 +66,7 @@ describe("LoginForm", () => {
     });
 
     it("shows a generic error when no field of the form is invalid", async () => {
-        mockPost("/auth", 400, validationProblem(400, {token: "Token is required."}));
+        mockProblem("/auth", 400, {token: "Token is required."});
 
         await signIn(user);
 

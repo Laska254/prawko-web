@@ -2,8 +2,7 @@ import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {ResetPasswordForm} from "@/features/auth/components/ResetPasswordForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost} from "@test/support/server.tsx";
-import {validationProblem} from "@test/support/data.tsx";
+import {mockNetworkError, mockPendingPost, mockPost, mockProblem} from "@test/support/server.tsx";
 
 const genericError = "Couldn't reset the password. Please try again later.";
 
@@ -67,8 +66,7 @@ describe("ResetPasswordForm", () => {
     });
 
     it("links an invalid token to a new reset link", async () => {
-        mockPost("/auth/password/reset", 400,
-            {type: "about:blank", title: "Bad Request", status: 400, detail: "Invalid or expired token."});
+        mockProblem("/auth/password/reset", 400);
 
         await resetPassword(user);
         expect(await screen.findByText(/This reset link is invalid or has expired./)).toBeInTheDocument();
@@ -78,8 +76,7 @@ describe("ResetPasswordForm", () => {
     });
 
     it("marks an invalid new password on a 400", async () => {
-        mockPost("/auth/password/reset", 400,
-            validationProblem(400, {newPassword: "Password must be at least 7 characters."}));
+        mockProblem("/auth/password/reset", 400, {newPassword: "Password must be at least 7 characters."});
 
         await resetPassword(user);
 
@@ -89,7 +86,7 @@ describe("ResetPasswordForm", () => {
     });
 
     it("clears the field error on a mismatch", async () => {
-        mockPost("/auth/password/reset", 400, validationProblem(400, {newPassword: "Too short."}));
+        mockProblem("/auth/password/reset", 400, {newPassword: "Too short."});
         await resetPassword(user);
         const password = await screen.findByLabelText(/^New password/);
         expect(password).toBeInvalid();
@@ -102,7 +99,7 @@ describe("ResetPasswordForm", () => {
     });
 
     it("shows a generic error when no field of the form is invalid", async () => {
-        mockPost("/auth/password/reset", 400, validationProblem(400, {token: "Token is required."}));
+        mockProblem("/auth/password/reset", 400, {token: "Token is required."});
 
         await resetPassword(user);
 

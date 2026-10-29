@@ -2,8 +2,8 @@ import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {RegisterForm} from "@/features/auth/components/RegisterForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {apiUrl, mockNetworkError, mockPendingPost, mockPost, mockRequest} from "@test/support/server.tsx";
-import {registerDto, validationProblem} from "@test/support/data.tsx";
+import {apiUrl, mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
+import {registerDto} from "@test/support/data.tsx";
 
 async function register(user: UserEvent) {
     await user.type(screen.getByRole("textbox", {name: "First name"}), registerDto.firstName);
@@ -34,13 +34,13 @@ describe("RegisterForm", () => {
     });
 
     it("marks the invalid fields on a 400", async () => {
-        mockPost("/users", 400, validationProblem(400, {
+        mockProblem("/users", 400, {
             firstName: "First name is required.",
             lastName: "Last name is required.",
             userName: "Username must not contain '@'.",
             email: "Email format is not valid.",
             password: "Password must be at least 7 characters.",
-        }));
+        });
 
         await register(user);
 
@@ -56,10 +56,10 @@ describe("RegisterForm", () => {
     });
 
     it("marks the taken fields on a 409", async () => {
-        mockPost("/users", 409, validationProblem(409, {
+        mockProblem("/users", 409, {
             userName: "User with username 'jan' already exists.",
             email: "User with email 'jan@example.com' already exists.",
-        }));
+        });
 
         await register(user);
 
@@ -71,7 +71,7 @@ describe("RegisterForm", () => {
     });
 
     it("clears the field errors when sending again", async () => {
-        mockPost("/users", 409, validationProblem(409, {userName: "Exists."}));
+        mockProblem("/users", 409, {userName: "Exists."});
         await register(user);
         const userName = await screen.findByRole("textbox", {name: "Username"});
         expect(userName).toBeInvalid();
@@ -99,7 +99,7 @@ describe("RegisterForm", () => {
     });
 
     it("shows a generic error when no field of the form is invalid", async () => {
-        mockPost("/users", 400, validationProblem(400, {role: "Role is required."}));
+        mockProblem("/users", 400, {role: "Role is required."});
 
         await register(user);
 
