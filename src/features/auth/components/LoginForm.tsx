@@ -1,6 +1,8 @@
 import {useRef, useState} from "react";
 import {Alert, Link, Stack} from "@mui/material";
 import {login} from "@/api/auth.tsx";
+import type {LoginDto} from "@/api/dto/LoginDto.tsx";
+import {type ApiError, type FieldMessages, fieldErrors, toApiError} from "@/api/errors.tsx";
 import {Link as RouterLink, useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
@@ -15,15 +17,27 @@ const ERROR_MESSAGES: Record<LoginError, string> = {
 };
 
 const STATUS_ERRORS: Partial<Record<number, LoginError>> = {
-    400: "invalidCredentials",
     401: "invalidCredentials",
     403: "notVerified",
 };
+
+const FIELD_MESSAGES: FieldMessages<keyof LoginDto> = {
+    userName: {400: "Enter a username or email of 3 to 63 characters."},
+    password: {400: "Password must be 7 to 63 characters."},
+};
+
+function toLoginError(error: ApiError): LoginError {
+    if (error.kind === "http") {
+        return STATUS_ERRORS[error.status] ?? "failed";
+    }
+    return "failed";
+}
 
 export function LoginForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<LoginError | null>(null);
+    const [errors, setErrors] = useState<Partial<Record<keyof LoginDto, string>>>({});
     const [email, setEmail] = useState<string>();
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
@@ -33,11 +47,19 @@ export function LoginForm() {
         const userName = userNameRef.current!.value;
         const password = passwordRef.current!.value;
         setError(null);
+        setErrors({});
         setEmail(userName.includes("@") ? userName : undefined);
         setIsSending(true);
         login({userName, password})
             .then(() => navigate('/'))
-            .catch(error => setError(STATUS_ERRORS[error.response?.status] ?? "failed"))
+            .catch(error => {
+                const apiError = toApiError(error);
+                const errors = fieldErrors(apiError, FIELD_MESSAGES);
+                setErrors(errors);
+                if (Object.keys(errors).length === 0) {
+                    setError(toLoginError(apiError));
+                }
+            })
             .finally(() => setIsSending(false));
     }
 
@@ -56,12 +78,14 @@ export function LoginForm() {
                     label="Login"
                     type="text"
                     inputRef={userNameRef}
+                    errorText={errors.userName}
                     placeholder="Username or email"
                     required
                 />
                 <PasswordField
                     label="Password"
                     inputRef={passwordRef}
+                    errorText={errors.password}
                     placeholder="Password"
                     required
                 />
