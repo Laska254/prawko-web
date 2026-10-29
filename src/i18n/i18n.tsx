@@ -1,10 +1,12 @@
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import {initReactI18next} from "react-i18next";
+import auth from "./locales/en/auth.json";
 import common from "./locales/en/common.json";
+import errors from "./locales/en/errors.json";
 
 export const resources = {
-    en: {common},
+    en: {common, errors, auth},
 };
 
 // Typed keys: `t` only accepts keys that exist in the English resources of the namespaces it was given.

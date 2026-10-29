@@ -1,5 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import {CircularProgress, Link, Stack, Typography} from "@mui/material";
+import {useTranslation} from "react-i18next";
 import {Link as RouterLink, useNavigate, useSearchParams} from "react-router";
 import {resendVerification, verifyEmail} from "@/api/auth.tsx";
 import {type ApiError, errorMessage, toApiError} from "@/api/errors.tsx";
@@ -21,6 +22,7 @@ export function VerifyEmailPage() {
     const [attempt, setAttempt] = useState(0);
     const sentAttemptRef = useRef<number>(null);
     const navigate = useNavigate();
+    const {t} = useTranslation(["auth", "errors"]);
 
     useEffect(() => {
         if (!token || sentAttemptRef.current === attempt) return;
@@ -58,7 +60,7 @@ export function VerifyEmailPage() {
         if (error) {
             return (
                 <>
-                    <PageError message={errorMessage(error)} onRetry={retry}/>
+                    <PageError message={t(errorMessage(error))} onRetry={retry}/>
                     <BackLink/>
                 </>
             );
