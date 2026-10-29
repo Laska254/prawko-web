@@ -1,4 +1,5 @@
 import {Component, type ReactNode} from "react";
+import {useTranslation} from "react-i18next";
 import {PageError} from "./PageError.tsx";
 
 interface PageErrorBoundaryProps {
@@ -7,6 +8,13 @@ interface PageErrorBoundaryProps {
 
 interface PageErrorBoundaryState {
     readonly hasError: boolean;
+}
+
+// Class components can't use hooks, so the translated error is its own component.
+function PageLoadError() {
+    const {t} = useTranslation();
+
+    return <PageError message={t("pageLoadFailed")} onRetry={() => window.location.reload()}/>;
 }
 
 // Shows `PageError` instead of a blank screen when the page fails to render, e.g. its lazy code fails to load.
@@ -20,10 +28,7 @@ export class PageErrorBoundary extends Component<PageErrorBoundaryProps, PageErr
 
     render() {
         if (this.state.hasError) {
-            return (
-                <PageError message="This page couldn't be loaded. Check your connection and try again."
-                           onRetry={() => window.location.reload()}/>
-            );
+            return <PageLoadError/>;
         }
         return this.props.children;
     }
