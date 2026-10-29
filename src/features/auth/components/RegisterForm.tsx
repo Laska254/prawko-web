@@ -43,10 +43,10 @@ export function RegisterForm() {
             password: passwordRef.current!.value,
         })
             .then(() => navigate('/auth/verify/sent', {state: {email}}))
-            .catch(error => {
-                const errors = fieldErrors(toApiError(error), FIELD_MESSAGES);
-                setErrors(errors);
-                setFailed(!hasFieldErrors(errors));
+            .catch(caught => {
+                const marked = fieldErrors(toApiError(caught), FIELD_MESSAGES);
+                setErrors(marked);
+                setFailed(!hasFieldErrors(marked));
             })
             .finally(() => setIsSending(false));
     }

@@ -64,11 +64,11 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
         setIsSending(true);
         resetPassword({token, newPassword})
             .then(() => navigate("/auth", {replace: true, state: {notice: "passwordReset"}}))
-            .catch(error => {
-                const apiError = toApiError(error);
-                const errors = fieldErrors(apiError, FIELD_MESSAGES);
-                setErrors(errors);
-                if (!hasFieldErrors(errors)) {
+            .catch(caught => {
+                const apiError = toApiError(caught);
+                const marked = fieldErrors(apiError, FIELD_MESSAGES);
+                setErrors(marked);
+                if (!hasFieldErrors(marked)) {
                     setError(toResetError(apiError));
                 }
             })
