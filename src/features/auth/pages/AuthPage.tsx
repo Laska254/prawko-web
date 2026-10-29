@@ -1,4 +1,5 @@
 import {useState} from "react";
+import type {ParseKeys} from "i18next";
 import {useLocation} from "react-router";
 import {FORM_CONFIGS, type FormType} from "../formConfig.tsx";
 import {AuthForm} from "../components/AuthForm.tsx";
@@ -6,9 +7,9 @@ import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 
 type AuthNotice = "verified" | "passwordReset";
 
-const NOTICES: Record<AuthNotice, string> = {
-    verified: "Your email is verified. You can sign in now.",
-    passwordReset: "Your password has been changed. You can sign in now.",
+const NOTICES: Record<AuthNotice, ParseKeys<"auth">> = {
+    verified: "notices.verified",
+    passwordReset: "notices.passwordReset",
 };
 
 export function AuthPage() {

@@ -70,7 +70,7 @@ export function RegisterForm() {
             <Stack spacing={2}>
                 {error && <Alert severity="error">{t(errorMessage(error))}</Alert>}
                 <FormTextField
-                    label="First name"
+                    label={t("fields.firstName")}
                     type="text"
                     inputRef={firstNameRef}
                     errorText={errors.firstName && t(errors.firstName)}
@@ -78,7 +78,7 @@ export function RegisterForm() {
                     slotProps={{htmlInput: NAME_LENGTH}}
                 />
                 <FormTextField
-                    label="Last name"
+                    label={t("fields.lastName")}
                     type="text"
                     inputRef={lastNameRef}
                     errorText={errors.lastName && t(errors.lastName)}
@@ -86,7 +86,7 @@ export function RegisterForm() {
                     slotProps={{htmlInput: NAME_LENGTH}}
                 />
                 <FormTextField
-                    label="Username"
+                    label={t("fields.userName")}
                     type="text"
                     inputRef={userNameRef}
                     errorText={errors.userName && t(errors.userName)}
@@ -94,7 +94,7 @@ export function RegisterForm() {
                     slotProps={{htmlInput: NAME_LENGTH}}
                 />
                 <FormTextField
-                    label="Email"
+                    label={t("fields.email")}
                     type="email"
                     inputRef={emailRef}
                     errorText={errors.email && t(errors.email)}
@@ -102,13 +102,13 @@ export function RegisterForm() {
                     slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
                 />
                 <PasswordField
-                    label="Password"
+                    label={t("fields.password")}
                     inputRef={passwordRef}
                     errorText={errors.password && t(errors.password)}
                     required
                     slotProps={{htmlInput: {minLength: 7, maxLength: 63}}}
                 />
-                <SubmitButton loading={isSending}>Register</SubmitButton>
+                <SubmitButton loading={isSending}>{t("register.submit")}</SubmitButton>
             </Stack>
         </form>
     );

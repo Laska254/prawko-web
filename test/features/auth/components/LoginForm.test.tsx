@@ -19,6 +19,11 @@ describe("LoginForm", () => {
         renderAtRoute(<LoginForm/>, "/auth");
     });
 
+    it("hints what each field takes", () => {
+        expect(screen.getByRole("textbox", {name: "Login"})).toHaveAttribute("placeholder", "Username or email");
+        expect(screen.getByLabelText(/^Password/)).toHaveAttribute("placeholder", "Password");
+    });
+
     it("signs in and goes home", async () => {
         const requests = mockPost("/auth");
 

@@ -33,6 +33,8 @@ describe("VerifyEmailPage", () => {
         renderAtRoute(<VerifyEmailPage/>, "/auth/verify?token=token");
 
         expect(await screen.findByRole("heading", {name: "Verification failed"})).toBeInTheDocument();
+        expect(screen.getByText("This verification link is invalid or has expired. Enter your email to get a new one."))
+            .toBeInTheDocument();
         await user.type(screen.getByRole("textbox", {name: "Email"}), "jan@example.com");
         await user.click(screen.getByRole("button", {name: "Send new link"}));
 

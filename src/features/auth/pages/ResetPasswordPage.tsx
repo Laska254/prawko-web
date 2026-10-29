@@ -1,4 +1,6 @@
 import {Link, Stack, Typography} from "@mui/material";
+import type {ParseKeys} from "i18next";
+import {useTranslation} from "react-i18next";
 import {Link as RouterLink, useSearchParams} from "react-router";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 import {AuthCard} from "../components/AuthCard.tsx";
@@ -6,24 +8,22 @@ import {ResetPasswordForm} from "../components/ResetPasswordForm.tsx";
 
 type ResetLinkState = "valid" | "invalid";
 
-const CONTENT: Record<ResetLinkState, { title: string; subtitle: string }> = {
-    valid: {title: "Set new password", subtitle: "Choose a new password for your account."},
-    invalid: {
-        title: "Invalid reset link",
-        subtitle: "This reset link is invalid. Request a new one to reset your password.",
-    },
+const CONTENT: Record<ResetLinkState, { title: ParseKeys<"auth">; subtitle: ParseKeys<"auth"> }> = {
+    valid: {title: "resetPassword.title", subtitle: "resetPassword.subtitle"},
+    invalid: {title: "resetPassword.invalidTitle", subtitle: "resetPassword.invalidSubtitle"},
 };
 
 export function ResetPasswordPage() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
+    const {t} = useTranslation("auth");
     const {title, subtitle, body} = token
         ? {...CONTENT.valid, body: <ResetPasswordForm token={token}/>}
         : {
             ...CONTENT.invalid,
             body: (
                 <Link component={RouterLink} to="/auth/password/forgot" underline="hover" fontWeight={600}>
-                    Request a new link
+                    {t("resetPassword.requestNewLink")}
                 </Link>
             ),
         };
@@ -32,12 +32,12 @@ export function ResetPasswordPage() {
         <AuthPageLayout>
             <AuthCard>
                 <Stack spacing={1}>
-                    <Typography variant="h4" fontWeight={700}>{title}</Typography>
-                    <Typography color="text.secondary">{subtitle}</Typography>
+                    <Typography variant="h4" fontWeight={700}>{t(title)}</Typography>
+                    <Typography color="text.secondary">{t(subtitle)}</Typography>
                 </Stack>
                 {body}
                 <Link component={RouterLink} to="/auth" underline="hover" fontWeight={600} alignSelf="flex-start">
-                    Back to sign in
+                    {t("backToSignIn")}
                 </Link>
             </AuthCard>
         </AuthPageLayout>

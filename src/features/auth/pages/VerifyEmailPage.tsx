@@ -11,7 +11,9 @@ import {AuthCard} from "../components/AuthCard.tsx";
 import {isInvalidToken} from "../tokenErrors.tsx";
 
 function BackLink() {
-    return <Link component={RouterLink} to="/auth" underline="hover">Back to sign in</Link>;
+    const {t} = useTranslation("auth");
+
+    return <Link component={RouterLink} to="/auth" underline="hover">{t("backToSignIn")}</Link>;
 }
 
 export function VerifyEmailPage() {
@@ -42,15 +44,14 @@ export function VerifyEmailPage() {
             return (
                 <>
                     <Stack spacing={1}>
-                        <Typography variant="h4" fontWeight={700}>Verification failed</Typography>
+                        <Typography variant="h4" fontWeight={700}>{t("verifyEmail.failedTitle")}</Typography>
                         <Typography color="text.secondary">
-                            This verification link is invalid or has expired. Enter your email to get a
-                            new one.
+                            {t("verifyEmail.failedSubtitle")}
                         </Typography>
                     </Stack>
                     <EmailLinkForm
-                        submitLabel="Send new link"
-                        sentMessage="If an unverified account uses this email, a new link is on its way."
+                        submitLabel={t("resendVerification.submit")}
+                        sentMessage={t("resendVerification.sent")}
                         send={email => resendVerification({email})}
                     />
                     <BackLink/>
@@ -68,7 +69,7 @@ export function VerifyEmailPage() {
         return (
             <>
                 <CircularProgress color="secondary"/>
-                <Typography color="text.secondary">Verifying your email…</Typography>
+                <Typography color="text.secondary">{t("verifyEmail.verifying")}</Typography>
             </>
         );
     }

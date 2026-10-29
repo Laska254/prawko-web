@@ -71,28 +71,28 @@ export function LoginForm() {
                     <Alert severity="error">
                         {t(errorMessage(error, STATUS_MESSAGES))}{" "}
                         {isNotVerified(error) && (
-                            <Link component={RouterLink} to="/auth/verify/sent" state={{email}}>Send a new link.</Link>
+                            <Link component={RouterLink} to="/auth/verify/sent" state={{email}}>{t("login.sendNewLink")}</Link>
                         )}
                     </Alert>
                 )}
                 <FormTextField
-                    label="Login"
+                    label={t("fields.login")}
                     type="text"
                     inputRef={userNameRef}
                     errorText={errors.userName && t(errors.userName)}
-                    placeholder="Username or email"
+                    placeholder={t("fields.loginPlaceholder")}
                     required
                 />
                 <PasswordField
-                    label="Password"
+                    label={t("fields.password")}
                     inputRef={passwordRef}
                     errorText={errors.password && t(errors.password)}
-                    placeholder="Password"
+                    placeholder={t("fields.password")}
                     required
                 />
-                <SubmitButton loading={isSending}>Sign in</SubmitButton>
+                <SubmitButton loading={isSending}>{t("login.submit")}</SubmitButton>
                 <Link component={RouterLink} to="/auth/password/forgot" underline="hover" alignSelf="flex-start">
-                    Forgot password?
+                    {t("login.forgotPassword")}
                 </Link>
             </Stack>
         </form>

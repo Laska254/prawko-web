@@ -11,6 +11,7 @@ describe("ResetPasswordPage", () => {
         renderAtRoute(<ResetPasswordPage/>, "/auth/password/reset?token=token");
 
         expect(screen.getByRole("heading", {name: "Set new password"})).toBeInTheDocument();
+        expect(screen.getByText("Choose a new password for your account.")).toBeInTheDocument();
         await user.type(screen.getByLabelText(/^New password/), "secret1");
         await user.type(screen.getByLabelText(/^Confirm new password/), "secret1");
         await user.click(screen.getByRole("button", {name: "Set new password"}));
@@ -24,6 +25,8 @@ describe("ResetPasswordPage", () => {
         renderAtRoute(<ResetPasswordPage/>, "/auth/password/reset");
 
         expect(screen.getByRole("heading", {name: "Invalid reset link"})).toBeInTheDocument();
+        expect(screen.getByText("This reset link is invalid. Request a new one to reset your password."))
+            .toBeInTheDocument();
         await user.click(screen.getByRole("link", {name: "Request a new link"}));
 
         expect(currentLocation().pathname).toBe("/auth/password/forgot");

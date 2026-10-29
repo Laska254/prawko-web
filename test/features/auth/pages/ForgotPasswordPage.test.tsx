@@ -10,6 +10,9 @@ describe("ForgotPasswordPage", () => {
         const requests = mockPost("/auth/password/forgot");
         renderAtRoute(<ForgotPasswordPage/>, "/auth/password/forgot");
 
+        expect(screen.getByRole("heading", {name: "Forgot password?"})).toBeInTheDocument();
+        expect(screen.getByText("Enter your account email and we'll send you a link to reset your password."))
+            .toBeInTheDocument();
         await user.type(screen.getByRole("textbox", {name: "Email"}), "jan@example.com");
         await user.click(screen.getByRole("button", {name: "Send reset link"}));
 

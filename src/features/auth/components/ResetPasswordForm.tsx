@@ -77,26 +77,26 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
                     <Alert severity="error">
                         {t(errorMessage(error, STATUS_MESSAGES))}{" "}
                         {isInvalidToken(error) && (
-                            <Link component={RouterLink} to="/auth/password/forgot">Request a new one.</Link>
+                            <Link component={RouterLink} to="/auth/password/forgot">{t("resetPassword.requestNewOne")}</Link>
                         )}
                     </Alert>
                 )}
                 <PasswordField
-                    label="New password"
+                    label={t("fields.newPassword")}
                     inputRef={passwordRef}
                     errorText={errors.newPassword && t(errors.newPassword)}
-                    placeholder="At least 7 characters"
+                    placeholder={t("fields.newPasswordPlaceholder")}
                     required
                     slotProps={{htmlInput: {minLength: 7, maxLength: 63}}}
                 />
                 <PasswordField
-                    label="Confirm new password"
+                    label={t("fields.confirmPassword")}
                     inputRef={confirmPasswordRef}
-                    placeholder="Repeat new password"
+                    placeholder={t("fields.confirmPasswordPlaceholder")}
                     required
                     errorText={confirmError && t(confirmError)}
                 />
-                <SubmitButton loading={isSending}>Set new password</SubmitButton>
+                <SubmitButton loading={isSending}>{t("resetPassword.submit")}</SubmitButton>
             </Stack>
         </form>
     );

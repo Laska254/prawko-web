@@ -20,6 +20,11 @@ describe("ResetPasswordForm", () => {
         renderAtRoute(<ResetPasswordForm token="token"/>, "/auth/password/reset");
     });
 
+    it("hints what each field takes", () => {
+        expect(screen.getByLabelText(/^New password/)).toHaveAttribute("placeholder", "At least 7 characters");
+        expect(screen.getByLabelText(/^Confirm new password/)).toHaveAttribute("placeholder", "Repeat new password");
+    });
+
     it("resets the password and goes to sign in with a notice", async () => {
         const requests = mockPost("/auth/password/reset");
 

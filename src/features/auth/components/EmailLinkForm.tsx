@@ -43,11 +43,11 @@ export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: Em
             <Stack spacing={2}>
                 {alert && <Alert severity={alert.severity}>{alert.message}</Alert>}
                 <FormTextField
-                    label="Email"
+                    label={t("fields.email")}
                     type="email"
                     inputRef={emailRef}
                     defaultValue={defaultEmail}
-                    placeholder="Email"
+                    placeholder={t("fields.email")}
                     required
                     slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
                 />
