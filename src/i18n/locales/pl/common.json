@@ -1,0 +1,15 @@
+{
+  "cancel": "Anuluj",
+  "loading": "Ładowanie",
+  "tryAgain": "Spróbuj ponownie",
+  "pageLoadFailed": "Nie udało się wczytać strony. Sprawdź połączenie i spróbuj ponownie.",
+  "password": {
+    "show": "Pokaż hasło",
+    "hide": "Ukryj hasło"
+  },
+  "themeMode": {
+    "light": "Motyw: jasny",
+    "dark": "Motyw: ciemny",
+    "system": "Motyw: systemowy"
+  }
+}
