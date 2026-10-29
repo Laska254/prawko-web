@@ -147,7 +147,7 @@ Folders are created when their first file is added.
 * UI text goes in `i18n/locales/<language>/<namespace>.json`, in English (`en`) and Polish (`pl`) with the same keys
   (`common` for shared components, `errors` for `api/` messages, `app` for the shell, one per feature) and is read with
   `useTranslation`. Code outside `i18n/` holds keys, typed as `ParseKeys<"namespace">`; `api/` returns keys and the
-  caller translates them.
+  caller translates them. Dates and numbers are shown through `useFormat` (`i18n/useFormat.tsx`).
 * Types live next to the code that owns them; there is no `types/` folder.
 * A component's SCSS and imported assets sit next to it. `public/` is only for files served as-is.
 * All routes are defined in `app/`; their pages are loaded on demand with `lazyPage`.
