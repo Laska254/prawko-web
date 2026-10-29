@@ -49,9 +49,12 @@ export function toApiError(error: unknown): ApiError {
     return {kind: "http", status, problem: data};
 }
 
-// The client's message per status for each form field. The server's own texts can't be used, and they don't say
-// which rule failed, so a field has one message per status (e.g. `400` invalid, `409` taken).
-export type FieldMessages<F extends string> = Readonly<Record<F, Readonly<Partial<Record<number, string>>>>>;
+// The client's message per response status. The server's own texts can't be shown.
+export type StatusMessages = Readonly<Partial<Record<number, string>>>;
+
+// The client's messages for each form field. The server's texts don't say which rule failed, so a field has one
+// message per status (e.g. `400` invalid, `409` taken).
+export type FieldMessages<F extends string> = Readonly<Record<F, StatusMessages>>;
 
 // The client message per field of a form; fields without an error are left out.
 export type FieldErrors<F extends string> = Partial<Record<F, string>>;
@@ -74,4 +77,29 @@ export function fieldErrors<F extends string>(error: ApiError, messages: FieldMe
 // Whether any field is marked; without one, the form has to show a general error instead.
 export function hasFieldErrors(errors: FieldErrors<string>): boolean {
     return Object.keys(errors).length > 0;
+}
+
+const GENERIC_MESSAGES = {
+    network: "Can't reach the server. Check your connection and try again.",
+    timeout: "The server took too long to answer. Please try again.",
+    unexpected: "Something went wrong. Please try again later.",
+};
+
+const GENERIC_STATUS_MESSAGES: StatusMessages = {
+    429: "Too many attempts. Wait a moment and try again.",
+    503: "The service is temporarily unavailable. Please try again later.",
+};
+
+// The message for an error no form field shows: the caller's own for the status, else a generic one.
+export function errorMessage(error: ApiError, messages: StatusMessages = {}): string {
+    switch (error.kind) {
+        case "network":
+        case "timeout":
+            return GENERIC_MESSAGES[error.kind];
+        case "validation":
+        case "http":
+            return messages[error.status] ?? GENERIC_STATUS_MESSAGES[error.status] ?? GENERIC_MESSAGES.unexpected;
+        case "unknown":
+            return GENERIC_MESSAGES.unexpected;
+    }
 }
