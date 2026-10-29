@@ -1,13 +1,16 @@
 import {Stack, Typography} from "@mui/material";
+import {useTranslation} from "react-i18next";
 import {Panel} from "@/components/layout/Panel.tsx";
 import {PageEmpty} from "@/components/feedback/PageEmpty.tsx";
 
 export function ProfilePage() {
+    const {t} = useTranslation("profile");
+
     return (
         <Stack spacing={3}>
-            <Typography variant="h4" component="h1" fontWeight={700}>Profile</Typography>
+            <Typography variant="h4" component="h1" fontWeight={700}>{t("profile.title")}</Typography>
             <Panel>
-                <PageEmpty message="Your account details will show up here."/>
+                <PageEmpty message={t("profile.empty")}/>
             </Panel>
         </Stack>
     );
