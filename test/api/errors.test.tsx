@@ -6,7 +6,8 @@ import {toApiError} from "@/api/errors.tsx";
 // Sends a request answered by `resolver` and returns what it rejected with.
 async function rejectionOf(resolver: () => Response | Promise<Response>, timeout = 0): Promise<unknown> {
     server.use(http.get(apiUrl("/test"), resolver));
-    return axios.get(apiUrl("/test"), {timeout}).then(() => expect.fail("resolved"), (error: unknown) => error);
+    const config = {timeout, transitional: {clarifyTimeoutError: true}};
+    return axios.get(apiUrl("/test"), config).then(() => expect.fail("resolved"), (error: unknown) => error);
 }
 
 function problem(status: number, extra: object = {}) {
@@ -29,8 +30,10 @@ describe("toApiError", () => {
         expect(toApiError(error)).toEqual({kind: "timeout"});
     });
 
-    it("recognises a timeout reported as ETIMEDOUT", () => {
-        expect(toApiError(new AxiosError("timeout", AxiosError.ETIMEDOUT))).toEqual({kind: "timeout"});
+    it("treats an aborted request as unknown, not as a timeout", () => {
+        const error = new AxiosError("Request aborted", AxiosError.ECONNABORTED);
+
+        expect(toApiError(error)).toEqual({kind: "unknown", cause: error});
     });
 
     it.each([400, 409])("maps the details of a %i to fields", async status => {

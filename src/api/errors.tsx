@@ -21,7 +21,9 @@ export function toApiError(error: unknown): ApiError {
     if (!isAxiosError(error)) {
         return {kind: "unknown", cause: error};
     }
-    if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+    // Needs `transitional.clarifyTimeoutError`; without it axios also reports a timeout as the
+    // `ECONNABORTED` it uses for requests the browser dropped, which end up as unknown here.
+    if (error.code === "ETIMEDOUT") {
         return {kind: "timeout"};
     }
     if (error.code === "ERR_NETWORK") {
