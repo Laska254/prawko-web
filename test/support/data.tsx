@@ -10,3 +10,8 @@ export const registerDto: RegisterDto = {
     email: "jan@example.com",
     password: "secret1",
 };
+
+// The body the server sends for a `400`/`409` with errors per field.
+export function validationProblem(status: number, details: Record<string, string>) {
+    return {type: "about:blank", title: "Title", status, detail: "Detail.", instance: "/test", details};
+}
