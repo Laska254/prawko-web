@@ -2,7 +2,7 @@ import {useRef, useState} from "react";
 import {Alert, Stack} from "@mui/material";
 import {register} from "@/api/users.tsx";
 import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
-import {type FieldMessages, fieldErrors, toApiError} from "@/api/errors.tsx";
+import {type FieldErrors, type FieldMessages, fieldErrors, hasFieldErrors, toApiError} from "@/api/errors.tsx";
 import {useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
@@ -24,7 +24,7 @@ export function RegisterForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
-    const [errors, setErrors] = useState<Partial<Record<keyof RegisterDto, string>>>({});
+    const [errors, setErrors] = useState<FieldErrors<keyof RegisterDto>>({});
     const [failed, setFailed] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
@@ -46,7 +46,7 @@ export function RegisterForm() {
             .catch(error => {
                 const errors = fieldErrors(toApiError(error), FIELD_MESSAGES);
                 setErrors(errors);
-                setFailed(Object.keys(errors).length === 0);
+                setFailed(!hasFieldErrors(errors));
             })
             .finally(() => setIsSending(false));
     }

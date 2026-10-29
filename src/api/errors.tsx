@@ -53,13 +53,15 @@ export function toApiError(error: unknown): ApiError {
 // which rule failed, so a field has one message per status (e.g. `400` invalid, `409` taken).
 export type FieldMessages<F extends string> = Readonly<Record<F, Readonly<Partial<Record<number, string>>>>>;
 
-// The client messages for the fields of a validation error. Fields (or statuses) missing from `messages` are left
-// out, so an empty result means the form has to show a general error instead.
-export function fieldErrors<F extends string>(error: ApiError, messages: FieldMessages<F>): Partial<Record<F, string>> {
+// The client message per field of a form; fields without an error are left out.
+export type FieldErrors<F extends string> = Partial<Record<F, string>>;
+
+// The client messages for the fields of a validation error. Fields (or statuses) missing from `messages` are left out.
+export function fieldErrors<F extends string>(error: ApiError, messages: FieldMessages<F>): FieldErrors<F> {
     if (error.kind !== "validation") {
         return {};
     }
-    const errors: Partial<Record<F, string>> = {};
+    const errors: FieldErrors<F> = {};
     for (const field of Object.keys(messages) as F[]) {
         const message = messages[field][error.status];
         if (error.fields[field] !== undefined && message !== undefined) {
@@ -67,4 +69,9 @@ export function fieldErrors<F extends string>(error: ApiError, messages: FieldMe
         }
     }
     return errors;
+}
+
+// Whether any field is marked; without one, the form has to show a general error instead.
+export function hasFieldErrors(errors: FieldErrors<string>): boolean {
+    return Object.keys(errors).length > 0;
 }

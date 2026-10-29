@@ -1,7 +1,7 @@
 import axios, {AxiosError} from "axios";
 import {delay, http, HttpResponse} from "msw";
 import {apiUrl, server} from "@test/support/server.tsx";
-import {type ApiError, fieldErrors, toApiError} from "@/api/errors.tsx";
+import {type ApiError, fieldErrors, hasFieldErrors, toApiError} from "@/api/errors.tsx";
 
 // Sends a request answered by `resolver` and returns what it rejected with.
 async function rejectionOf(resolver: () => Response | Promise<Response>, timeout = 0): Promise<unknown> {
@@ -110,5 +110,15 @@ describe("fieldErrors", () => {
         {kind: "unknown", cause: null},
     ])("maps no fields for a $kind error", error => {
         expect(fieldErrors(error, messages)).toEqual({});
+    });
+});
+
+describe("hasFieldErrors", () => {
+    it("is true with a marked field", () => {
+        expect(hasFieldErrors({userName: "Invalid username."})).toBe(true);
+    });
+
+    it("is false without one", () => {
+        expect(hasFieldErrors({})).toBe(false);
     });
 });

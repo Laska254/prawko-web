@@ -2,7 +2,14 @@ import {useRef, useState} from "react";
 import {Alert, Link, Stack} from "@mui/material";
 import {login} from "@/api/auth.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
-import {type ApiError, type FieldMessages, fieldErrors, toApiError} from "@/api/errors.tsx";
+import {
+    type ApiError,
+    type FieldErrors,
+    type FieldMessages,
+    fieldErrors,
+    hasFieldErrors,
+    toApiError,
+} from "@/api/errors.tsx";
 import {Link as RouterLink, useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
@@ -37,7 +44,7 @@ export function LoginForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<LoginError | null>(null);
-    const [errors, setErrors] = useState<Partial<Record<keyof LoginDto, string>>>({});
+    const [errors, setErrors] = useState<FieldErrors<keyof LoginDto>>({});
     const [email, setEmail] = useState<string>();
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
@@ -56,7 +63,7 @@ export function LoginForm() {
                 const apiError = toApiError(error);
                 const errors = fieldErrors(apiError, FIELD_MESSAGES);
                 setErrors(errors);
-                if (Object.keys(errors).length === 0) {
+                if (!hasFieldErrors(errors)) {
                     setError(toLoginError(apiError));
                 }
             })

@@ -3,7 +3,14 @@ import {Alert, Link, Stack} from "@mui/material";
 import {Link as RouterLink, useNavigate} from "react-router";
 import {resetPassword} from "@/api/auth.tsx";
 import type {ResetPasswordDto} from "@/api/dto/ResetPasswordDto.tsx";
-import {type ApiError, type FieldMessages, fieldErrors, toApiError} from "@/api/errors.tsx";
+import {
+    type ApiError,
+    type FieldErrors,
+    type FieldMessages,
+    fieldErrors,
+    hasFieldErrors,
+    toApiError,
+} from "@/api/errors.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
@@ -40,7 +47,7 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
     const confirmPasswordRef = useRef<HTMLInputElement>(null);
     const [confirmError, setConfirmError] = useState<string>();
     const [error, setError] = useState<ResetError | null>(null);
-    const [errors, setErrors] = useState<Partial<Record<ResetField, string>>>({});
+    const [errors, setErrors] = useState<FieldErrors<ResetField>>({});
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
 
@@ -61,7 +68,7 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
                 const apiError = toApiError(error);
                 const errors = fieldErrors(apiError, FIELD_MESSAGES);
                 setErrors(errors);
-                if (Object.keys(errors).length === 0) {
+                if (!hasFieldErrors(errors)) {
                     setError(toResetError(apiError));
                 }
             })
