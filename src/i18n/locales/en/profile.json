@@ -1,0 +1,10 @@
+{
+  "profile": {
+    "title": "Profile",
+    "empty": "Your account details will show up here."
+  },
+  "settings": {
+    "title": "Settings",
+    "empty": "Language, theme and exam preferences will show up here."
+  }
+}

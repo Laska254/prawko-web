@@ -106,7 +106,7 @@ src/
                 pages/ (pages outside any feature: 404)
   api/          axios setup and requests, error model, query client and keys, credentials, dto/
   session/      signed-in session: context, current user (planned)
-  i18n/         translations setup, locales/<language>/<namespace>.json (planned)
+  i18n/         translations setup, locales/<language>/<namespace>.json
   components/   shared UI with no feature or server knowledge, grouped by role (form/, feedback/, layout/)
   utils/        generic helpers (planned)
   features/
@@ -144,6 +144,9 @@ Folders are created when their first file is added.
   in the feature.
 * Server data goes through TanStack Query: feature hooks read with `useQuery` and change with `useMutation`, using
   the keys from `api/queryKeys.tsx`, and a mutation invalidates the keys of the resource it changed.
+* UI text goes in `i18n/locales/en/<namespace>.json` (`common` for shared components, `errors` for `api/` messages,
+  `app` for the shell, one per feature) and is read with `useTranslation`. Code outside `i18n/` holds keys, typed as
+  `ParseKeys<"namespace">`; `api/` returns keys and the caller translates them.
 * Types live next to the code that owns them; there is no `types/` folder.
 * A component's SCSS and imported assets sit next to it. `public/` is only for files served as-is.
 * All routes are defined in `app/`; their pages are loaded on demand with `lazyPage`.

@@ -1,0 +1,20 @@
+{
+  "nav": {
+    "label": "Sections",
+    "open": "Open navigation",
+    "home": "Home",
+    "history": "History",
+    "profile": "Profile"
+  },
+  "userMenu": {
+    "label": "Account",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The page you are looking for doesn't exist or has moved.",
+    "backToHome": "Back to home",
+    "backToSignIn": "Back to sign in"
+  }
+}

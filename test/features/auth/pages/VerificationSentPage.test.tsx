@@ -10,7 +10,10 @@ describe("VerificationSentPage", () => {
         const requests = mockPost("/auth/verify/resend");
         renderAtRoute(<VerificationSentPage/>, "/auth/verify/sent", {email: "jan@example.com"});
 
-        expect(screen.getByText("jan@example.com")).toBeInTheDocument();
+        expect(screen.getByRole("heading", {name: "Check your email"})).toBeInTheDocument();
+        expect(screen.getByText(/^We sent a verification link to/)).toHaveTextContent(
+            "We sent a verification link to jan@example.com. Open it to activate your account, then sign in.");
+        expect(screen.getByText("jan@example.com").tagName).toBe("B");
         await user.click(screen.getByRole("button", {name: "Send new link"}));
 
         expect(await screen.findByText("If an unverified account uses this email, a new link is on its way."))
@@ -22,7 +25,9 @@ describe("VerificationSentPage", () => {
         const user = userEvent.setup();
         renderAtRoute(<VerificationSentPage/>, "/auth/verify/sent");
 
-        expect(screen.getByText(/We sent a verification link to your email\./)).toBeInTheDocument();
+        expect(screen.getByText(
+            "We sent a verification link to your email. Open it to activate your account, then sign in."))
+            .toBeInTheDocument();
         expect(screen.getByRole("textbox", {name: "Email"})).toHaveValue("");
 
         await user.click(screen.getByRole("link", {name: "Back to sign in"}));

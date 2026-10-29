@@ -1,6 +1,7 @@
 import {useRef, useState} from "react";
 import {Alert, type AlertColor, Stack} from "@mui/material";
-import {errorMessage, toApiError} from "@/api/errors.tsx";
+import {useTranslation} from "react-i18next";
+import {errorMessage, type GenericMessageKey, toApiError} from "@/api/errors.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
@@ -16,11 +17,13 @@ interface EmailLinkFormProps {
 export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: EmailLinkFormProps) {
     const emailRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState<SendStatus>("idle");
-    const [errorText, setErrorText] = useState("");
+    // Only shown in the `error` status, which always sets it first.
+    const [errorKey, setErrorKey] = useState<GenericMessageKey>("errors:unexpected");
+    const {t} = useTranslation(["auth", "errors"]);
 
     const statusAlerts: Partial<Record<SendStatus, {severity: AlertColor; message: string}>> = {
         sent: {severity: "success", message: sentMessage},
-        error: {severity: "error", message: errorText},
+        error: {severity: "error", message: t(errorKey)},
     };
     const alert = statusAlerts[status];
 
@@ -30,7 +33,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: Em
         send(emailRef.current!.value)
             .then(() => setStatus("sent"))
             .catch(caught => {
-                setErrorText(errorMessage(toApiError(caught)));
+                setErrorKey(errorMessage(toApiError(caught)));
                 setStatus("error");
             });
     }
@@ -40,11 +43,11 @@ export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: Em
             <Stack spacing={2}>
                 {alert && <Alert severity={alert.severity}>{alert.message}</Alert>}
                 <FormTextField
-                    label="Email"
+                    label={t("fields.email")}
                     type="email"
                     inputRef={emailRef}
                     defaultValue={defaultEmail}
-                    placeholder="Email"
+                    placeholder={t("fields.email")}
                     required
                     slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
                 />

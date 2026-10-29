@@ -49,22 +49,27 @@ export function toApiError(error: unknown): ApiError {
     return {kind: "http", status, problem: data};
 }
 
+// Messages are translation keys (`K`), which the caller translates: api/ can't import i18n/.
+
 // The client's message per response status. The server's own texts can't be shown.
-export type StatusMessages = Readonly<Partial<Record<number, string>>>;
+export type StatusMessages<K extends string = string> = Readonly<Partial<Record<number, K>>>;
 
 // The client's messages for each form field. The server's texts don't say which rule failed, so a field has one
 // message per status (e.g. `400` invalid, `409` taken).
-export type FieldMessages<F extends string> = Readonly<Record<F, StatusMessages>>;
+export type FieldMessages<F extends string, K extends string = string> = Readonly<Record<F, StatusMessages<K>>>;
 
 // The client message per field of a form; fields without an error are left out.
-export type FieldErrors<F extends string> = Partial<Record<F, string>>;
+export type FieldErrors<F extends string, K extends string = string> = Partial<Record<F, K>>;
 
 // The client messages for the fields of a validation error. Fields (or statuses) missing from `messages` are left out.
-export function fieldErrors<F extends string>(error: ApiError, messages: FieldMessages<F>): FieldErrors<F> {
+export function fieldErrors<F extends string, K extends string>(
+    error: ApiError,
+    messages: FieldMessages<F, K>,
+): FieldErrors<F, K> {
     if (error.kind !== "validation") {
         return {};
     }
-    const errors: FieldErrors<F> = {};
+    const errors: FieldErrors<F, K> = {};
     for (const field of Object.keys(messages) as F[]) {
         const message = messages[field][error.status];
         if (error.fields[field] !== undefined && message !== undefined) {
@@ -79,19 +84,26 @@ export function hasFieldErrors(errors: FieldErrors<string>): boolean {
     return Object.keys(errors).length > 0;
 }
 
-const GENERIC_MESSAGES = {
-    network: "Can't reach the server. Check your connection and try again.",
-    timeout: "The server took too long to answer. Please try again.",
-    unexpected: "Something went wrong. Please try again later.",
-};
+// Keys in the `errors` namespace; a key missing there fails the build where it's translated.
+export type GenericMessageKey =
+    `errors:${"network" | "timeout" | "unexpected" | "tooManyRequests" | "unavailable"}`;
 
-const GENERIC_STATUS_MESSAGES: StatusMessages = {
-    429: "Too many attempts. Wait a moment and try again.",
-    503: "The service is temporarily unavailable. Please try again later.",
+const GENERIC_MESSAGES = {
+    network: "errors:network",
+    timeout: "errors:timeout",
+    unexpected: "errors:unexpected",
+} as const;
+
+const GENERIC_STATUS_MESSAGES: StatusMessages<GenericMessageKey> = {
+    429: "errors:tooManyRequests",
+    503: "errors:unavailable",
 };
 
 // The message for an error no form field shows: the caller's own for the status, else a generic one.
-export function errorMessage(error: ApiError, messages: StatusMessages = {}): string {
+export function errorMessage<K extends string = never>(
+    error: ApiError,
+    messages: StatusMessages<K> = {},
+): NoInfer<K> | GenericMessageKey {
     switch (error.kind) {
         case "network":
         case "timeout":

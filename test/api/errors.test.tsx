@@ -1,5 +1,6 @@
 import axios, {AxiosError} from "axios";
 import {delay, http, HttpResponse} from "msw";
+import i18n from "i18next";
 import {problem} from "@test/support/data.tsx";
 import {apiUrl, server} from "@test/support/server.tsx";
 import {type ApiError, errorMessage, fieldErrors, hasFieldErrors, toApiError} from "@/api/errors.tsx";
@@ -123,6 +124,7 @@ describe("hasFieldErrors", () => {
 describe("errorMessage", () => {
     const unexpected = "Something went wrong. Please try again later.";
 
+    // Checked through the English texts, so each key has to exist in the `errors` namespace too.
     it.each<[string, ApiError, string]>([
         ["no connection", {kind: "network"}, "Can't reach the server. Check your connection and try again."],
         ["a timeout", {kind: "timeout"}, "The server took too long to answer. Please try again."],
@@ -132,7 +134,7 @@ describe("errorMessage", () => {
         ["a validation error", {kind: "validation", status: 400, fields: {}}, unexpected],
         ["an unknown error", {kind: "unknown", cause: null}, unexpected],
     ])("has a generic message for %s", (_, error, message) => {
-        expect(errorMessage(error)).toBe(message);
+        expect(i18n.t(errorMessage(error))).toBe(message);
     });
 
     it.each<ApiError>([
@@ -147,6 +149,6 @@ describe("errorMessage", () => {
     });
 
     it("falls back to the generic message for other statuses", () => {
-        expect(errorMessage({kind: "http", status: 500}, {401: "Wrong password."})).toBe(unexpected);
+        expect(errorMessage({kind: "http", status: 500}, {401: "Wrong password."})).toBe("errors:unexpected");
     });
 });

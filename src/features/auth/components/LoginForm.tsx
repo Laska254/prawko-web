@@ -1,5 +1,7 @@
 import {useRef, useState} from "react";
 import {Alert, Link, Stack} from "@mui/material";
+import type {ParseKeys} from "i18next";
+import {useTranslation} from "react-i18next";
 import {login} from "@/api/auth.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import {
@@ -17,14 +19,14 @@ import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
-const STATUS_MESSAGES: StatusMessages = {
-    401: "Wrong login or password.",
-    403: "Verify your email before signing in.",
+const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
+    401: "messages.wrongCredentials",
+    403: "messages.notVerified",
 };
 
-const FIELD_MESSAGES: FieldMessages<keyof LoginDto> = {
-    userName: {400: "Enter a username or email of 3 to 63 characters."},
-    password: {400: "Password must be 7 to 63 characters."},
+const FIELD_MESSAGES: FieldMessages<keyof LoginDto, ParseKeys<"auth">> = {
+    userName: {400: "messages.loginLength"},
+    password: {400: "messages.passwordLength"},
 };
 
 function isNotVerified(error: ApiError): boolean {
@@ -35,10 +37,11 @@ export function LoginForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<ApiError | null>(null);
-    const [errors, setErrors] = useState<FieldErrors<keyof LoginDto>>({});
+    const [errors, setErrors] = useState<FieldErrors<keyof LoginDto, ParseKeys<"auth">>>({});
     const [email, setEmail] = useState<string>();
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
+    const {t} = useTranslation(["auth", "errors"]);
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
@@ -66,30 +69,30 @@ export function LoginForm() {
             <Stack spacing={2}>
                 {error && (
                     <Alert severity="error">
-                        {errorMessage(error, STATUS_MESSAGES)}{" "}
+                        {t(errorMessage(error, STATUS_MESSAGES))}{" "}
                         {isNotVerified(error) && (
-                            <Link component={RouterLink} to="/auth/verify/sent" state={{email}}>Send a new link.</Link>
+                            <Link component={RouterLink} to="/auth/verify/sent" state={{email}}>{t("login.sendNewLink")}</Link>
                         )}
                     </Alert>
                 )}
                 <FormTextField
-                    label="Login"
+                    label={t("fields.login")}
                     type="text"
                     inputRef={userNameRef}
-                    errorText={errors.userName}
-                    placeholder="Username or email"
+                    errorText={errors.userName && t(errors.userName)}
+                    placeholder={t("fields.loginPlaceholder")}
                     required
                 />
                 <PasswordField
-                    label="Password"
+                    label={t("fields.password")}
                     inputRef={passwordRef}
-                    errorText={errors.password}
-                    placeholder="Password"
+                    errorText={errors.password && t(errors.password)}
+                    placeholder={t("fields.password")}
                     required
                 />
-                <SubmitButton loading={isSending}>Sign in</SubmitButton>
+                <SubmitButton loading={isSending}>{t("login.submit")}</SubmitButton>
                 <Link component={RouterLink} to="/auth/password/forgot" underline="hover" alignSelf="flex-start">
-                    Forgot password?
+                    {t("login.forgotPassword")}
                 </Link>
             </Stack>
         </form>

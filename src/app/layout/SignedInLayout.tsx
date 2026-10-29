@@ -1,6 +1,7 @@
 import {Suspense, useState} from "react";
 import {AppBar, Box, Button, Container, IconButton, Stack, Toolbar} from "@mui/material";
 import {Menu} from "@mui/icons-material";
+import {useTranslation} from "react-i18next";
 import {Link, NavLink, Outlet, useLocation} from "react-router";
 import {Logo} from "@/components/Logo.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
@@ -14,25 +15,26 @@ import {UserMenu} from "./UserMenu.tsx";
 export function SignedInLayout() {
     const [isDrawerOpen, setDrawerOpen] = useState(false);
     const {pathname} = useLocation();
+    const {t} = useTranslation("app");
 
     return (
         <>
             <AppBar position="sticky" elevation={0} enableColorOnDark
                     sx={{bgcolor: "primary.dark", color: "common.white"}}>
                 <Toolbar>
-                    <IconButton color="inherit" edge="start" aria-label="Open navigation" aria-expanded={isDrawerOpen}
+                    <IconButton color="inherit" edge="start" aria-label={t("nav.open")} aria-expanded={isDrawerOpen}
                                 onClick={() => setDrawerOpen(true)} sx={{display: {md: "none"}, mr: 1}}>
                         <Menu/>
                     </IconButton>
                     <Box component={Link} to="/" color="inherit" sx={{textDecoration: "none"}}>
                         <Logo/>
                     </Box>
-                    <Stack component="nav" aria-label="Sections" direction="row" spacing={1} ml={4}
+                    <Stack component="nav" aria-label={t("nav.label")} direction="row" spacing={1} ml={4}
                            display={{xs: "none", md: "flex"}}>
                         {NAV_ITEMS.map(({label, to, end}) => (
                             <Button key={to} component={NavLink} to={to} end={end} color="inherit"
                                     sx={{"&.active": {bgcolor: "secondary.main"}}}>
-                                {label}
+                                {t(label)}
                             </Button>
                         ))}
                     </Stack>

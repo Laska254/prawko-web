@@ -1,5 +1,6 @@
 import {useId} from "react";
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
+import {useTranslation} from "react-i18next";
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -16,6 +17,7 @@ interface ConfirmDialogProps {
 // MUI links the title to the dialog itself; the text is linked through `aria-describedby`.
 export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "secondary", loading, onConfirm, onCancel}: ConfirmDialogProps) {
     const textId = useId();
+    const {t} = useTranslation();
 
     // Escape and backdrop clicks can't close the dialog while the action is running.
     function handleClose() {
@@ -31,7 +33,7 @@ export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "
                 <DialogContentText id={textId}>{text}</DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel} disabled={loading}>Cancel</Button>
+                <Button onClick={onCancel} disabled={loading}>{t("cancel")}</Button>
                 <Button variant="contained" color={confirmColor} onClick={onConfirm} loading={loading}>{confirmLabel}</Button>
             </DialogActions>
         </Dialog>
