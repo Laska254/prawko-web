@@ -4,7 +4,7 @@ import {ResetPasswordForm} from "@/features/auth/components/ResetPasswordForm.ts
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
 import {mockNetworkError, mockPendingPost, mockPost, mockProblem} from "@test/support/server.tsx";
 
-const genericError = "Couldn't reset the password. Please try again later.";
+const genericError = "Something went wrong. Please try again later.";
 
 async function resetPassword(user: UserEvent, password = "secret1", confirmation = password) {
     await user.type(screen.getByLabelText(/^New password/), password);
@@ -115,12 +115,13 @@ describe("ResetPasswordForm", () => {
         expect(await screen.findByText(genericError)).toBeInTheDocument();
     });
 
-    it("shows a generic error without a connection", async () => {
+    it("shows the connection error without a connection", async () => {
         mockNetworkError("/auth/password/reset");
 
         await resetPassword(user);
 
-        expect(await screen.findByText(genericError)).toBeInTheDocument();
+        expect(await screen.findByText("Can't reach the server. Check your connection and try again."))
+            .toBeInTheDocument();
     });
 
     it("sends one request while sending", async () => {
