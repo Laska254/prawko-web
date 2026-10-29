@@ -2,7 +2,15 @@ import {useRef, useState} from "react";
 import {Alert, Stack} from "@mui/material";
 import {register} from "@/api/users.tsx";
 import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
-import {type FieldErrors, type FieldMessages, fieldErrors, hasFieldErrors, toApiError} from "@/api/errors.tsx";
+import {
+    type ApiError,
+    errorMessage,
+    type FieldErrors,
+    type FieldMessages,
+    fieldErrors,
+    hasFieldErrors,
+    toApiError,
+} from "@/api/errors.tsx";
 import {useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
@@ -25,7 +33,7 @@ export function RegisterForm() {
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const [errors, setErrors] = useState<FieldErrors<keyof RegisterDto>>({});
-    const [failed, setFailed] = useState(false);
+    const [error, setError] = useState<ApiError | null>(null);
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
 
@@ -33,7 +41,7 @@ export function RegisterForm() {
         e.preventDefault();
         const email = emailRef.current!.value;
         setErrors({});
-        setFailed(false);
+        setError(null);
         setIsSending(true);
         register({
             firstName: firstNameRef.current!.value,
@@ -44,9 +52,12 @@ export function RegisterForm() {
         })
             .then(() => navigate('/auth/verify/sent', {state: {email}}))
             .catch(caught => {
-                const marked = fieldErrors(toApiError(caught), FIELD_MESSAGES);
+                const apiError = toApiError(caught);
+                const marked = fieldErrors(apiError, FIELD_MESSAGES);
                 setErrors(marked);
-                setFailed(!hasFieldErrors(marked));
+                if (!hasFieldErrors(marked)) {
+                    setError(apiError);
+                }
             })
             .finally(() => setIsSending(false));
     }
@@ -54,7 +65,7 @@ export function RegisterForm() {
     return (
         <form onSubmit={onSubmit}>
             <Stack spacing={2}>
-                {failed && <Alert severity="error">Couldn't create the account. Please try again later.</Alert>}
+                {error && <Alert severity="error">{errorMessage(error)}</Alert>}
                 <FormTextField
                     label="First name"
                     type="text"
