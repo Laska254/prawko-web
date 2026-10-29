@@ -82,7 +82,7 @@ describe("RegisterForm", () => {
         expect(userName).toBeValid();
         expect(userName).not.toHaveAccessibleDescription();
         request.respond();
-        expect(await screen.findByText("Couldn't create the account. Please try again later.")).toBeInTheDocument();
+        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
     });
 
     it("hides the generic error when sending again", async () => {
@@ -103,7 +103,7 @@ describe("RegisterForm", () => {
 
         await register(user);
 
-        expect(await screen.findByText("Couldn't create the account. Please try again later.")).toBeInTheDocument();
+        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
     });
 
     it("shows a generic error on a server error", async () => {
@@ -111,15 +111,16 @@ describe("RegisterForm", () => {
 
         await register(user);
 
-        expect(await screen.findByText("Couldn't create the account. Please try again later.")).toBeInTheDocument();
+        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
     });
 
-    it("shows a generic error without a connection", async () => {
+    it("shows the connection error without a connection", async () => {
         mockNetworkError("/users");
 
         await register(user);
 
-        expect(await screen.findByText("Couldn't create the account. Please try again later.")).toBeInTheDocument();
+        expect(await screen.findByText("Can't reach the server. Check your connection and try again."))
+            .toBeInTheDocument();
     });
 
     it("sends one request while sending", async () => {

@@ -2,9 +2,15 @@ import axios, {type AxiosResponse} from "axios";
 import {clearCredentials, getCredentials} from "./credentials.tsx";
 import {parseInstants} from "./instants.tsx";
 
+// A request without an answer by then fails as a timeout instead of leaving the screen loading for good.
+const TIMEOUT_MS = 15_000;
+
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
-    headers: {'Content-Type': 'application/json'}
+    headers: {'Content-Type': 'application/json'},
+    timeout: TIMEOUT_MS,
+    // Reports a timeout as `ETIMEDOUT` instead of the `ECONNABORTED` of an aborted request, see `toApiError`.
+    transitional: {clarifyTimeoutError: true},
 });
 
 api.interceptors.request.use(config => {

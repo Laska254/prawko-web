@@ -70,7 +70,7 @@ describe("LoginForm", () => {
 
         await signIn(user);
 
-        expect(await screen.findByText("Couldn't sign in. Please try again later.")).toBeInTheDocument();
+        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
     });
 
     it("links an unverified email login to a new verification link", async () => {
@@ -97,15 +97,16 @@ describe("LoginForm", () => {
 
         await signIn(user);
 
-        expect(await screen.findByText("Couldn't sign in. Please try again later.")).toBeInTheDocument();
+        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
     });
 
-    it("shows a generic error without a connection", async () => {
+    it("shows the connection error without a connection", async () => {
         mockNetworkError("/auth");
 
         await signIn(user);
 
-        expect(await screen.findByText("Couldn't sign in. Please try again later.")).toBeInTheDocument();
+        expect(await screen.findByText("Can't reach the server. Check your connection and try again."))
+            .toBeInTheDocument();
     });
 
     it("sends one request while sending", async () => {

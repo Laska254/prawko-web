@@ -2,7 +2,7 @@ import axios, {AxiosError} from "axios";
 import {delay, http, HttpResponse} from "msw";
 import {problem} from "@test/support/data.tsx";
 import {apiUrl, server} from "@test/support/server.tsx";
-import {type ApiError, fieldErrors, hasFieldErrors, toApiError} from "@/api/errors.tsx";
+import {type ApiError, errorMessage, fieldErrors, hasFieldErrors, toApiError} from "@/api/errors.tsx";
 
 // Sends a request answered by `resolver` and returns what it rejected with.
 async function rejectionOf(resolver: () => Response | Promise<Response>, timeout = 0): Promise<unknown> {
@@ -117,5 +117,36 @@ describe("hasFieldErrors", () => {
 
     it("is false without one", () => {
         expect(hasFieldErrors({})).toBe(false);
+    });
+});
+
+describe("errorMessage", () => {
+    const unexpected = "Something went wrong. Please try again later.";
+
+    it.each<[string, ApiError, string]>([
+        ["no connection", {kind: "network"}, "Can't reach the server. Check your connection and try again."],
+        ["a timeout", {kind: "timeout"}, "The server took too long to answer. Please try again."],
+        ["a 429", {kind: "http", status: 429}, "Too many attempts. Wait a moment and try again."],
+        ["a 503", {kind: "http", status: 503}, "The service is temporarily unavailable. Please try again later."],
+        ["another status", {kind: "http", status: 500}, unexpected],
+        ["a validation error", {kind: "validation", status: 400, fields: {}}, unexpected],
+        ["an unknown error", {kind: "unknown", cause: null}, unexpected],
+    ])("has a generic message for %s", (_, error, message) => {
+        expect(errorMessage(error)).toBe(message);
+    });
+
+    it.each<ApiError>([
+        {kind: "http", status: 401},
+        {kind: "validation", status: 401, fields: {}},
+    ])("prefers the caller's message for the status of a $kind error", error => {
+        expect(errorMessage(error, {401: "Wrong password."})).toBe("Wrong password.");
+    });
+
+    it("overrides a generic status message", () => {
+        expect(errorMessage({kind: "http", status: 429}, {429: "Too many sign-ins."})).toBe("Too many sign-ins.");
+    });
+
+    it("falls back to the generic message for other statuses", () => {
+        expect(errorMessage({kind: "http", status: 500}, {401: "Wrong password."})).toBe(unexpected);
     });
 });

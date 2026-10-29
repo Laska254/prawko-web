@@ -1,5 +1,6 @@
 import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
+import {AxiosError} from "axios";
 import {EmailLinkForm} from "@/features/auth/components/EmailLinkForm.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 
@@ -33,12 +34,22 @@ describe("EmailLinkForm", () => {
         expect(screen.getByRole("textbox", {name: "Email"})).toHaveValue("jan@example.com");
     });
 
-    it("shows an error when sending fails", async () => {
+    it("shows a generic error when sending fails", async () => {
         renderForm(vi.fn().mockRejectedValue(new Error()), "jan@example.com");
 
         await user.click(screen.getByRole("button", {name: "Send link"}));
 
-        expect(await screen.findByText("Couldn't send the link. Please try again later.")).toBeInTheDocument();
+        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
+    });
+
+    it("shows the connection error without a connection", async () => {
+        const error = new AxiosError("Network Error", AxiosError.ERR_NETWORK);
+        renderForm(vi.fn().mockRejectedValue(error), "jan@example.com");
+
+        await user.click(screen.getByRole("button", {name: "Send link"}));
+
+        expect(await screen.findByText("Can't reach the server. Check your connection and try again."))
+            .toBeInTheDocument();
     });
 
     it("sends once while sending", async () => {

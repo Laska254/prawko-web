@@ -4,10 +4,12 @@ import {login} from "@/api/auth.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import {
     type ApiError,
+    errorMessage,
     type FieldErrors,
     type FieldMessages,
     fieldErrors,
     hasFieldErrors,
+    type StatusMessages,
     toApiError,
 } from "@/api/errors.tsx";
 import {Link as RouterLink, useNavigate} from "react-router";
@@ -15,17 +17,9 @@ import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
-type LoginError = "invalidCredentials" | "notVerified" | "failed";
-
-const ERROR_MESSAGES: Record<LoginError, string> = {
-    invalidCredentials: "Wrong login or password.",
-    notVerified: "Verify your email before signing in.",
-    failed: "Couldn't sign in. Please try again later.",
-};
-
-const STATUS_ERRORS: Partial<Record<number, LoginError>> = {
-    401: "invalidCredentials",
-    403: "notVerified",
+const STATUS_MESSAGES: StatusMessages = {
+    401: "Wrong login or password.",
+    403: "Verify your email before signing in.",
 };
 
 const FIELD_MESSAGES: FieldMessages<keyof LoginDto> = {
@@ -33,17 +27,14 @@ const FIELD_MESSAGES: FieldMessages<keyof LoginDto> = {
     password: {400: "Password must be 7 to 63 characters."},
 };
 
-function toLoginError(error: ApiError): LoginError {
-    if (error.kind === "http") {
-        return STATUS_ERRORS[error.status] ?? "failed";
-    }
-    return "failed";
+function isNotVerified(error: ApiError): boolean {
+    return error.kind === "http" && error.status === 403;
 }
 
 export function LoginForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
-    const [error, setError] = useState<LoginError | null>(null);
+    const [error, setError] = useState<ApiError | null>(null);
     const [errors, setErrors] = useState<FieldErrors<keyof LoginDto>>({});
     const [email, setEmail] = useState<string>();
     const [isSending, setIsSending] = useState(false);
@@ -64,7 +55,7 @@ export function LoginForm() {
                 const marked = fieldErrors(apiError, FIELD_MESSAGES);
                 setErrors(marked);
                 if (!hasFieldErrors(marked)) {
-                    setError(toLoginError(apiError));
+                    setError(apiError);
                 }
             })
             .finally(() => setIsSending(false));
@@ -75,8 +66,8 @@ export function LoginForm() {
             <Stack spacing={2}>
                 {error && (
                     <Alert severity="error">
-                        {ERROR_MESSAGES[error]}{" "}
-                        {error === "notVerified" && (
+                        {errorMessage(error, STATUS_MESSAGES)}{" "}
+                        {isNotVerified(error) && (
                             <Link component={RouterLink} to="/auth/verify/sent" state={{email}}>Send a new link.</Link>
                         )}
                     </Alert>

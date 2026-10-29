@@ -1,5 +1,6 @@
 import {useRef, useState} from "react";
 import {Alert, type AlertColor, Stack} from "@mui/material";
+import {errorMessage, toApiError} from "@/api/errors.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
@@ -15,10 +16,11 @@ interface EmailLinkFormProps {
 export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: EmailLinkFormProps) {
     const emailRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState<SendStatus>("idle");
+    const [errorText, setErrorText] = useState("");
 
     const statusAlerts: Partial<Record<SendStatus, {severity: AlertColor; message: string}>> = {
         sent: {severity: "success", message: sentMessage},
-        error: {severity: "error", message: "Couldn't send the link. Please try again later."},
+        error: {severity: "error", message: errorText},
     };
     const alert = statusAlerts[status];
 
@@ -27,7 +29,10 @@ export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: Em
         setStatus("sending");
         send(emailRef.current!.value)
             .then(() => setStatus("sent"))
-            .catch(() => setStatus("error"));
+            .catch(caught => {
+                setErrorText(errorMessage(toApiError(caught)));
+                setStatus("error");
+            });
     }
 
     return (

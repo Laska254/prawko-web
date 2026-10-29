@@ -1,3 +1,4 @@
+import {delay} from "msw";
 import {http, HttpResponse} from "msw/http";
 import {apiUrl, mockRequest, server} from "@test/support/server.tsx";
 import {credentials} from "@test/support/data.tsx";
@@ -36,6 +37,19 @@ describe("client", () => {
             }],
             page,
         });
+    });
+
+    it("gives up on a request after 15 seconds", () => {
+        expect(api.defaults.timeout).toBe(15_000);
+    });
+
+    it("reports a timeout as ETIMEDOUT", async () => {
+        server.use(http.get(apiUrl("/exams"), async () => {
+            await delay(100);
+            return new HttpResponse(null, {status: 204});
+        }));
+
+        await expect(api.get("/exams", {timeout: 10})).rejects.toMatchObject({code: "ETIMEDOUT"});
     });
 
     describe("createdId", () => {
