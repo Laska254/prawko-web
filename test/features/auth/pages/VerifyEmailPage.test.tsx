@@ -41,7 +41,7 @@ describe("VerifyEmailPage", () => {
         expect(requests).toEqual([{email: "jan@example.com"}]);
     });
 
-    it("treats a 400 without an invalid form field as an invalid link", async () => {
+    it("treats a 400 with field details as an invalid link", async () => {
         mockProblem("/auth/verify", 400, {token: "Token must not be blank."});
 
         renderAtRoute(<VerifyEmailPage/>, "/auth/verify?token=token");
