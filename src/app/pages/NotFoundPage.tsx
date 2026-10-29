@@ -7,7 +7,7 @@ import {Logo} from "@/components/Logo.tsx";
 import {Panel} from "@/components/layout/Panel.tsx";
 import {ThemeModeSwitch} from "@/components/ThemeModeSwitch.tsx";
 
-function backLink(): {to: string; label: ParseKeys<"app">} {
+function backLink(): {readonly to: string; readonly label: ParseKeys<"app">} {
     if (isAuthenticated()) {
         return {to: "/", label: "notFound.backToHome"};
     }

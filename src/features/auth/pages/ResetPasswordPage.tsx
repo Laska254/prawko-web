@@ -8,7 +8,7 @@ import {ResetPasswordForm} from "../components/ResetPasswordForm.tsx";
 
 type ResetLinkState = "valid" | "invalid";
 
-const CONTENT: Record<ResetLinkState, { title: ParseKeys<"auth">; subtitle: ParseKeys<"auth"> }> = {
+const CONTENT: Record<ResetLinkState, { readonly title: ParseKeys<"auth">; readonly subtitle: ParseKeys<"auth"> }> = {
     valid: {title: "resetPassword.title", subtitle: "resetPassword.subtitle"},
     invalid: {title: "resetPassword.invalidTitle", subtitle: "resetPassword.invalidSubtitle"},
 };
