@@ -6,6 +6,7 @@ import {Link, NavLink, Outlet, useLocation} from "react-router";
 import {Logo} from "@/components/Logo.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
 import {PageErrorBoundary} from "@/components/feedback/PageErrorBoundary.tsx";
+import {LanguageSwitch} from "@/components/LanguageSwitch.tsx";
 import {ThemeModeSwitch} from "@/components/ThemeModeSwitch.tsx";
 import {NAV_ITEMS} from "./navItems.tsx";
 import {NavDrawer} from "./NavDrawer.tsx";
@@ -39,6 +40,7 @@ export function SignedInLayout() {
                         ))}
                     </Stack>
                     <Box flexGrow={1}/>
+                    <LanguageSwitch color="inherit"/>
                     <ThemeModeSwitch color="inherit"/>
                     <UserMenu/>
                 </Toolbar>

@@ -21,6 +21,22 @@ const pl: typeof en = {common: plCommon, errors: plErrors, app: plApp, auth: plA
 
 export const resources = {en, pl};
 
+// Names in their own language, so readers find theirs whatever language the page is in.
+export const LANGUAGES = [
+    {code: "en", name: "English"},
+    {code: "pl", name: "Polski"},
+] as const;
+
+export type Language = (typeof LANGUAGES)[number]["code"];
+
+const STORAGE_KEY = "language";
+
+// Only a chosen language is stored, so until then the app keeps following the browser.
+export function chooseLanguage(language: Language) {
+    localStorage.setItem(STORAGE_KEY, language);
+    return i18n.changeLanguage(language);
+}
+
 // Typed keys: `t` only accepts keys that exist in the English resources of the namespaces it was given.
 declare module "i18next" {
     interface CustomTypeOptions {
@@ -29,19 +45,25 @@ declare module "i18next" {
     }
 }
 
+// `<html lang>` follows the texts for screen readers and the browser. Registered before `init`, which sets the first
+// language.
+i18n.on("languageChanged", language => {
+    document.documentElement.lang = language;
+});
+
 // Imported once for its side effect (main.tsx, test setup). Resources are bundled, so `initAsync: false` makes the
-// texts ready before the first render. The browser language is used when supported (`pl-PL` counts as `pl`),
-// otherwise English.
+// texts ready before the first render. The chosen language comes first, then the browser language when supported
+// (`pl-PL` counts as `pl`), otherwise English. An unsupported stored value is skipped.
 void i18n
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
         resources,
         defaultNS: "common",
-        supportedLngs: ["en", "pl"],
+        supportedLngs: LANGUAGES.map(({code}) => code),
         nonExplicitSupportedLngs: true,
         fallbackLng: "en",
-        detection: {order: ["navigator"], caches: []},
+        detection: {order: ["localStorage", "navigator"], lookupLocalStorage: STORAGE_KEY, caches: []},
         // React already escapes rendered text.
         interpolation: {escapeValue: false},
         initAsync: false,

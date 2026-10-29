@@ -1,6 +1,7 @@
 {
   "cancel": "Cancel",
   "loading": "Loading",
+  "language": "Language",
   "tryAgain": "Try again",
   "pageLoadFailed": "This page couldn't be loaded. Check your connection and try again.",
   "password": {
