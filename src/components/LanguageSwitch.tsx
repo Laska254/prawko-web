@@ -30,14 +30,16 @@ export function LanguageSwitch({color}: LanguageSwitchProps) {
             <Menu anchorEl={anchor} open={anchor !== null} onClose={close}
                   anchorOrigin={{vertical: "bottom", horizontal: "right"}}
                   transformOrigin={{vertical: "top", horizontal: "right"}}>
-                {LANGUAGES.map(({code, name}) => (
+                {LANGUAGES.map(({code, name}) => {
+                    const isCurrent = code === i18n.resolvedLanguage;
                     // Each name is read in its own language.
-                    <MenuItem key={code} lang={code} role="menuitemradio"
-                              aria-checked={code === i18n.resolvedLanguage} selected={code === i18n.resolvedLanguage}
-                              onClick={() => choose(code)}>
-                        {name}
-                    </MenuItem>
-                ))}
+                    return (
+                        <MenuItem key={code} lang={code} role="menuitemradio" aria-checked={isCurrent}
+                                  selected={isCurrent} onClick={() => choose(code)}>
+                            {name}
+                        </MenuItem>
+                    );
+                })}
             </Menu>
         </>
     );
