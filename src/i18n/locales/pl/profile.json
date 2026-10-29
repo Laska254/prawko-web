@@ -1,0 +1,10 @@
+{
+  "profile": {
+    "title": "Profil",
+    "empty": "Tutaj pojawią się dane twojego konta."
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "empty": "Tutaj pojawią się ustawienia języka, motywu i egzaminu."
+  }
+}

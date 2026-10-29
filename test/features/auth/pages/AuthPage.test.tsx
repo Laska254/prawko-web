@@ -11,6 +11,7 @@ describe("AuthPage", () => {
         expect(screen.getByText("Welcome back. Sign in to continue practicing.")).toBeInTheDocument();
         expect(screen.getByText(/^Don't have an account\?/)).toBeInTheDocument();
         expect(screen.getByRole("heading", {name: "Prepare for your driving theory exam."})).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Language"})).toBeInTheDocument();
         expect(screen.getByRole("button", {name: "Theme: system"})).toBeInTheDocument();
     });
 

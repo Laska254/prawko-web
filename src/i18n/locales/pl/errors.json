@@ -1,0 +1,7 @@
+{
+  "network": "Brak połączenia z serwerem. Sprawdź połączenie i spróbuj ponownie.",
+  "timeout": "Serwer zbyt długo nie odpowiada. Spróbuj ponownie.",
+  "unexpected": "Coś poszło nie tak. Spróbuj ponownie później.",
+  "tooManyRequests": "Zbyt wiele prób. Odczekaj chwilę i spróbuj ponownie.",
+  "unavailable": "Usługa jest chwilowo niedostępna. Spróbuj ponownie później."
+}

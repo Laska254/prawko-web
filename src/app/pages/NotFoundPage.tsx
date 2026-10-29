@@ -1,10 +1,11 @@
-import {Box, Button, Stack, Typography} from "@mui/material";
+import {Button, Stack, Typography} from "@mui/material";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import {Link} from "react-router";
 import {isAuthenticated} from "@/api/credentials.tsx";
 import {Logo} from "@/components/Logo.tsx";
 import {Panel} from "@/components/layout/Panel.tsx";
+import {LanguageSwitch} from "@/components/LanguageSwitch.tsx";
 import {ThemeModeSwitch} from "@/components/ThemeModeSwitch.tsx";
 
 function backLink(): {readonly to: string; readonly label: ParseKeys<"app">} {
@@ -22,9 +23,10 @@ export function NotFoundPage() {
     return (
         <Stack component="main" position="relative" alignItems="center" justifyContent="center" spacing={4}
                minHeight="100vh" px={2} py={6}>
-            <Box position="absolute" top={8} right={8}>
+            <Stack direction="row" position="absolute" top={8} right={8}>
+                <LanguageSwitch/>
                 <ThemeModeSwitch/>
-            </Box>
+            </Stack>
             <Logo/>
             <Panel spacing={3} alignItems="center" textAlign="center" width="100%" maxWidth={440} p={{xs: 3, sm: 5}}>
                 <Typography variant="h2" component="p" fontWeight={700} color="primary">404</Typography>

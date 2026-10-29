@@ -18,6 +18,7 @@ describe("NotFoundPage", () => {
         const main = screen.getByRole("main");
         expect(within(main).getByRole("heading", {name: "Page not found"})).toBeInTheDocument();
         expect(within(main).getByText("The page you are looking for doesn't exist or has moved.")).toBeInTheDocument();
+        expect(within(main).getByRole("button", {name: "Language"})).toBeInTheDocument();
         expect(within(main).getByRole("button", {name: "Theme: system"})).toBeInTheDocument();
 
         await userEvent.setup().click(screen.getByRole("link", {name: link}));

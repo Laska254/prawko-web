@@ -1,5 +1,6 @@
 import type {ReactNode} from "react";
 import {Box, Stack} from "@mui/material";
+import {LanguageSwitch} from "@/components/LanguageSwitch.tsx";
 import {ThemeModeSwitch} from "@/components/ThemeModeSwitch.tsx";
 import {AuthPagePanel} from "./AuthPagePanel.tsx";
 
@@ -13,9 +14,10 @@ export function AuthPageLayout({children}: AuthPageLayoutProps) {
              gridTemplateRows={{xs: "auto 1fr", md: "1fr"}} minHeight="100vh">
             <AuthPagePanel/>
             <Stack position="relative" alignItems="center" justifyContent="center" px={2} pt={{xs: 8, md: 6}} pb={{xs: 4, md: 6}}>
-                <Box position="absolute" top={8} right={8}>
+                <Stack direction="row" position="absolute" top={8} right={8}>
+                    <LanguageSwitch/>
                     <ThemeModeSwitch/>
-                </Box>
+                </Stack>
                 {children}
             </Stack>
         </Box>

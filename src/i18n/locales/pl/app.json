@@ -1,0 +1,20 @@
+{
+  "nav": {
+    "label": "Sekcje",
+    "open": "Otwórz nawigację",
+    "home": "Strona główna",
+    "history": "Historia",
+    "profile": "Profil"
+  },
+  "userMenu": {
+    "label": "Konto",
+    "profile": "Profil",
+    "settings": "Ustawienia"
+  },
+  "notFound": {
+    "title": "Nie znaleziono strony",
+    "text": "Strona, której szukasz, nie istnieje lub została przeniesiona.",
+    "backToHome": "Wróć do strony głównej",
+    "backToSignIn": "Wróć do logowania"
+  }
+}
