@@ -1,8 +1,8 @@
 import axios, {AxiosError} from "axios";
 import {delay, http, HttpResponse} from "msw";
+import i18n from "i18next";
 import {problem} from "@test/support/data.tsx";
 import {apiUrl, server} from "@test/support/server.tsx";
-import i18n from "i18next";
 import {type ApiError, errorMessage, fieldErrors, hasFieldErrors, toApiError} from "@/api/errors.tsx";
 
 // Sends a request answered by `resolver` and returns what it rejected with.
