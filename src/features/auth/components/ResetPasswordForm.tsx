@@ -30,9 +30,9 @@ const FIELD_MESSAGES: FieldMessages<ResetField> = {
     newPassword: {400: "Password must be 7 to 63 characters."},
 };
 
-// An unknown or expired token is a `400` without field errors.
+// A `400` that marks no field of the form is about the token: unknown, expired or blank.
 function toResetError(error: ApiError): ResetError {
-    if (error.kind === "http" && error.status === 400) {
+    if ((error.kind === "http" || error.kind === "validation") && error.status === 400) {
         return "invalidToken";
     }
     return "failed";

@@ -98,12 +98,13 @@ describe("ResetPasswordForm", () => {
         expect(password).toBeValid();
     });
 
-    it("shows a generic error when no field of the form is invalid", async () => {
+    it("treats a 400 without an invalid form field as an invalid link", async () => {
         mockProblem("/auth/password/reset", 400, {token: "Token is required."});
 
         await resetPassword(user);
 
-        expect(await screen.findByText(genericError)).toBeInTheDocument();
+        expect(await screen.findByText(/This reset link is invalid or has expired./)).toBeInTheDocument();
+        expect(screen.getByRole("link", {name: "Request a new one."})).toBeInTheDocument();
     });
 
     it("shows a generic error on a server error", async () => {
