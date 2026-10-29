@@ -6,6 +6,20 @@ import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 import {AuthCard} from "../components/AuthCard.tsx";
 import {EmailLinkForm} from "../components/EmailLinkForm.tsx";
 
+interface SentToProps {
+    readonly email?: string;
+}
+
+function SentTo({email}: SentToProps) {
+    const {t} = useTranslation("auth");
+
+    if (!email) {
+        return t("verificationSent.sentToYourEmail");
+    }
+    // `<email/>` is self-closing, so the email stays a React child and isn't parsed as markup.
+    return <Trans t={t} i18nKey="verificationSent.sentToEmail" components={{email: <b>{email}</b>}}/>;
+}
+
 export function VerificationSentPage() {
     const email: string | undefined = useLocation().state?.email;
     const {t} = useTranslation("auth");
@@ -16,10 +30,7 @@ export function VerificationSentPage() {
                 <Stack spacing={1}>
                     <Typography variant="h4" fontWeight={700}>{t("verificationSent.title")}</Typography>
                     <Typography color="text.secondary">
-                        {/* `<email/>` is self-closing, so the email stays a React child and isn't parsed as markup. */}
-                        {email
-                            ? <Trans t={t} i18nKey="verificationSent.sentToEmail" components={{email: <b>{email}</b>}}/>
-                            : t("verificationSent.sentToYourEmail")}
+                        <SentTo email={email}/>
                     </Typography>
                 </Stack>
                 <EmailLinkForm
