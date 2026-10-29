@@ -21,11 +21,11 @@ import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 const NAME_LENGTH = {minLength: 3, maxLength: 31};
 
 const FIELD_MESSAGES: FieldMessages<keyof RegisterDto, ParseKeys<"auth">> = {
-    firstName: {400: "errors.firstNameLength"},
-    lastName: {400: "errors.lastNameLength"},
-    userName: {400: "errors.userNameInvalid", 409: "errors.userNameTaken"},
-    email: {400: "errors.emailInvalid", 409: "errors.emailTaken"},
-    password: {400: "errors.passwordLength"},
+    firstName: {400: "messages.firstNameLength"},
+    lastName: {400: "messages.lastNameLength"},
+    userName: {400: "messages.userNameInvalid", 409: "messages.userNameTaken"},
+    email: {400: "messages.emailInvalid", 409: "messages.emailTaken"},
+    password: {400: "messages.passwordLength"},
 };
 
 export function RegisterForm() {

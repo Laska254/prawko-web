@@ -20,13 +20,13 @@ import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
-    401: "errors.wrongCredentials",
-    403: "errors.notVerified",
+    401: "messages.wrongCredentials",
+    403: "messages.notVerified",
 };
 
 const FIELD_MESSAGES: FieldMessages<keyof LoginDto, ParseKeys<"auth">> = {
-    userName: {400: "errors.loginLength"},
-    password: {400: "errors.passwordLength"},
+    userName: {400: "messages.loginLength"},
+    password: {400: "messages.passwordLength"},
 };
 
 function isNotVerified(error: ApiError): boolean {

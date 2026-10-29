@@ -20,16 +20,16 @@ import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {isInvalidToken} from "../tokenErrors.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
-    400: "errors.resetLinkInvalid",
+    400: "messages.resetLinkInvalid",
 };
 
-const MISMATCH_MESSAGE: ParseKeys<"auth"> = "errors.passwordMismatch";
+const MISMATCH_MESSAGE: ParseKeys<"auth"> = "messages.passwordMismatch";
 
 // The token comes from the link, so only the new password can be marked.
 type ResetField = Exclude<keyof ResetPasswordDto, "token">;
 
 const FIELD_MESSAGES: FieldMessages<ResetField, ParseKeys<"auth">> = {
-    newPassword: {400: "errors.passwordLength"},
+    newPassword: {400: "messages.passwordLength"},
 };
 
 interface ResetPasswordFormProps {
