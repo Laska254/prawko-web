@@ -1,6 +1,7 @@
 import {type ComponentProps, useState} from "react";
 import {IconButton, InputAdornment, type SvgIcon, type TextFieldProps} from "@mui/material";
 import {Visibility, VisibilityOff} from "@mui/icons-material";
+import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import {FormTextField} from "./FormTextField.tsx";
 
@@ -8,7 +9,7 @@ type PasswordVisibility = "hidden" | "shown";
 
 interface VisibilityConfig {
     readonly type: string;
-    readonly toggleLabel: "password.show" | "password.hide";
+    readonly toggleLabel: ParseKeys;
     readonly Icon: typeof SvgIcon;
     readonly next: PasswordVisibility;
 }
