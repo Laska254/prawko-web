@@ -1,7 +1,7 @@
 import type {JsonBodyType} from "msw";
 import {http, HttpResponse} from "msw/http";
 import {setupServer} from "msw/node";
-import type {ProblemDetail} from "@/api/dto/ProblemDetail.tsx";
+import {problem} from "./data.tsx";
 
 export const server = setupServer();
 
@@ -21,9 +21,7 @@ export function mockPost(path: string, status = 204, body?: JsonBodyType): unkno
 
 // Answers POST `path` with a ProblemDetail of `status`; `details` are the errors per field of a `400`/`409`.
 export function mockProblem(path: string, status: number, details?: Readonly<Record<string, string>>): void {
-    const problem: ProblemDetail =
-        {type: "about:blank", title: "Title", status, detail: "Detail.", instance: path, details};
-    mockPost(path, status, problem);
+    mockPost(path, status, problem(status, details));
 }
 
 // Like `mockPost`, but holds the response until `respond()` is called, to check the UI while sending.
