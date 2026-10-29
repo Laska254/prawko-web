@@ -15,8 +15,8 @@ import {
 } from "@/api/errors.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
+import {isInvalidToken} from "../tokenErrors.tsx";
 
-// A `400` that marks no field of the form is about the token: unknown, expired or blank.
 const STATUS_MESSAGES: StatusMessages = {
     400: "This reset link is invalid or has expired.",
 };
@@ -29,10 +29,6 @@ type ResetField = Exclude<keyof ResetPasswordDto, "token">;
 const FIELD_MESSAGES: FieldMessages<ResetField> = {
     newPassword: {400: "Password must be 7 to 63 characters."},
 };
-
-function isInvalidToken(error: ApiError): boolean {
-    return (error.kind === "http" || error.kind === "validation") && error.status === 400;
-}
 
 interface ResetPasswordFormProps {
     token: string;
