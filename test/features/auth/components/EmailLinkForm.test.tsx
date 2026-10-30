@@ -1,8 +1,9 @@
 import {act, screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
-import {AxiosError, type AxiosResponse} from "axios";
+import {AxiosError} from "axios";
 import {EmailLinkForm} from "@/features/auth/components/EmailLinkForm.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
+import {httpError} from "@test/support/data.tsx";
 
 function renderForm(send: (email: string) => Promise<unknown>, defaultEmail?: string) {
     return renderWithProviders(
@@ -125,9 +126,7 @@ describe("EmailLinkForm", () => {
         });
 
         it("counts down a minute after too many requests", async () => {
-            const response = {status: 429} as AxiosResponse;
-            const error = new AxiosError("Request failed", undefined, undefined, undefined, response);
-            renderForm(vi.fn().mockRejectedValue(error), "jan@example.com");
+            renderForm(vi.fn().mockRejectedValue(httpError(429)), "jan@example.com");
 
             await user.click(screen.getByRole("button", {name: "Send link"}));
 

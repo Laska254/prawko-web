@@ -1,13 +1,10 @@
-import axios, {AxiosError, type AxiosResponse} from "axios";
+import axios, {AxiosError} from "axios";
 import {MutationObserver} from "@tanstack/react-query";
 import {http, HttpResponse} from "msw/http";
 import {apiUrl, server} from "@test/support/server.tsx";
 import {createTestQueryClient} from "@test/support/render.tsx";
+import {httpError} from "@test/support/data.tsx";
 import {createQueryClient, shouldRetry} from "@/api/queryClient.tsx";
-
-function httpError(status: number) {
-    return new AxiosError("Request failed", undefined, undefined, undefined, {status} as AxiosResponse);
-}
 
 function emptyResponse(status: number) {
     return () => new HttpResponse(null, {status});
