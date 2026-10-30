@@ -1,9 +1,10 @@
 import {screen, waitFor} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {App} from "@/app/App.tsx";
-import {saveCredentials} from "@/api/credentials.tsx";
+import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
 import {credentials, user} from "@test/support/data.tsx";
 import {renderWithoutRouter} from "@test/support/render.tsx";
-import {mockRequest} from "@test/support/server.tsx";
+import {mockPost, mockRequest} from "@test/support/server.tsx";
 
 // Pages are lazy, so tests wait for the page's content before checking it.
 function renderAt(path: string) {
@@ -88,6 +89,25 @@ describe("App", () => {
             renderAt(path);
 
             expect(await screen.findByRole("heading", {name: heading})).toBeInTheDocument();
+        });
+
+        // The server ends every session of the account after a reset.
+        it("resets the password and goes to sign in signed out", async () => {
+            if (isSignedIn) {
+                signIn();
+            }
+            mockPost("/auth/password/reset");
+            const userEvents = userEvent.setup();
+            renderAt("/auth/password/reset?token=token");
+
+            await userEvents.type(await screen.findByLabelText(/^New password/), "secret1");
+            await userEvents.type(screen.getByLabelText(/^Confirm new password/), "secret1");
+            await userEvents.click(screen.getByRole("button", {name: "Set new password"}));
+
+            expect(await screen.findByText("Your password has been changed. You can sign in now.")).toBeInTheDocument();
+            expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+            expect(window.location.pathname).toBe("/auth");
+            expect(getCredentials()).toBeNull();
         });
     });
 });

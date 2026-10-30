@@ -14,6 +14,8 @@ export type SessionState =
 export type Session = SessionState & {
     // Signs in and loads the user; rejects with the failed request's error and stays signed out.
     readonly signIn: (loginDto: LoginDto) => Promise<void>;
+    // Forgets the session in this browser without telling the server, e.g. after the server revoked it.
+    readonly clearSession: () => void;
 };
 
 export const SessionContext = createContext<Session | null>(null);
