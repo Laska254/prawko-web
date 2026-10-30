@@ -26,15 +26,7 @@ export function mockProblem(path: string, status: number, details?: Readonly<Rec
 
 // Like `mockPost`, but holds the response until `respond()` is called, to check the UI while sending.
 export function mockPendingPost(path: string, status = 204) {
-    let respond!: () => void;
-    const responded = new Promise<void>(resolve => respond = resolve);
-    let requestCount = 0;
-    server.use(http.post(apiUrl(path), async () => {
-        requestCount++;
-        await responded;
-        return new HttpResponse(null, {status});
-    }));
-    return {respond, requestCount: () => requestCount};
+    return mockPendingRequest("post", path, {status});
 }
 
 export function mockNetworkError(path: string): void {
@@ -70,4 +62,21 @@ export function mockRequest(method: "get" | "post" | "patch" | "delete", path: s
         return HttpResponse.json(body, {status, headers});
     }));
     return requests;
+}
+
+// Like `mockRequest`, but holds the response until `respond()` is called, to check the UI while waiting.
+export function mockPendingRequest(method: "get" | "post" | "patch" | "delete", path: string,
+                                   {status = 200, body, headers}: MockResponse = {}) {
+    let respond!: () => void;
+    const responded = new Promise<void>(resolve => respond = resolve);
+    let requestCount = 0;
+    server.use(http[method](apiUrl(path), async () => {
+        requestCount++;
+        await responded;
+        if (body === undefined) {
+            return new HttpResponse(null, {status, headers});
+        }
+        return HttpResponse.json(body, {status, headers});
+    }));
+    return {respond, requestCount: () => requestCount};
 }
