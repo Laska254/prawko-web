@@ -4,6 +4,7 @@ import {MemoryRouter, parsePath, Route, Routes} from "react-router";
 import {QueryClientProvider} from "@tanstack/react-query";
 import {createQueryClient} from "@/api/queryClient.tsx";
 import {ThemeProviders} from "@/app/ThemeProviders.tsx";
+import {SessionProvider} from "@/session/SessionProvider.tsx";
 import {ShowLocation} from "./ShowLocation.tsx";
 
 interface RenderOptions {
@@ -19,22 +20,31 @@ export function createTestQueryClient() {
     return queryClient;
 }
 
-// Same providers as main.tsx, with a fresh query client (so no test sees another's cache) and a router starting at
-// `route` (and `state`). Returns the client too, to check its cache.
-export function renderWithProviders(ui: ReactElement, {route = "/", state}: RenderOptions = {}) {
+// Same providers as main.tsx, with a fresh query client (so no test sees another's cache). For `App`, which brings its
+// own router. Returns the client too, to check its cache.
+export function renderWithoutRouter(ui: ReactElement) {
     const queryClient = createTestQueryClient();
     const result = render(
         <StrictMode>
             <QueryClientProvider client={queryClient}>
-                <ThemeProviders>
-                    <MemoryRouter initialEntries={[{...parsePath(route), state}]}>
+                <SessionProvider>
+                    <ThemeProviders>
                         {ui}
-                    </MemoryRouter>
-                </ThemeProviders>
+                    </ThemeProviders>
+                </SessionProvider>
             </QueryClientProvider>
         </StrictMode>
     );
     return {...result, queryClient};
+}
+
+// Same providers as main.tsx, with a router starting at `route` (and `state`).
+export function renderWithProviders(ui: ReactElement, {route = "/", state}: RenderOptions = {}) {
+    return renderWithoutRouter(
+        <MemoryRouter initialEntries={[{...parsePath(route), state}]}>
+            {ui}
+        </MemoryRouter>
+    );
 }
 
 // Renders the UI at `route`; any other path shows `ShowLocation`.

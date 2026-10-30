@@ -2,8 +2,8 @@ import {screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {LoginForm} from "@/features/auth/components/LoginForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost, mockProblem} from "@test/support/server.tsx";
-import {credentials} from "@test/support/data.tsx";
+import {mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
+import {credentials, user as signedInUser} from "@test/support/data.tsx";
 
 async function signIn(user: UserEvent, login = credentials.userName, password = credentials.password) {
     await user.type(screen.getByRole("textbox", {name: "Login"}), login);
@@ -26,12 +26,23 @@ describe("LoginForm", () => {
 
     it("signs in and goes home", async () => {
         const requests = mockPost("/auth");
+        mockRequest("get", "/users/me", {body: signedInUser});
 
         await signIn(user);
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation().pathname).toBe("/");
         expect(requests).toEqual([credentials]);
+    });
+
+    it("shows a generic error and stays when the user can't be loaded", async () => {
+        mockPost("/auth");
+        mockRequest("get", "/users/me", {status: 500});
+
+        await signIn(user);
+
+        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
+        expect(screen.queryByTestId("location")).not.toBeInTheDocument();
     });
 
     it("shows wrong credentials on a 401", async () => {

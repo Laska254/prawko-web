@@ -4,6 +4,7 @@
   "language": "Język",
   "tryAgain": "Spróbuj ponownie",
   "pageLoadFailed": "Nie udało się wczytać strony. Sprawdź połączenie i spróbuj ponownie.",
+  "sessionLoadFailed": "Nie udało się wczytać Twojego konta. Sprawdź połączenie i spróbuj ponownie.",
   "password": {
     "show": "Pokaż hasło",
     "hide": "Ukryj hasło"

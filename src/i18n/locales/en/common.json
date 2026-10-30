@@ -4,6 +4,7 @@
   "language": "Language",
   "tryAgain": "Try again",
   "pageLoadFailed": "This page couldn't be loaded. Check your connection and try again.",
+  "sessionLoadFailed": "Your account couldn't be loaded. Check your connection and try again.",
   "password": {
     "show": "Show password",
     "hide": "Hide password"

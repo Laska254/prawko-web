@@ -1,6 +1,7 @@
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import type {ProblemDetail} from "@/api/dto/ProblemDetail.tsx";
 import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
+import type {UserDto} from "@/api/dto/UserDto.tsx";
 
 export const credentials: LoginDto = {userName: "jan", password: "secret"};
 
@@ -10,6 +11,18 @@ export const registerDto: RegisterDto = {
     userName: "jan",
     email: "jan@example.com",
     password: "secret1",
+};
+
+export const user: UserDto = {
+    id: 1,
+    firstName: "Jan",
+    lastName: "Kowalski",
+    userName: "jan",
+    email: "jan@example.com",
+    pendingEmail: null,
+    awaitingNewEmailConfirmation: false,
+    awaitingCurrentEmailConfirmation: false,
+    role: "USER",
 };
 
 // A ProblemDetail of `status`; `details` are the errors per field of a `400`/`409`.
