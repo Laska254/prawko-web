@@ -1,6 +1,7 @@
 import {renderHook, screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {RegisterForm} from "@/features/auth/components/RegisterForm.tsx";
+import {COOLDOWN_MS, emailLinkCooldownKey} from "@/features/auth/emailLinkCooldown.tsx";
 import {useCooldown} from "@/features/auth/hooks/useCooldown.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
 import {apiUrl, mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
@@ -40,7 +41,7 @@ describe("RegisterForm", () => {
         await register(user);
         await screen.findByTestId("location");
 
-        const {result} = renderHook(() => useCooldown(`verification.${registerDto.email}`, 60_000));
+        const {result} = renderHook(() => useCooldown(emailLinkCooldownKey("verification", registerDto.email), COOLDOWN_MS));
         expect(result.current.secondsLeft).toBe(60);
     });
 
