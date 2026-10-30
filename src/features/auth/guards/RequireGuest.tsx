@@ -1,6 +1,12 @@
 import {Navigate, Outlet} from "react-router";
-import {isAuthenticated} from "@/api/credentials.tsx";
+import {useSession} from "@/session/useSession.tsx";
 
+// Stored credentials whose user is still loading or failed to load also go home, where `RequireAuth` shows that.
 export function RequireGuest() {
-    return isAuthenticated() ? <Navigate to="/" replace/> : <Outlet/>;
+    const {status} = useSession();
+
+    if (status === "signedOut") {
+        return <Outlet/>;
+    }
+    return <Navigate to="/" replace/>;
 }

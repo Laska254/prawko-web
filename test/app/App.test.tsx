@@ -1,13 +1,20 @@
 import {screen, waitFor} from "@testing-library/react";
 import {App} from "@/app/App.tsx";
 import {saveCredentials} from "@/api/credentials.tsx";
-import {credentials} from "@test/support/data.tsx";
+import {credentials, user} from "@test/support/data.tsx";
 import {renderWithoutRouter} from "@test/support/render.tsx";
+import {mockRequest} from "@test/support/server.tsx";
 
 // Pages are lazy, so tests wait for the page's content before checking it.
 function renderAt(path: string) {
     window.history.pushState({}, "", path);
     renderWithoutRouter(<App/>);
+}
+
+// Stores credentials whose user loads.
+function signIn() {
+    saveCredentials(credentials);
+    mockRequest("get", "/users/me", {body: user});
 }
 
 describe("App", () => {
@@ -29,7 +36,7 @@ describe("App", () => {
         ["/exam", "/exam"],
         ["/auth", "/"],
     ])("sends a signed in user from %s to %s", async (path, expected) => {
-        saveCredentials(credentials);
+        signIn();
 
         renderAt(path);
 
@@ -43,12 +50,13 @@ describe("App", () => {
         ["/history", "History"],
         ["/profile", "Profile"],
         ["/settings", "Settings"],
-    ])("shows a signed in user %s in the layout", async (path, heading) => {
-        saveCredentials(credentials);
+    ])("shows a signed in user %s in the layout", async (path, name) => {
+        signIn();
 
         renderAt(path);
 
-        expect(screen.getByRole("main")).toContainElement(await screen.findByRole("heading", {name: heading}));
+        const heading = await screen.findByRole("heading", {name});
+        expect(screen.getByRole("main")).toContainElement(heading);
     });
 
     describe.each([
@@ -57,7 +65,7 @@ describe("App", () => {
     ])("for %s", (_, isSignedIn) => {
         it.each(["/unknown", "/auth/unknown", "/history/unknown"])("shows the 404 page at %s", async path => {
             if (isSignedIn) {
-                saveCredentials(credentials);
+                signIn();
             }
 
             renderAt(path);
@@ -74,7 +82,7 @@ describe("App", () => {
             ["/auth/password/reset", "Invalid reset link"],
         ])("shows %s", async (path, heading) => {
             if (isSignedIn) {
-                saveCredentials(credentials);
+                signIn();
             }
 
             renderAt(path);

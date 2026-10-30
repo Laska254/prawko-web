@@ -3,7 +3,8 @@ import {Route, Routes} from "react-router";
 import {RequireGuest} from "@/features/auth/guards/RequireGuest.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {saveCredentials} from "@/api/credentials.tsx";
-import {credentials} from "@test/support/data.tsx";
+import {credentials, user} from "@test/support/data.tsx";
+import {mockRequest} from "@test/support/server.tsx";
 
 function renderRoutes() {
     renderWithProviders(
@@ -18,14 +19,18 @@ function renderRoutes() {
 }
 
 describe("RequireGuest", () => {
-    it("shows the page without a session", () => {
+    it("shows the page when signed out", () => {
         renderRoutes();
 
         expect(screen.getByText("Auth")).toBeInTheDocument();
     });
 
-    it("redirects to / with a session", () => {
+    it.each([
+        ["while the user loads", 200],
+        ["when the user can't be loaded", 500],
+    ])("redirects to / %s", (_, status) => {
         saveCredentials(credentials);
+        mockRequest("get", "/users/me", {status, body: user});
 
         renderRoutes();
 
