@@ -1,11 +1,12 @@
 import {screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {http, HttpResponse} from "msw/http";
 import {Route, Routes} from "react-router";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {saveCredentials} from "@/api/credentials.tsx";
 import {credentials, user} from "@test/support/data.tsx";
-import {mockRequest} from "@test/support/server.tsx";
+import {apiUrl, mockRequest, server} from "@test/support/server.tsx";
 
 function renderRoutes() {
     renderWithProviders(
@@ -36,9 +37,18 @@ describe("RequireAuth", () => {
         expect(await screen.findByRole("alert"))
             .toHaveTextContent("Your account couldn't be loaded. Check your connection and try again.");
 
-        mockRequest("get", "/users/me", {body: user});
+        // Holds the user until `respond()`, to check what shows while retrying.
+        let respond!: () => void;
+        const responded = new Promise<void>(resolve => respond = resolve);
+        server.use(http.get(apiUrl("/users/me"), async () => {
+            await responded;
+            return HttpResponse.json(user);
+        }));
         await userEvent.setup().click(screen.getByRole("button", {name: "Try again"}));
 
+        expect(await screen.findByRole("progressbar", {name: "Loading"})).toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        respond();
         expect(await screen.findByText("Home")).toBeInTheDocument();
     });
 
