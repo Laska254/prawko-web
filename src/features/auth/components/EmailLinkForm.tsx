@@ -5,7 +5,7 @@ import {errorMessage, type GenericMessageKey, toApiError} from "@/api/errors.tsx
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useCooldown} from "../hooks/useCooldown.tsx";
-import {COOLDOWN, emailLinkCooldownKey} from "../emailLinkCooldown.tsx";
+import {COOLDOWN_MS, emailLinkCooldownKey} from "../emailLinkCooldown.tsx";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";
 
@@ -24,7 +24,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send, cooldownKey, defa
     const [status, setStatus] = useState<SendStatus>("idle");
     // Only shown in the `error` status, which always sets it first.
     const [errorKey, setErrorKey] = useState<GenericMessageKey>("errors:unexpected");
-    const {secondsLeft, start} = useCooldown(emailLinkCooldownKey(cooldownKey, email), COOLDOWN);
+    const {secondsLeft, start} = useCooldown(emailLinkCooldownKey(cooldownKey, email), COOLDOWN_MS);
     const {t} = useTranslation(["auth", "errors"]);
 
     const statusAlerts: Partial<Record<SendStatus, {severity: AlertColor; message: string}>> = {
