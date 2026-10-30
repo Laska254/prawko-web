@@ -61,7 +61,7 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
         setIsSending(true);
         resetPassword({token, newPassword})
             .then(() => {
-                // The server ended every session of the account, including a signed-in one here.
+                // The server ended every session of the link's account, most likely the one signed in here, so the local session goes either way.
                 clearSession();
                 navigate("/auth", {replace: true, state: {notice: "passwordReset"}});
             })
