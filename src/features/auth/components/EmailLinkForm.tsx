@@ -4,21 +4,28 @@ import {useTranslation} from "react-i18next";
 import {errorMessage, type GenericMessageKey, toApiError} from "@/api/errors.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
+import {useCooldown} from "../hooks/useCooldown.tsx";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";
+
+// The server sends a new link at most once a minute; earlier requests are skipped without an error.
+const COOLDOWN = 60_000;
 
 interface EmailLinkFormProps {
     submitLabel: string;
     sentMessage: string;
     send: (email: string) => Promise<unknown>;
+    // Forms sending the same kind of link share it, so their cooldown is the same.
+    cooldownKey: string;
     defaultEmail?: string;
 }
 
-export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: EmailLinkFormProps) {
+export function EmailLinkForm({submitLabel, sentMessage, send, cooldownKey, defaultEmail}: EmailLinkFormProps) {
     const emailRef = useRef<HTMLInputElement>(null);
     const [status, setStatus] = useState<SendStatus>("idle");
     // Only shown in the `error` status, which always sets it first.
     const [errorKey, setErrorKey] = useState<GenericMessageKey>("errors:unexpected");
+    const {secondsLeft, start} = useCooldown(cooldownKey, COOLDOWN);
     const {t} = useTranslation(["auth", "errors"]);
 
     const statusAlerts: Partial<Record<SendStatus, {severity: AlertColor; message: string}>> = {
@@ -31,11 +38,25 @@ export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: Em
         e.preventDefault();
         setStatus("sending");
         send(emailRef.current!.value)
-            .then(() => setStatus("sent"))
+            .then(() => {
+                start();
+                setStatus("sent");
+            })
             .catch(caught => {
-                setErrorKey(errorMessage(toApiError(caught)));
+                const error = toApiError(caught);
+                if (error.kind === "http" && error.status === 429) {
+                    start();
+                }
+                setErrorKey(errorMessage(error));
                 setStatus("error");
             });
+    }
+
+    function buttonLabel(): string {
+        if (secondsLeft > 0) {
+            return t("emailLink.wait", {seconds: secondsLeft});
+        }
+        return submitLabel;
     }
 
     return (
@@ -51,7 +72,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send, defaultEmail}: Em
                     required
                     slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
                 />
-                <SubmitButton loading={status === "sending"}>{submitLabel}</SubmitButton>
+                <SubmitButton loading={status === "sending"} disabled={secondsLeft > 0}>{buttonLabel()}</SubmitButton>
             </Stack>
         </form>
     );
