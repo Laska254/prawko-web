@@ -1,4 +1,4 @@
-import {screen} from "@testing-library/react";
+import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
 import {credentials, user} from "@test/support/data.tsx";
@@ -7,7 +7,7 @@ import {mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowSession} from "@test/support/ShowSession.tsx";
 
 function renderSession() {
-    renderWithProviders(<ShowSession/>);
+    return renderWithProviders(<ShowSession/>);
 }
 
 function status(): string | null {
@@ -46,10 +46,10 @@ describe("SessionProvider", () => {
         expect(status()).toBe("signedIn");
     });
 
-    it("signs in and loads the user", async () => {
+    it("signs in and loads the user once", async () => {
         const signIns = mockPost("/auth");
-        mockRequest("get", "/users/me", {body: user});
-        renderSession();
+        const requests = mockRequest("get", "/users/me", {body: user});
+        const {queryClient} = renderSession();
 
         await userEvent.setup().click(screen.getByRole("button", {name: "Sign in"}));
 
@@ -57,6 +57,9 @@ describe("SessionProvider", () => {
         expect(status()).toBe("signedIn");
         expect(signIns).toEqual([credentials]);
         expect(getCredentials()).not.toBeNull();
+        // Enabling the query after signing in mustn't fetch the user again.
+        await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+        expect(requests).toHaveLength(1);
     });
 
     it("stays signed out and loads no user when signing in fails", async () => {

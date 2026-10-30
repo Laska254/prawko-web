@@ -11,7 +11,8 @@ interface SessionProviderProps {
     children: ReactNode;
 }
 
-const currentUserQuery = queryOptions({queryKey: userKeys.me(), queryFn: getCurrentUser});
+// Fresh until a change to the user invalidates `userKeys`, so the query enabled after `signIn` doesn't fetch it again.
+const currentUserQuery = queryOptions({queryKey: userKeys.me(), queryFn: getCurrentUser, staleTime: Infinity});
 
 // Loads the user of the stored credentials on app start, so a reload keeps the session.
 export function SessionProvider({children}: SessionProviderProps) {
