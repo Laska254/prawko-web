@@ -1,14 +1,13 @@
 import {screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
-import {SessionProvider} from "@/session/SessionProvider.tsx";
 import {credentials, user} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowSession} from "@test/support/ShowSession.tsx";
 
 function renderSession() {
-    renderWithProviders(<SessionProvider><ShowSession/></SessionProvider>);
+    renderWithProviders(<ShowSession/>);
 }
 
 function status(): string | null {
