@@ -20,24 +20,31 @@ export function createTestQueryClient() {
     return queryClient;
 }
 
-// Same providers as main.tsx, with a fresh query client (so no test sees another's cache) and a router starting at
-// `route` (and `state`). Returns the client too, to check its cache.
-export function renderWithProviders(ui: ReactElement, {route = "/", state}: RenderOptions = {}) {
+// Same providers as main.tsx, with a fresh query client (so no test sees another's cache). For `App`, which brings its
+// own router. Returns the client too, to check its cache.
+export function renderWithoutRouter(ui: ReactElement) {
     const queryClient = createTestQueryClient();
     const result = render(
         <StrictMode>
             <QueryClientProvider client={queryClient}>
                 <SessionProvider>
                     <ThemeProviders>
-                        <MemoryRouter initialEntries={[{...parsePath(route), state}]}>
-                            {ui}
-                        </MemoryRouter>
+                        {ui}
                     </ThemeProviders>
                 </SessionProvider>
             </QueryClientProvider>
         </StrictMode>
     );
     return {...result, queryClient};
+}
+
+// Same providers as main.tsx, with a router starting at `route` (and `state`).
+export function renderWithProviders(ui: ReactElement, {route = "/", state}: RenderOptions = {}) {
+    return renderWithoutRouter(
+        <MemoryRouter initialEntries={[{...parsePath(route), state}]}>
+            {ui}
+        </MemoryRouter>
+    );
 }
 
 // Renders the UI at `route`; any other path shows `ShowLocation`.

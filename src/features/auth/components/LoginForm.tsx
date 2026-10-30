@@ -2,7 +2,6 @@ import {useRef, useState} from "react";
 import {Alert, Link, Stack} from "@mui/material";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
-import {login} from "@/api/auth.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import {
     type ApiError,
@@ -18,6 +17,7 @@ import {Link as RouterLink, useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
+import {useSession} from "@/session/useSession.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     401: "messages.wrongCredentials",
@@ -41,6 +41,7 @@ export function LoginForm() {
     const [email, setEmail] = useState<string>();
     const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
+    const {signIn} = useSession();
     const {t} = useTranslation(["auth", "errors"]);
 
     function onSubmit(e: React.FormEvent): void {
@@ -51,7 +52,7 @@ export function LoginForm() {
         setErrors({});
         setEmail(userName.includes("@") ? userName : undefined);
         setIsSending(true);
-        login({userName, password})
+        signIn({userName, password})
             .then(() => navigate('/'))
             .catch(caught => {
                 const apiError = toApiError(caught);
