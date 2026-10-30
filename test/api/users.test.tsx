@@ -1,6 +1,5 @@
 import {apiUrl, mockRequest} from "@test/support/server.tsx";
-import {registerDto} from "@test/support/data.tsx";
-import type {UserDto} from "@/api/dto/UserDto.tsx";
+import {registerDto, user} from "@test/support/data.tsx";
 import {
     changePassword,
     deleteAccount,
@@ -13,18 +12,6 @@ import {
 } from "@/api/users.tsx";
 
 describe("users", () => {
-    const user: UserDto = {
-        id: 1,
-        firstName: "Jan",
-        lastName: "Kowalski",
-        userName: "jan",
-        email: "jan@example.com",
-        pendingEmail: null,
-        awaitingNewEmailConfirmation: false,
-        awaitingCurrentEmailConfirmation: false,
-        role: "USER",
-    };
-
     it("registers and returns the new user's ID from Location", async () => {
         const requests = mockRequest("post", "/users",
             {status: 201, headers: {Location: apiUrl("/users/5")}});
