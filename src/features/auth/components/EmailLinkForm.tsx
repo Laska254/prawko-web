@@ -9,7 +9,7 @@ import {useCooldown} from "../hooks/useCooldown.tsx";
 type SendStatus = "idle" | "sending" | "sent" | "error";
 
 // The server sends a new link at most once a minute; earlier requests are skipped without an error.
-const COOLDOWN = 60_000;
+export const COOLDOWN = 60_000;
 
 interface EmailLinkFormProps {
     submitLabel: string;

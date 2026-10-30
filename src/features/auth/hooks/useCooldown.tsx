@@ -2,6 +2,14 @@ import {useEffect, useState} from "react";
 
 const STORAGE_PREFIX = "cooldown.";
 
+// Starts the cooldown under `key` from outside the hook, e.g. before opening the page that shows it, and returns
+// its end time.
+export function startCooldown(key: string, duration: number): number {
+    const end = Date.now() + duration;
+    sessionStorage.setItem(STORAGE_PREFIX + key, String(end));
+    return end;
+}
+
 // A wait between two actions, e.g. sending email links. The end time is kept in `sessionStorage` under `key`, so
 // a reload doesn't reset it; `secondsLeft` counts down to 0 once a second.
 export function useCooldown(key: string, duration: number) {
@@ -19,10 +27,8 @@ export function useCooldown(key: string, duration: number) {
     }, [running]);
 
     function start(): void {
-        const started = Date.now();
-        sessionStorage.setItem(storageKey, String(started + duration));
-        setEnd(started + duration);
-        setNow(started);
+        setEnd(startCooldown(key, duration));
+        setNow(Date.now());
     }
 
     return {secondsLeft, start};

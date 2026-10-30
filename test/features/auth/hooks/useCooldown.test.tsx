@@ -1,5 +1,5 @@
 import {act, renderHook} from "@testing-library/react";
-import {useCooldown} from "@/features/auth/hooks/useCooldown.tsx";
+import {startCooldown, useCooldown} from "@/features/auth/hooks/useCooldown.tsx";
 
 describe("useCooldown", () => {
     beforeEach(() => {
@@ -32,6 +32,15 @@ describe("useCooldown", () => {
         const first = renderHook(() => useCooldown("test", 60_000));
         act(() => first.result.current.start());
         first.unmount();
+        vi.advanceTimersByTime(20_000);
+
+        const {result} = renderHook(() => useCooldown("test", 60_000));
+
+        expect(result.current.secondsLeft).toBe(40);
+    });
+
+    it("shows a cooldown started before it mounts", () => {
+        startCooldown("test", 60_000);
         vi.advanceTimersByTime(20_000);
 
         const {result} = renderHook(() => useCooldown("test", 60_000));
