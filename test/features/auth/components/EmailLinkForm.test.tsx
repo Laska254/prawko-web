@@ -123,6 +123,10 @@ describe("EmailLinkForm", () => {
             await user.clear(email);
             await user.type(email, "jan@exmaple.com");
             expect(screen.getByRole("button", {name: /^Send again in/})).toBeDisabled();
+
+            await user.clear(email);
+            await user.type(email, "Jan@Exmaple.com");
+            expect(screen.getByRole("button", {name: /^Send again in/})).toBeDisabled();
         });
 
         it("counts down a minute after too many requests", async () => {
