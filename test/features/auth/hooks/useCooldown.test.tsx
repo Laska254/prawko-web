@@ -48,6 +48,16 @@ describe("useCooldown", () => {
         expect(result.current.secondsLeft).toBe(40);
     });
 
+    it("shows the cooldown of a new key", () => {
+        startCooldown("other", 60_000);
+        const {result, rerender} = renderHook(({key}) => useCooldown(key, 60_000), {initialProps: {key: "test"}});
+        expect(result.current.secondsLeft).toBe(0);
+
+        rerender({key: "other"});
+
+        expect(result.current.secondsLeft).toBe(60);
+    });
+
     it("keeps each key apart", () => {
         const first = renderHook(() => useCooldown("test", 60_000));
         act(() => first.result.current.start());

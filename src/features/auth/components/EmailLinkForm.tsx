@@ -1,31 +1,30 @@
-import {useRef, useState} from "react";
+import {useState} from "react";
 import {Alert, type AlertColor, Stack} from "@mui/material";
 import {useTranslation} from "react-i18next";
 import {errorMessage, type GenericMessageKey, toApiError} from "@/api/errors.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useCooldown} from "../hooks/useCooldown.tsx";
+import {COOLDOWN, emailLinkCooldownKey} from "../emailLinkCooldown.tsx";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";
-
-// The server sends a new link at most once a minute; earlier requests are skipped without an error.
-export const COOLDOWN = 60_000;
 
 interface EmailLinkFormProps {
     submitLabel: string;
     sentMessage: string;
     send: (email: string) => Promise<unknown>;
-    // Forms sending the same kind of link share it, so their cooldown is the same.
+    // Forms sending the same kind of link share it, so their cooldown for an email is the same.
     cooldownKey: string;
     defaultEmail?: string;
 }
 
 export function EmailLinkForm({submitLabel, sentMessage, send, cooldownKey, defaultEmail}: EmailLinkFormProps) {
-    const emailRef = useRef<HTMLInputElement>(null);
+    // The field stays uncontrolled; this follows it, so the countdown shown is the one for the email typed in.
+    const [email, setEmail] = useState(defaultEmail ?? "");
     const [status, setStatus] = useState<SendStatus>("idle");
     // Only shown in the `error` status, which always sets it first.
     const [errorKey, setErrorKey] = useState<GenericMessageKey>("errors:unexpected");
-    const {secondsLeft, start} = useCooldown(cooldownKey, COOLDOWN);
+    const {secondsLeft, start} = useCooldown(emailLinkCooldownKey(cooldownKey, email), COOLDOWN);
     const {t} = useTranslation(["auth", "errors"]);
 
     const statusAlerts: Partial<Record<SendStatus, {severity: AlertColor; message: string}>> = {
@@ -37,7 +36,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send, cooldownKey, defa
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
         setStatus("sending");
-        send(emailRef.current!.value)
+        send(email)
             .then(() => {
                 start();
                 setStatus("sent");
@@ -66,8 +65,8 @@ export function EmailLinkForm({submitLabel, sentMessage, send, cooldownKey, defa
                 <FormTextField
                     label={t("fields.email")}
                     type="email"
-                    inputRef={emailRef}
                     defaultValue={defaultEmail}
+                    onChange={e => setEmail(e.target.value)}
                     placeholder={t("fields.email")}
                     required
                     slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}

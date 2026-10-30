@@ -40,7 +40,7 @@ describe("RegisterForm", () => {
         await register(user);
         await screen.findByTestId("location");
 
-        const {result} = renderHook(() => useCooldown("verification", 60_000));
+        const {result} = renderHook(() => useCooldown(`verification.${registerDto.email}`, 60_000));
         expect(result.current.secondsLeft).toBe(60);
     });
 

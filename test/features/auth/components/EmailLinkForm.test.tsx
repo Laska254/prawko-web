@@ -109,6 +109,21 @@ describe("EmailLinkForm", () => {
             expect(screen.queryByText("Link sent.")).not.toBeInTheDocument();
         });
 
+        it("waits for each email apart", async () => {
+            renderForm(vi.fn().mockResolvedValue(undefined), "jan@exmaple.com");
+            await user.click(screen.getByRole("button", {name: "Send link"}));
+            await screen.findByRole("button", {name: "Send again in 60 s"});
+            const email = screen.getByRole("textbox", {name: "Email"});
+
+            await user.clear(email);
+            await user.type(email, "jan@example.com");
+            expect(screen.getByRole("button", {name: "Send link"})).toBeEnabled();
+
+            await user.clear(email);
+            await user.type(email, "jan@exmaple.com");
+            expect(screen.getByRole("button", {name: /^Send again in/})).toBeDisabled();
+        });
+
         it("counts down a minute after too many requests", async () => {
             const response = {status: 429} as AxiosResponse;
             const error = new AxiosError("Request failed", undefined, undefined, undefined, response);
