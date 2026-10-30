@@ -4,6 +4,7 @@ import type {DeleteAccountDto} from "./dto/DeleteAccountDto.tsx";
 import type {PagedModel} from "./dto/PagedModel.tsx";
 import type {RegisterDto} from "./dto/RegisterDto.tsx";
 import type {UserDto} from "./dto/UserDto.tsx";
+import type {UserStatsDto} from "./dto/UserStatsDto.tsx";
 import type {UserUpdateDto} from "./dto/UserUpdateDto.tsx";
 
 // Returns the new user's ID.
@@ -13,6 +14,10 @@ export async function register(registerDto: RegisterDto): Promise<number> {
 
 export async function getCurrentUser(): Promise<UserDto> {
     return (await api.get<UserDto>("/users/me")).data;
+}
+
+export async function getCurrentUserStats(): Promise<UserStatsDto> {
+    return (await api.get<UserStatsDto>("/users/me/stats")).data;
 }
 
 // Admins can't change another user's email.

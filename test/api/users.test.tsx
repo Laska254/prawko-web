@@ -1,10 +1,12 @@
 import {apiUrl, mockRequest} from "@test/support/server.tsx";
 import {registerDto, user} from "@test/support/data.tsx";
+import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import {
     changePassword,
     deleteAccount,
     deleteUser,
     getCurrentUser,
+    getCurrentUserStats,
     getUser,
     getUsers,
     register,
@@ -24,6 +26,20 @@ describe("users", () => {
         const requests = mockRequest("get", "/users/me", {body: user});
 
         expect(await getCurrentUser()).toEqual(user);
+        expect(requests).toEqual([{search: "", body: undefined}]);
+    });
+
+    it("gets the current user's exam statistics", async () => {
+        const stats: UserStatsDto = {
+            examsTaken: 3,
+            examsPassed: 1,
+            averageScore: 63.5,
+            bestScore: 72,
+            categories: [{category: "B", examsTaken: 3, examsPassed: 1, averageScore: 63.5, bestScore: 72}],
+        };
+        const requests = mockRequest("get", "/users/me/stats", {body: stats});
+
+        expect(await getCurrentUserStats()).toEqual(stats);
         expect(requests).toEqual([{search: "", body: undefined}]);
     });
 
