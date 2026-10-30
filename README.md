@@ -194,6 +194,7 @@ Prawko Server must allow CORS requests from the application URL.
 * `/users`
     + `POST` register new user
     + `GET /me` get the signed-in user
+    + `GET /me/stats` get the signed-in user's exam statistics
     + `PATCH /{id}` update a user
     + `PATCH /me/password` change password
     + `DELETE /me` delete own account
