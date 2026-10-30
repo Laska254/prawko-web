@@ -1,5 +1,6 @@
 import {apiUrl, mockRequest} from "@test/support/server.tsx";
 import {registerDto, user} from "@test/support/data.tsx";
+import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import {
     changePassword,
     deleteAccount,
@@ -29,7 +30,7 @@ describe("users", () => {
     });
 
     it("gets the current user's exam statistics", async () => {
-        const stats = {
+        const stats: UserStatsDto = {
             examsTaken: 3,
             examsPassed: 1,
             averageScore: 63.5,
