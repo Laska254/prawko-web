@@ -105,7 +105,7 @@ src/
   app/          entry (main), route tree (App), theme, layout/ (signed-in app bar and navigation),
                 pages/ (pages outside any feature: 404)
   api/          axios setup and requests, error model, query client and keys, credentials, dto/
-  session/      signed-in session: context, current user (planned)
+  session/      signed-in session: context, current user
   i18n/         translations setup, locales/<language>/<namespace>.json
   components/   shared UI with no feature or server knowledge, grouped by role (form/, feedback/, layout/)
   utils/        generic helpers (planned)
