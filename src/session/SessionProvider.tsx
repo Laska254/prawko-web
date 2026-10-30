@@ -32,6 +32,13 @@ export function SessionProvider({children}: SessionProviderProps) {
         setHasCredentials(true);
     }
 
+    function clearSession(): void {
+        clearCredentials();
+        setHasCredentials(false);
+        // The next user to sign in mustn't see this one's cached data.
+        queryClient.clear();
+    }
+
     function state(): SessionState {
         if (!hasCredentials) {
             return {status: "signedOut"};
@@ -46,5 +53,5 @@ export function SessionProvider({children}: SessionProviderProps) {
         }
     }
 
-    return <SessionContext value={{...state(), signIn}}>{children}</SessionContext>;
+    return <SessionContext value={{...state(), signIn, clearSession}}>{children}</SessionContext>;
 }

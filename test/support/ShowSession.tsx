@@ -2,7 +2,8 @@ import {useState} from "react";
 import {useSession} from "@/session/useSession.tsx";
 import {credentials} from "./data.tsx";
 
-// Shows the session's status and user, with buttons to sign in (as `credentials`) and to retry a failed session.
+// Shows the session's status and user, with buttons to sign in (as `credentials`), to retry a failed session and to
+// clear the session.
 export function ShowSession() {
     const session = useSession();
     const [isFailed, setFailed] = useState(false);
@@ -16,6 +17,7 @@ export function ShowSession() {
                 Sign in
             </button>
             {isFailed && <p>Sign in failed</p>}
+            <button type="button" onClick={session.clearSession}>Clear session</button>
         </>
     );
 }

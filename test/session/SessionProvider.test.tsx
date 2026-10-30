@@ -1,6 +1,7 @@
 import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
+import {userKeys} from "@/api/queryKeys.tsx";
 import {credentials, user} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
@@ -84,5 +85,19 @@ describe("SessionProvider", () => {
         expect(await screen.findByText("Sign in failed")).toBeInTheDocument();
         expect(status()).toBe("signedOut");
         expect(getCredentials()).toBeNull();
+    });
+
+    it("clears the session, its credentials and the cached data", async () => {
+        saveCredentials(credentials);
+        mockRequest("get", "/users/me", {body: user});
+        const {queryClient} = renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Clear session"}));
+
+        expect(status()).toBe("signedOut");
+        expect(screen.queryByText("Jan")).not.toBeInTheDocument();
+        expect(getCredentials()).toBeNull();
+        expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
     });
 });

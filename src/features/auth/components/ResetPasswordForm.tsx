@@ -17,6 +17,7 @@ import {
 } from "@/api/errors.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
+import {useSession} from "@/session/useSession.tsx";
 import {isInvalidToken} from "../tokenErrors.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
@@ -43,6 +44,7 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
     const [error, setError] = useState<ApiError | null>(null);
     const [errors, setErrors] = useState<FieldErrors<ResetField, ParseKeys<"auth">>>({});
     const [isSending, setIsSending] = useState(false);
+    const {clearSession} = useSession();
     const navigate = useNavigate();
     const {t} = useTranslation(["auth", "errors"]);
 
@@ -58,7 +60,11 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
         setConfirmError(undefined);
         setIsSending(true);
         resetPassword({token, newPassword})
-            .then(() => navigate("/auth", {replace: true, state: {notice: "passwordReset"}}))
+            .then(() => {
+                // The server ended every session of the link's account, most likely the one signed in here, so the local session goes either way.
+                clearSession();
+                navigate("/auth", {replace: true, state: {notice: "passwordReset"}});
+            })
             .catch(caught => {
                 const apiError = toApiError(caught);
                 const marked = fieldErrors(apiError, FIELD_MESSAGES);
