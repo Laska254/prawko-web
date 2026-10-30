@@ -17,6 +17,7 @@ import {useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
+import {startEmailLinkCooldown} from "../emailLinkCooldown.tsx";
 
 const NAME_LENGTH = {minLength: 3, maxLength: 31};
 
@@ -53,7 +54,11 @@ export function RegisterForm() {
             email,
             password: passwordRef.current!.value,
         })
-            .then(() => navigate('/auth/verify/sent', {state: {email}}))
+            .then(() => {
+                // Registering sends the first verification link, so the server won't send another for a while.
+                startEmailLinkCooldown("verification", email);
+                navigate('/auth/verify/sent', {state: {email}});
+            })
             .catch(caught => {
                 const apiError = toApiError(caught);
                 const marked = fieldErrors(apiError, FIELD_MESSAGES);

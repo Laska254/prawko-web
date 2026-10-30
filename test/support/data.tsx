@@ -1,3 +1,4 @@
+import {AxiosError, type AxiosResponse} from "axios";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import type {ProblemDetail} from "@/api/dto/ProblemDetail.tsx";
 import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
@@ -28,4 +29,9 @@ export const user: UserDto = {
 // A ProblemDetail of `status`; `details` are the errors per field of a `400`/`409`.
 export function problem(status: number, details?: Readonly<Record<string, string>>): ProblemDetail {
     return {type: "about:blank", title: "Title", status, detail: "Detail.", details};
+}
+
+// The error axios rejects with when the server answers `status`.
+export function httpError(status: number): AxiosError {
+    return new AxiosError("Request failed", undefined, undefined, undefined, {status} as AxiosResponse);
 }

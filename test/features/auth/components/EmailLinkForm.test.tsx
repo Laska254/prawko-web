@@ -1,12 +1,19 @@
-import {screen} from "@testing-library/react";
+import {act, screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {AxiosError} from "axios";
 import {EmailLinkForm} from "@/features/auth/components/EmailLinkForm.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
+import {httpError} from "@test/support/data.tsx";
 
 function renderForm(send: (email: string) => Promise<unknown>, defaultEmail?: string) {
-    renderWithProviders(
-        <EmailLinkForm submitLabel="Send link" sentMessage="Link sent." send={send} defaultEmail={defaultEmail}/>
+    return renderWithProviders(
+        <EmailLinkForm
+            submitLabel="Send link"
+            sentMessage="Link sent."
+            send={send}
+            cooldownKey="test"
+            defaultEmail={defaultEmail}
+        />
     );
 }
 
@@ -40,6 +47,7 @@ describe("EmailLinkForm", () => {
         await user.click(screen.getByRole("button", {name: "Send link"}));
 
         expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Send link"})).toBeEnabled();
     });
 
     it("shows the connection error without a connection", async () => {
@@ -64,5 +72,70 @@ describe("EmailLinkForm", () => {
         respond();
         expect(await screen.findByText("Link sent.")).toBeInTheDocument();
         expect(send).toHaveBeenCalledTimes(1);
+    });
+
+    describe("waiting between links", () => {
+        beforeEach(() => {
+            // `shouldAdvanceTime` keeps the clock moving for user-event and `findBy`, which wait on timers too.
+            vi.useFakeTimers({shouldAdvanceTime: true});
+            user = userEvent.setup({advanceTimers: vi.advanceTimersByTime});
+        });
+
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it("counts down a minute after sending", async () => {
+            renderForm(vi.fn().mockResolvedValue(undefined), "jan@example.com");
+
+            await user.click(screen.getByRole("button", {name: "Send link"}));
+
+            expect(await screen.findByRole("button", {name: "Send again in 60 s"})).toBeDisabled();
+            act(() => vi.advanceTimersByTime(59_000));
+            expect(screen.getByRole("button", {name: "Send again in 1 s"})).toBeDisabled();
+            act(() => vi.advanceTimersByTime(1_000));
+            expect(screen.getByRole("button", {name: "Send link"})).toBeEnabled();
+        });
+
+        it("keeps counting down after a reload", async () => {
+            const {unmount} = renderForm(vi.fn().mockResolvedValue(undefined), "jan@example.com");
+            await user.click(screen.getByRole("button", {name: "Send link"}));
+            await screen.findByText("Link sent.");
+            unmount();
+            vi.advanceTimersByTime(20_000);
+
+            renderForm(vi.fn(), "jan@example.com");
+
+            expect(screen.getByRole("button", {name: "Send again in 40 s"})).toBeDisabled();
+            expect(screen.queryByText("Link sent.")).not.toBeInTheDocument();
+        });
+
+        it("waits for each email apart", async () => {
+            renderForm(vi.fn().mockResolvedValue(undefined), "jan@exmaple.com");
+            await user.click(screen.getByRole("button", {name: "Send link"}));
+            await screen.findByRole("button", {name: "Send again in 60 s"});
+            const email = screen.getByRole("textbox", {name: "Email"});
+
+            await user.clear(email);
+            await user.type(email, "jan@example.com");
+            expect(screen.getByRole("button", {name: "Send link"})).toBeEnabled();
+
+            await user.clear(email);
+            await user.type(email, "jan@exmaple.com");
+            expect(screen.getByRole("button", {name: /^Send again in/})).toBeDisabled();
+
+            await user.clear(email);
+            await user.type(email, "Jan@Exmaple.com");
+            expect(screen.getByRole("button", {name: /^Send again in/})).toBeDisabled();
+        });
+
+        it("counts down a minute after too many requests", async () => {
+            renderForm(vi.fn().mockRejectedValue(httpError(429)), "jan@example.com");
+
+            await user.click(screen.getByRole("button", {name: "Send link"}));
+
+            expect(await screen.findByText("Too many attempts. Wait a moment and try again.")).toBeInTheDocument();
+            expect(screen.getByRole("button", {name: "Send again in 60 s"})).toBeDisabled();
+        });
     });
 });

@@ -53,6 +53,7 @@ export function VerifyEmailPage() {
                         submitLabel={t("resendVerification.submit")}
                         sentMessage={t("resendVerification.sent")}
                         send={email => resendVerification({email})}
+                        cooldownKey="verification"
                     />
                     <BackLink/>
                 </>

@@ -20,4 +20,11 @@ describe("SubmitButton", () => {
         expect(screen.getByRole("button", {name: "Save"})).toBeDisabled();
         expect(screen.getByRole("progressbar")).toBeInTheDocument();
     });
+
+    it("is disabled without a spinner when disabled", () => {
+        renderWithProviders(<SubmitButton loading={false} disabled>Save</SubmitButton>);
+
+        expect(screen.getByRole("button", {name: "Save"})).toBeDisabled();
+        expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    });
 });

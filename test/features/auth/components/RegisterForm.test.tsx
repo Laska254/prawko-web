@@ -1,6 +1,8 @@
-import {screen} from "@testing-library/react";
+import {renderHook, screen} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {RegisterForm} from "@/features/auth/components/RegisterForm.tsx";
+import {COOLDOWN_MS, emailLinkCooldownKey} from "@/features/auth/emailLinkCooldown.tsx";
+import {useCooldown} from "@/features/auth/hooks/useCooldown.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
 import {apiUrl, mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
 import {registerDto} from "@test/support/data.tsx";
@@ -31,6 +33,16 @@ describe("RegisterForm", () => {
         expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation()).toMatchObject({pathname: "/auth/verify/sent", state: {email: registerDto.email}});
         expect(requests).toEqual([{search: "", body: registerDto}]);
+    });
+
+    it("starts the verification link cooldown", async () => {
+        mockRequest("post", "/users", {status: 201, headers: {Location: apiUrl("/users/5")}});
+
+        await register(user);
+        await screen.findByTestId("location");
+
+        const {result} = renderHook(() => useCooldown(emailLinkCooldownKey("verification", registerDto.email), COOLDOWN_MS));
+        expect(result.current.secondsLeft).toBe(60);
     });
 
     it("marks the invalid fields on a 400", async () => {
