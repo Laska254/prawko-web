@@ -39,7 +39,8 @@ describe("auth", () => {
 
             await login(credentials);
 
-            expect(JSON.stringify({...localStorage, ...sessionStorage})).not.toContain("secret");
+            expect({...localStorage}).toEqual({refreshToken: "refresh-token"});
+            expect(sessionStorage).toHaveLength(0);
         });
 
         it("doesn't send the previous access token", async () => {
