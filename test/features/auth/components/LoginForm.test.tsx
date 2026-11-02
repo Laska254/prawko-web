@@ -3,7 +3,7 @@ import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {LoginForm} from "@/features/auth/components/LoginForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
 import {mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
-import {credentials, user as signedInUser} from "@test/support/data.tsx";
+import {credentials, tokens, user as signedInUser} from "@test/support/data.tsx";
 
 async function signIn(user: UserEvent, login = credentials.userName, password = credentials.password) {
     await user.type(screen.getByRole("textbox", {name: "Login"}), login);
@@ -25,7 +25,7 @@ describe("LoginForm", () => {
     });
 
     it("signs in and goes home", async () => {
-        const requests = mockPost("/auth");
+        const requests = mockPost("/auth", 200, tokens);
         mockRequest("get", "/users/me", {body: signedInUser});
 
         await signIn(user);
@@ -36,7 +36,7 @@ describe("LoginForm", () => {
     });
 
     it("shows a generic error and stays when the user can't be loaded", async () => {
-        mockPost("/auth");
+        mockPost("/auth", 200, tokens);
         mockRequest("get", "/users/me", {status: 500});
 
         await signIn(user);

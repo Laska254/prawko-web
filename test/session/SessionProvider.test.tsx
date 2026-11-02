@@ -1,8 +1,8 @@
 import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
+import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
-import {credentials, user} from "@test/support/data.tsx";
+import {credentials, tokens, user} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowSession} from "@test/support/ShowSession.tsx";
@@ -16,14 +16,14 @@ function status(): string | null {
 }
 
 describe("SessionProvider", () => {
-    it("is signed out without stored credentials", () => {
+    it("is signed out without stored tokens", () => {
         renderSession();
 
         expect(status()).toBe("signedOut");
     });
 
-    it("loads the user of the stored credentials", async () => {
-        saveCredentials(credentials);
+    it("loads the user of the stored tokens", async () => {
+        saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
 
         renderSession();
@@ -34,7 +34,7 @@ describe("SessionProvider", () => {
     });
 
     it("fails when the user can't be loaded and loads it again on retry", async () => {
-        saveCredentials(credentials);
+        saveTokens(tokens);
         mockRequest("get", "/users/me", {status: 500});
         renderSession();
         const retry = await screen.findByRole("button", {name: "Retry"});
@@ -48,7 +48,7 @@ describe("SessionProvider", () => {
     });
 
     it("signs in and loads the user once", async () => {
-        const signIns = mockPost("/auth");
+        const signIns = mockPost("/auth", 200, tokens);
         const requests = mockRequest("get", "/users/me", {body: user});
         const {queryClient} = renderSession();
 
@@ -57,7 +57,7 @@ describe("SessionProvider", () => {
         expect(await screen.findByText("Jan")).toBeInTheDocument();
         expect(status()).toBe("signedIn");
         expect(signIns).toEqual([credentials]);
-        expect(getCredentials()).not.toBeNull();
+        expect(getRefreshToken()).toBe("refresh-token");
         // Enabling the query after signing in mustn't fetch the user again.
         await waitFor(() => expect(queryClient.isFetching()).toBe(0));
         expect(requests).toHaveLength(1);
@@ -75,8 +75,8 @@ describe("SessionProvider", () => {
         expect(requests).toEqual([]);
     });
 
-    it("stays signed out and forgets the credentials when the signed in user can't be loaded", async () => {
-        mockPost("/auth");
+    it("stays signed out and forgets the tokens when the signed in user can't be loaded", async () => {
+        mockPost("/auth", 200, tokens);
         mockRequest("get", "/users/me", {status: 500});
         renderSession();
 
@@ -84,11 +84,11 @@ describe("SessionProvider", () => {
 
         expect(await screen.findByText("Sign in failed")).toBeInTheDocument();
         expect(status()).toBe("signedOut");
-        expect(getCredentials()).toBeNull();
+        expect(getRefreshToken()).toBeNull();
     });
 
-    it("clears the session, its credentials and the cached data", async () => {
-        saveCredentials(credentials);
+    it("clears the session, its tokens and the cached data", async () => {
+        saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
         const {queryClient} = renderSession();
         expect(await screen.findByText("Jan")).toBeInTheDocument();
@@ -97,7 +97,7 @@ describe("SessionProvider", () => {
 
         expect(status()).toBe("signedOut");
         expect(screen.queryByText("Jan")).not.toBeInTheDocument();
-        expect(getCredentials()).toBeNull();
+        expect(getRefreshToken()).toBeNull();
         expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
     });
 });

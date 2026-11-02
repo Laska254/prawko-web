@@ -1,8 +1,8 @@
 import {screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {NotFoundPage} from "@/app/pages/NotFoundPage.tsx";
-import {saveCredentials} from "@/api/credentials.tsx";
-import {credentials, user} from "@test/support/data.tsx";
+import {saveTokens} from "@/api/tokens.tsx";
+import {tokens, user} from "@test/support/data.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
 import {mockRequest} from "@test/support/server.tsx";
 import {ShowSession} from "@test/support/ShowSession.tsx";
@@ -22,7 +22,7 @@ describe("NotFoundPage", () => {
         ["a signed in user", true, "signedIn", "Back to home", "/"],
     ])("sends %s back", async (_, isSignedIn, status, link, expected) => {
         if (isSignedIn) {
-            saveCredentials(credentials);
+            saveTokens(tokens);
             mockRequest("get", "/users/me", {body: user});
         }
         renderPage();
@@ -40,7 +40,7 @@ describe("NotFoundPage", () => {
     });
 
     it("sends a user still loading home", () => {
-        saveCredentials(credentials);
+        saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
 
         renderPage();
@@ -50,7 +50,7 @@ describe("NotFoundPage", () => {
     });
 
     it("sends a user that can't be loaded home", async () => {
-        saveCredentials(credentials);
+        saveTokens(tokens);
         mockRequest("get", "/users/me", {status: 500});
 
         renderPage();
