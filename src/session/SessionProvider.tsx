@@ -14,7 +14,7 @@ interface SessionProviderProps {
 // Fresh until a change to the user invalidates `userKeys`, so the query enabled after `signIn` doesn't fetch it again.
 const currentUserQuery = queryOptions({queryKey: userKeys.me(), queryFn: getCurrentUser, staleTime: Infinity});
 
-// Loads the user of the stored tokens on app start, so a reload keeps the session.
+// Loads the user of the stored tokens on app start; until #81 refreshes a missing access token, a reload ends in a `401` that signs out.
 export function SessionProvider({children}: SessionProviderProps) {
     const queryClient = useQueryClient();
     // Storing the tokens doesn't trigger a render, so signing in sets this too.
