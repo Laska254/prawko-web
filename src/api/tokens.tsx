@@ -28,3 +28,21 @@ export function clearTokens(): void {
 export function isAuthenticated(): boolean {
     return getRefreshToken() !== null;
 }
+
+const sessionEndedListeners = new Set<() => void>();
+
+// Calls `listener` each time the session ends; returns a function that stops it.
+export function onSessionEnded(listener: () => void): () => void {
+    sessionEndedListeners.add(listener);
+    return () => {
+        sessionEndedListeners.delete(listener);
+    };
+}
+
+// Clears the tokens and tells the listeners, e.g. the session state, that the session is over.
+export function endSession(): void {
+    clearTokens();
+    for (const listener of sessionEndedListeners) {
+        listener();
+    }
+}

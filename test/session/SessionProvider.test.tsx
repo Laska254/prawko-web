@@ -1,10 +1,11 @@
-import {screen, waitFor} from "@testing-library/react";
+import {act, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
+import {http, HttpResponse} from "msw/http";
+import {endSession, getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
 import {credentials, tokens, user} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
-import {mockPost, mockRequest} from "@test/support/server.tsx";
+import {apiUrl, mockPost, mockRequest, server} from "@test/support/server.tsx";
 import {ShowSession} from "@test/support/ShowSession.tsx";
 
 function renderSession() {
@@ -98,6 +99,46 @@ describe("SessionProvider", () => {
         expect(status()).toBe("signedOut");
         expect(screen.queryByText("Jan")).not.toBeInTheDocument();
         expect(getRefreshToken()).toBeNull();
+        expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
+    });
+
+    it("loads the user with a new access token after a reload", async () => {
+        localStorage.setItem("refreshToken", "refresh-token");
+        const refreshes = mockPost("/auth/refresh", 200, {...tokens, accessToken: "new-access-token"});
+        server.use(http.get(apiUrl("/users/me"), ({request}) => {
+            if (request.headers.get("Authorization") === "Bearer new-access-token") {
+                return HttpResponse.json(user);
+            }
+            return new HttpResponse(null, {status: 401});
+        }));
+
+        renderSession();
+
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        expect(status()).toBe("signedIn");
+        expect(refreshes).toEqual([{refreshToken: "refresh-token"}]);
+    });
+
+    it("signs out after a reload when the refresh token is no longer valid", async () => {
+        localStorage.setItem("refreshToken", "refresh-token");
+        mockRequest("get", "/users/me", {status: 401});
+        mockPost("/auth/refresh", 401);
+
+        renderSession();
+
+        await waitFor(() => expect(status()).toBe("signedOut"));
+        expect(getRefreshToken()).toBeNull();
+    });
+
+    it("signs out and clears the cached data when the API client ends the session", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const {queryClient} = renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+
+        act(() => endSession());
+
+        expect(status()).toBe("signedOut");
         expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
     });
 });

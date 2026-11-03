@@ -2,7 +2,8 @@ import {delay} from "msw";
 import {http, HttpResponse} from "msw/http";
 import {apiUrl, mockRequest, server} from "@test/support/server.tsx";
 import {tokens} from "@test/support/data.tsx";
-import {getAccessToken, getRefreshToken, saveTokens} from "@/api/tokens.tsx";
+import {getAccessToken, getRefreshToken, onSessionEnded, saveTokens} from "@/api/tokens.tsx";
+import type {AuthTokensDto} from "@/api/dto/AuthTokensDto.tsx";
 import type {ExamSummaryDto} from "@/api/dto/ExamSummaryDto.tsx";
 import type {PagedModel} from "@/api/dto/PagedModel.tsx";
 import {api, createdId} from "@/api/client.tsx";
@@ -80,15 +81,21 @@ describe("client", () => {
     });
 
     describe("interceptors", () => {
-        const assign = vi.fn();
+        const newTokens: AuthTokensDto = {
+            accessToken: "new-access-token",
+            refreshToken: "new-refresh-token",
+            expiresIn: 900,
+        };
+        const sessionEnded = vi.fn();
+        let stopListening: () => void;
 
         beforeEach(() => {
-            vi.stubGlobal("location", {...window.location, assign});
+            stopListening = onSessionEnded(sessionEnded);
         });
 
         afterEach(() => {
-            vi.unstubAllGlobals();
-            assign.mockReset();
+            stopListening();
+            sessionEnded.mockReset();
         });
 
         function respondWith(status: number) {
@@ -98,6 +105,26 @@ describe("client", () => {
                 return new HttpResponse(null, {status});
             }));
             return () => authorization;
+        }
+
+        // Answers POST `path` with `401` unless it's sent with the new access token, after waiting for `held`;
+        // returns each request's Authorization header.
+        function requireNewToken(path: string, held = Promise.resolve()): (string | null)[] {
+            const authorizations: (string | null)[] = [];
+            server.use(http.post(apiUrl(path), async ({request}) => {
+                const authorization = request.headers.get("Authorization");
+                authorizations.push(authorization);
+                await held;
+                if (authorization === "Bearer new-access-token") {
+                    return new HttpResponse(null, {status: 204});
+                }
+                return new HttpResponse(null, {status: 401});
+            }));
+            return authorizations;
+        }
+
+        function mockRefresh() {
+            return mockRequest("post", "/auth/refresh", {body: newTokens});
         }
 
         it("sends the access token as a Bearer token", async () => {
@@ -117,41 +144,109 @@ describe("client", () => {
             expect(authorization()).toBeNull();
         });
 
-        it("clears the tokens and goes to /auth on 401", async () => {
-            respondWith(401);
+        it("refreshes the tokens on 401 and sends the request again", async () => {
+            const authorizations = requireNewToken("/auth/verify");
+            const refreshes = mockRefresh();
+            saveTokens(tokens);
+
+            await expect(api.post("/auth/verify")).resolves.toMatchObject({status: 204});
+            expect(refreshes).toEqual([{search: "", body: {refreshToken: "refresh-token"}}]);
+            expect(authorizations).toEqual(["Bearer access-token", "Bearer new-access-token"]);
+            expect(getAccessToken()).toBe("new-access-token");
+            expect(getRefreshToken()).toBe("new-refresh-token");
+        });
+
+        it("refreshes the tokens on 401 after a reload", async () => {
+            const authorizations = requireNewToken("/auth/verify");
+            const refreshes = mockRefresh();
+            localStorage.setItem("refreshToken", "refresh-token");
+
+            await expect(api.post("/auth/verify")).resolves.toMatchObject({status: 204});
+            expect(refreshes).toHaveLength(1);
+            expect(authorizations).toEqual([null, "Bearer new-access-token"]);
+        });
+
+        it("refreshes once for parallel 401s", async () => {
+            const authorizations = requireNewToken("/auth/verify");
+            const refreshes = mockRefresh();
+            saveTokens(tokens);
+
+            await Promise.all([api.post("/auth/verify"), api.post("/auth/verify"), api.post("/auth/verify")]);
+
+            expect(refreshes).toHaveLength(1);
+            expect(authorizations.filter(authorization => authorization === "Bearer new-access-token")).toHaveLength(3);
+        });
+
+        it("sends a request again without refreshing when another request's refresh got a new token", async () => {
+            let respond!: () => void;
+            const slowAuthorizations = requireNewToken("/exams", new Promise(resolve => respond = resolve));
+            requireNewToken("/auth/verify");
+            const refreshes = mockRefresh();
+            saveTokens(tokens);
+            const slowRequest = api.post("/exams");
+            await vi.waitFor(() => expect(slowAuthorizations).toHaveLength(1));
+
+            await api.post("/auth/verify");
+            respond();
+
+            await expect(slowRequest).resolves.toMatchObject({status: 204});
+            expect(refreshes).toHaveLength(1);
+            expect(slowAuthorizations).toEqual(["Bearer access-token", "Bearer new-access-token"]);
+        });
+
+        it("ends the session when the refresh token is no longer valid", async () => {
+            const authorizations = requireNewToken("/auth/verify");
+            mockRequest("post", "/auth/refresh", {status: 401});
             saveTokens(tokens);
 
             await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 401}});
+            expect(authorizations).toHaveLength(1);
             expect(getAccessToken()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(assign).toHaveBeenCalledWith("/auth");
+            expect(sessionEnded).toHaveBeenCalledOnce();
         });
 
-        it("clears the refresh token and goes to /auth on 401 after a reload", async () => {
+        it("keeps the session when the refresh gets no answer", async () => {
+            requireNewToken("/auth/verify");
+            server.use(http.post(apiUrl("/auth/refresh"), () => HttpResponse.error()));
+            saveTokens(tokens);
+
+            await expect(api.post("/auth/verify")).rejects.toMatchObject({code: "ERR_NETWORK"});
+            expect(getAccessToken()).toBe("access-token");
+            expect(getRefreshToken()).toBe("refresh-token");
+            expect(sessionEnded).not.toHaveBeenCalled();
+        });
+
+        it("ends the session when the new access token gets a 401 too", async () => {
             const authorization = respondWith(401);
-            localStorage.setItem("refreshToken", "refresh-token");
+            const refreshes = mockRefresh();
+            saveTokens(tokens);
 
             await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 401}});
-            expect(authorization()).toBeNull();
+            expect(refreshes).toHaveLength(1);
+            expect(authorization()).toBe("Bearer new-access-token");
             expect(getRefreshToken()).toBeNull();
-            expect(assign).toHaveBeenCalledWith("/auth");
+            expect(sessionEnded).toHaveBeenCalledOnce();
         });
 
-        it("doesn't redirect on 401 without tokens", async () => {
+        it("doesn't refresh on 401 without tokens", async () => {
             respondWith(401);
+            const refreshes = mockRefresh();
 
             await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 401}});
-            expect(assign).not.toHaveBeenCalled();
+            expect(refreshes).toEqual([]);
+            expect(sessionEnded).not.toHaveBeenCalled();
         });
 
         it("keeps the tokens on other errors", async () => {
             respondWith(500);
+            const refreshes = mockRefresh();
             saveTokens(tokens);
 
             await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 500}});
+            expect(refreshes).toEqual([]);
             expect(getAccessToken()).toBe("access-token");
             expect(getRefreshToken()).toBe("refresh-token");
-            expect(assign).not.toHaveBeenCalled();
         });
     });
 });

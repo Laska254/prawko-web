@@ -1,7 +1,7 @@
-import {type ReactNode, useState} from "react";
+import {type ReactNode, useEffect, useState} from "react";
 import {queryOptions, useQuery, useQueryClient} from "@tanstack/react-query";
 import {login} from "@/api/auth.tsx";
-import {clearTokens, isAuthenticated} from "@/api/tokens.tsx";
+import {clearTokens, endSession, isAuthenticated, onSessionEnded} from "@/api/tokens.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
 import {getCurrentUser} from "@/api/users.tsx";
@@ -14,12 +14,20 @@ interface SessionProviderProps {
 // Fresh until a change to the user invalidates `userKeys`, so the query enabled after `signIn` doesn't fetch it again.
 const currentUserQuery = queryOptions({queryKey: userKeys.me(), queryFn: getCurrentUser, staleTime: Infinity});
 
-// Loads the user of the stored tokens on app start; until #81 refreshes a missing access token, a reload ends in a `401` that signs out.
+// Loads the user of the stored tokens on app start.
 export function SessionProvider({children}: SessionProviderProps) {
     const queryClient = useQueryClient();
     // Storing the tokens doesn't trigger a render, so signing in sets this too.
     const [hasTokens, setHasTokens] = useState(isAuthenticated);
     const user = useQuery({...currentUserQuery, enabled: hasTokens});
+
+    // Signs out when the session ends, through `clearSession` or in the API client once the refresh token is no longer
+    // valid.
+    useEffect(() => onSessionEnded(() => {
+        setHasTokens(false);
+        // The next user to sign in mustn't see this one's cached data.
+        queryClient.clear();
+    }), [queryClient]);
 
     async function signIn(loginDto: LoginDto): Promise<void> {
         await login(loginDto);
@@ -30,13 +38,6 @@ export function SessionProvider({children}: SessionProviderProps) {
             throw error;
         }
         setHasTokens(true);
-    }
-
-    function clearSession(): void {
-        clearTokens();
-        setHasTokens(false);
-        // The next user to sign in mustn't see this one's cached data.
-        queryClient.clear();
     }
 
     function state(): SessionState {
@@ -53,5 +54,5 @@ export function SessionProvider({children}: SessionProviderProps) {
         }
     }
 
-    return <SessionContext value={{...state(), signIn, clearSession}}>{children}</SessionContext>;
+    return <SessionContext value={{...state(), signIn, clearSession: endSession}}>{children}</SessionContext>;
 }
