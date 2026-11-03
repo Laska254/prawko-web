@@ -1,22 +1,98 @@
-import axios, {type AxiosResponse} from "axios";
-import {clearTokens, getAccessToken, isAuthenticated} from "./tokens.tsx";
+import axios, {type AxiosError, type AxiosResponse, type CreateAxiosDefaults} from "axios";
+import {endSession, getAccessToken, getRefreshToken, isAuthenticated, saveTokens} from "./tokens.tsx";
 import {parseInstants} from "./instants.tsx";
+import type {AuthTokensDto} from "./dto/AuthTokensDto.tsx";
+import type {RefreshTokenDto} from "./dto/RefreshTokenDto.tsx";
+
+declare module "axios" {
+    // biome-ignore lint/suspicious/noExplicitAny: merging the interface needs axios' own type parameters.
+    interface AxiosRequestConfig<D = any, P = any> {
+        // Set on a request sent again with a new access token, so a second `401` ends the session.
+        readonly retried?: boolean;
+    }
+}
 
 // A request without an answer by then fails as a timeout instead of leaving the screen loading for good.
 const TIMEOUT_MS = 15_000;
 
-export const api = axios.create({
+const defaults: CreateAxiosDefaults = {
     baseURL: import.meta.env.VITE_API_URL,
     headers: {'Content-Type': 'application/json'},
     timeout: TIMEOUT_MS,
     // Reports a timeout as `ETIMEDOUT` instead of the `ECONNABORTED` of an aborted request, see `toApiError`.
     transitional: {clarifyTimeoutError: true},
-});
+};
 
-api.interceptors.request.use(config => {
+export const api = axios.create(defaults);
+
+// Sends the refresh without `api`'s interceptors: its `401` means the refresh token is no longer valid.
+const refreshApi = axios.create(defaults);
+
+function authorization(): string | undefined {
     const accessToken = getAccessToken();
     if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
+        return `Bearer ${accessToken}`;
+    }
+}
+
+// Also the name other tabs of this site take the lock under.
+const REFRESH_LOCK = "prawko-token-refresh";
+
+// Runs `task` once no other tab runs one under the lock. Browsers have Web Locks only on HTTPS and localhost;
+// without them it runs at once.
+function withRefreshLock(task: () => Promise<void>): Promise<void> {
+    if (!navigator.locks) {
+        return task();
+    }
+    // `void`: the DOM types don't unwrap the promise `task` returns, which the lock waits for.
+    return navigator.locks.request<void>(REFRESH_LOCK, task);
+}
+
+// Reads the refresh token only once holding the lock, as another tab may have swapped it, or ended the session,
+// while this one waited. Rejects with the request's error; a `401` ends the session, any other error keeps it for a
+// later try.
+async function sendRefresh(): Promise<void> {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+        endSession();
+        return;
+    }
+    const body: RefreshTokenDto = {refreshToken};
+    const response = await refreshApi.post<AuthTokensDto>("/auth/refresh", body).catch((error: AxiosError) => {
+        if (error.response?.status === 401) {
+            endSession();
+        }
+        throw error;
+    });
+    saveTokens(response.data);
+}
+
+let refreshing: Promise<void> | null = null;
+
+// Swaps the refresh token for a new pair. The server accepts each refresh token once, so parallel calls share one
+// request and tabs refresh one at a time, each with the token the previous one stored.
+function refreshTokens(): Promise<void> {
+    refreshing ??= withRefreshLock(sendRefresh).finally(() => {
+        refreshing = null;
+    });
+    return refreshing;
+}
+
+api.interceptors.request.use(async config => {
+    // After a reload only the refresh token is left: get an access token first instead of waiting for a `401`.
+    if (!getAccessToken() && isAuthenticated()) {
+        try {
+            await refreshTokens();
+        } catch (error) {
+            // A session that ended sends the request without a token, as it may not need one (e.g. verifying an email).
+            if (isAuthenticated()) {
+                throw error;
+            }
+        }
+    }
+    const header = authorization();
+    if (header) {
+        config.headers.Authorization = header;
     }
     return config;
 });
@@ -24,12 +100,21 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(response => {
     response.data = parseInstants(response.data);
     return response;
-}, error => {
-    if (error.response?.status === 401 && isAuthenticated()) {
-        clearTokens();
-        window.location.assign("/auth");
+}, async (error: AxiosError) => {
+    if (error.response?.status !== 401 || !isAuthenticated()) {
+        throw error;
     }
-    return Promise.reject(error);
+    // Every response carries the config of its request.
+    const request = error.config!;
+    if (request.retried) {
+        endSession();
+        throw error;
+    }
+    // A request sent with an older access token failed after another request's refresh got a new one.
+    if (request.headers.Authorization === authorization()) {
+        await refreshTokens();
+    }
+    return api.request({...request, retried: true});
 });
 
 // The ID at the end of a `201 Created` response's `Location` header (`…/users/5` → 5).
