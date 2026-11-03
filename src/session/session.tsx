@@ -2,7 +2,7 @@ import {createContext} from "react";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 
-// Who is signed in. `loading` while the stored credentials' user is fetched; `error` when that failed with no answer
+// Who is signed in. `loading` while the stored tokens' user is fetched; `error` when that failed with no answer
 // or a server error (a `401` signs out in the API client instead).
 export type SessionState =
     | {readonly status: "loading"}

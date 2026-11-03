@@ -2,8 +2,8 @@ import {screen, waitFor} from "@testing-library/react";
 import {Route, Routes} from "react-router";
 import {RequireGuest} from "@/features/auth/guards/RequireGuest.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
-import {saveCredentials} from "@/api/credentials.tsx";
-import {credentials, user} from "@test/support/data.tsx";
+import {saveTokens} from "@/api/tokens.tsx";
+import {tokens, user} from "@test/support/data.tsx";
 import {mockRequest} from "@test/support/server.tsx";
 import {ShowSession} from "@test/support/ShowSession.tsx";
 
@@ -32,7 +32,7 @@ describe("RequireGuest", () => {
     });
 
     it("redirects to / while the user loads", () => {
-        saveCredentials(credentials);
+        saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
 
         renderRoutes();
@@ -45,7 +45,7 @@ describe("RequireGuest", () => {
         ["once the user is loaded", 200, "signedIn"],
         ["when the user can't be loaded", 500, "error"],
     ])("redirects to / %s", async (_, status, expected) => {
-        saveCredentials(credentials);
+        saveTokens(tokens);
         mockRequest("get", "/users/me", {status, body: user});
 
         renderRoutes();

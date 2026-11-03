@@ -4,12 +4,13 @@ import type {VerifyEmailDto} from "./dto/VerifyEmailDto.tsx";
 import type {ResendVerificationDto} from "./dto/ResendVerificationDto.tsx";
 import type {ForgotPasswordDto} from "./dto/ForgotPasswordDto.tsx";
 import type {ResetPasswordDto} from "./dto/ResetPasswordDto.tsx";
-import {clearCredentials, saveCredentials} from "./credentials.tsx";
+import type {AuthTokensDto} from "./dto/AuthTokensDto.tsx";
+import {clearTokens, saveTokens} from "./tokens.tsx";
 
 export async function login(loginDto: LoginDto) {
-    clearCredentials();
-    const response = await api.post("/auth", loginDto);
-    saveCredentials(loginDto);
+    clearTokens();
+    const response = await api.post<AuthTokensDto>("/auth", loginDto);
+    saveTokens(response.data);
     return response;
 }
 

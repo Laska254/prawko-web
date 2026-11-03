@@ -1,5 +1,5 @@
 import axios, {type AxiosResponse} from "axios";
-import {clearCredentials, getCredentials} from "./credentials.tsx";
+import {clearTokens, getAccessToken, isAuthenticated} from "./tokens.tsx";
 import {parseInstants} from "./instants.tsx";
 
 // A request without an answer by then fails as a timeout instead of leaving the screen loading for good.
@@ -14,9 +14,9 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use(config => {
-    const credentials = getCredentials();
-    if (credentials) {
-        config.headers.Authorization = `Basic ${credentials}`;
+    const accessToken = getAccessToken();
+    if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
 });
@@ -25,8 +25,8 @@ api.interceptors.response.use(response => {
     response.data = parseInstants(response.data);
     return response;
 }, error => {
-    if (error.response?.status === 401 && getCredentials()) {
-        clearCredentials();
+    if (error.response?.status === 401 && isAuthenticated()) {
+        clearTokens();
         window.location.assign("/auth");
     }
     return Promise.reject(error);

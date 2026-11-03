@@ -1,8 +1,8 @@
 import {delay} from "msw";
 import {http, HttpResponse} from "msw/http";
 import {apiUrl, mockRequest, server} from "@test/support/server.tsx";
-import {credentials} from "@test/support/data.tsx";
-import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
+import {tokens} from "@test/support/data.tsx";
+import {getAccessToken, getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import type {ExamSummaryDto} from "@/api/dto/ExamSummaryDto.tsx";
 import type {PagedModel} from "@/api/dto/PagedModel.tsx";
 import {api, createdId} from "@/api/client.tsx";
@@ -100,16 +100,16 @@ describe("client", () => {
             return () => authorization;
         }
 
-        it("sends the stored credentials", async () => {
+        it("sends the access token as a Bearer token", async () => {
             const authorization = respondWith(204);
-            saveCredentials(credentials);
+            saveTokens(tokens);
 
             await api.post("/auth/verify");
 
-            expect(authorization()).toBe(`Basic ${btoa("jan:secret")}`);
+            expect(authorization()).toBe("Bearer access-token");
         });
 
-        it("sends no Authorization header without credentials", async () => {
+        it("sends no Authorization header without an access token", async () => {
             const authorization = respondWith(204);
 
             await api.post("/auth/verify");
@@ -117,28 +117,40 @@ describe("client", () => {
             expect(authorization()).toBeNull();
         });
 
-        it("clears the credentials and goes to /auth on 401", async () => {
+        it("clears the tokens and goes to /auth on 401", async () => {
             respondWith(401);
-            saveCredentials(credentials);
+            saveTokens(tokens);
 
             await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 401}});
-            expect(getCredentials()).toBeNull();
+            expect(getAccessToken()).toBeNull();
+            expect(getRefreshToken()).toBeNull();
             expect(assign).toHaveBeenCalledWith("/auth");
         });
 
-        it("doesn't redirect on 401 without credentials", async () => {
+        it("clears the refresh token and goes to /auth on 401 after a reload", async () => {
+            const authorization = respondWith(401);
+            localStorage.setItem("refreshToken", "refresh-token");
+
+            await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 401}});
+            expect(authorization()).toBeNull();
+            expect(getRefreshToken()).toBeNull();
+            expect(assign).toHaveBeenCalledWith("/auth");
+        });
+
+        it("doesn't redirect on 401 without tokens", async () => {
             respondWith(401);
 
             await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 401}});
             expect(assign).not.toHaveBeenCalled();
         });
 
-        it("keeps the credentials on other errors", async () => {
+        it("keeps the tokens on other errors", async () => {
             respondWith(500);
-            saveCredentials(credentials);
+            saveTokens(tokens);
 
             await expect(api.post("/auth/verify")).rejects.toMatchObject({response: {status: 500}});
-            expect(getCredentials()).toBe(btoa("jan:secret"));
+            expect(getAccessToken()).toBe("access-token");
+            expect(getRefreshToken()).toBe("refresh-token");
             expect(assign).not.toHaveBeenCalled();
         });
     });

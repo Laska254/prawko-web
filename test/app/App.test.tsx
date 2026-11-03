@@ -1,8 +1,8 @@
 import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {App} from "@/app/App.tsx";
-import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
-import {credentials, user} from "@test/support/data.tsx";
+import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
+import {tokens, user} from "@test/support/data.tsx";
 import {renderWithoutRouter} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 
@@ -12,9 +12,9 @@ function renderAt(path: string) {
     renderWithoutRouter(<App/>);
 }
 
-// Stores credentials whose user loads.
+// Stores tokens whose user loads.
 function signIn() {
-    saveCredentials(credentials);
+    saveTokens(tokens);
     mockRequest("get", "/users/me", {body: user});
 }
 
@@ -107,7 +107,7 @@ describe("App", () => {
             expect(await screen.findByText("Your password has been changed. You can sign in now.")).toBeInTheDocument();
             expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
             expect(window.location.pathname).toBe("/auth");
-            expect(getCredentials()).toBeNull();
+            expect(getRefreshToken()).toBeNull();
         });
     });
 });
