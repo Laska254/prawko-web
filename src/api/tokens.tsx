@@ -49,8 +49,10 @@ export function endSession(): void {
 
 // Another tab removed the refresh token (`key` is the removed one, or null for `localStorage.clear()`): its session
 // ended, e.g. by signing out or a refresh token no longer valid, so this tab's ends too instead of failing every request.
+// Decided from the event, not the storage: a tab frozen in the background gets its events late, when another tab may
+// already have signed in again, possibly as another user.
 window.addEventListener("storage", event => {
-    if ((event.key === REFRESH_TOKEN_KEY || event.key === null) && !isAuthenticated()) {
+    if ((event.key === REFRESH_TOKEN_KEY && event.newValue === null) || event.key === null) {
         endSession();
     }
 });

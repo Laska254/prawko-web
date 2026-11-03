@@ -79,13 +79,23 @@ describe("tokens", () => {
         afterEach(() => stopListening());
 
         // Browsers send `storage` events only to the other tabs, so the test plays the tab that changed the storage.
-        function changeInAnotherTab(change: () => void, key: string | null): void {
+        function changeInAnotherTab(change: () => void, key: string | null, newValue: string | null = null): void {
             change();
-            window.dispatchEvent(new StorageEvent("storage", {key, storageArea: localStorage}));
+            window.dispatchEvent(new StorageEvent("storage", {key, newValue, storageArea: localStorage}));
         }
 
         it("ends the session when the refresh token is removed", () => {
             changeInAnotherTab(() => localStorage.removeItem("refreshToken"), "refreshToken");
+
+            expect(getAccessToken()).toBeNull();
+            expect(listener).toHaveBeenCalledOnce();
+        });
+
+        it("ends the session when the refresh token is removed, even if a new one is stored before this tab hears of it", () => {
+            changeInAnotherTab(() => {
+                localStorage.removeItem("refreshToken");
+                localStorage.setItem("refreshToken", "refresh-token-1");
+            }, "refreshToken");
 
             expect(getAccessToken()).toBeNull();
             expect(listener).toHaveBeenCalledOnce();
@@ -99,7 +109,8 @@ describe("tokens", () => {
         });
 
         it("keeps the session when a new refresh token is stored", () => {
-            changeInAnotherTab(() => localStorage.setItem("refreshToken", "refresh-token-1"), "refreshToken");
+            changeInAnotherTab(() => localStorage.setItem("refreshToken", "refresh-token-1"), "refreshToken",
+                "refresh-token-1");
 
             expect(getAccessToken()).toBe("access-token");
             expect(listener).not.toHaveBeenCalled();
