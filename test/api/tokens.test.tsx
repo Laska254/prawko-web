@@ -65,4 +65,52 @@ describe("tokens", () => {
 
         expect(listener).not.toHaveBeenCalled();
     });
+
+    describe("in another tab", () => {
+        const listener = vi.fn();
+        let stopListening: () => void;
+
+        beforeEach(() => {
+            listener.mockClear();
+            stopListening = onSessionEnded(listener);
+            saveTokens(tokens);
+        });
+
+        afterEach(() => stopListening());
+
+        // Browsers send `storage` events only to the other tabs, so the test plays the tab that changed the storage.
+        function changeInAnotherTab(change: () => void, key: string | null): void {
+            change();
+            window.dispatchEvent(new StorageEvent("storage", {key, storageArea: localStorage}));
+        }
+
+        it("ends the session when the refresh token is removed", () => {
+            changeInAnotherTab(() => localStorage.removeItem("refreshToken"), "refreshToken");
+
+            expect(getAccessToken()).toBeNull();
+            expect(listener).toHaveBeenCalledOnce();
+        });
+
+        it("ends the session when the storage is cleared", () => {
+            changeInAnotherTab(() => localStorage.clear(), null);
+
+            expect(getAccessToken()).toBeNull();
+            expect(listener).toHaveBeenCalledOnce();
+        });
+
+        it("keeps the session when a new refresh token is stored", () => {
+            changeInAnotherTab(() => localStorage.setItem("refreshToken", "refresh-token-1"), "refreshToken");
+
+            expect(getAccessToken()).toBe("access-token");
+            expect(listener).not.toHaveBeenCalled();
+        });
+
+        it("doesn't end a session that is already over when another key changes", () => {
+            clearTokens();
+
+            changeInAnotherTab(() => localStorage.setItem("mui-mode", "dark"), "mui-mode");
+
+            expect(listener).not.toHaveBeenCalled();
+        });
+    });
 });
