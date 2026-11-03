@@ -4,6 +4,7 @@ import {apiUrl, mockRequest, server} from "@test/support/server.tsx";
 import {tokens} from "@test/support/data.tsx";
 import {getAccessToken, getRefreshToken, onSessionEnded, saveTokens} from "@/api/tokens.tsx";
 import type {AuthTokensDto} from "@/api/dto/AuthTokensDto.tsx";
+import type {RefreshTokenDto} from "@/api/dto/RefreshTokenDto.tsx";
 import type {ExamSummaryDto} from "@/api/dto/ExamSummaryDto.tsx";
 import type {PagedModel} from "@/api/dto/PagedModel.tsx";
 import {api, createdId} from "@/api/client.tsx";
@@ -260,6 +261,94 @@ describe("client", () => {
             expect(authorization()).toBe("Bearer new-access-token");
             expect(getRefreshToken()).toBeNull();
             expect(sessionEnded).toHaveBeenCalledOnce();
+        });
+
+        it("refreshes without Web Locks", async () => {
+            vi.spyOn(navigator, "locks", "get").mockReturnValue(undefined as unknown as LockManager);
+            requireNewToken("/auth/verify");
+            const refreshes = mockRefresh();
+            saveTokens(tokens);
+
+            await expect(api.post("/auth/verify")).resolves.toMatchObject({status: 204});
+            expect(refreshes).toHaveLength(1);
+            vi.restoreAllMocks();
+        });
+
+        describe("in two tabs", () => {
+            // Another tab: its own API client and access token in memory, sharing localStorage and the locks.
+            async function openOtherTab() {
+                vi.resetModules();
+                return {...await import("@/api/client.tsx"), ...await import("@/api/tokens.tsx")};
+            }
+
+            // Answers `/auth/verify` with `401` for the expired `tokens.accessToken` only.
+            function expireAccessToken(): void {
+                server.use(http.post(apiUrl("/auth/verify"), ({request}) => {
+                    if (request.headers.get("Authorization") === "Bearer access-token") {
+                        return new HttpResponse(null, {status: 401});
+                    }
+                    return new HttpResponse(null, {status: 204});
+                }));
+            }
+
+            // Answers each refresh token once, as the server does, with a new pair numbered by the refresh; returns the
+            // refresh tokens received.
+            function mockRotatingRefresh(): string[] {
+                const received: string[] = [];
+                server.use(http.post(apiUrl("/auth/refresh"), async ({request}) => {
+                    const {refreshToken} = await request.json() as RefreshTokenDto;
+                    if (received.includes(refreshToken)) {
+                        return new HttpResponse(null, {status: 401});
+                    }
+                    received.push(refreshToken);
+                    const number = received.length;
+                    return HttpResponse.json({
+                        accessToken: `access-token-${number}`,
+                        refreshToken: `refresh-token-${number}`,
+                        expiresIn: 900,
+                    });
+                }));
+                return received;
+            }
+
+            it("refresh one at a time with the refresh token the other stored and both keep the session", async () => {
+                saveTokens(tokens);
+                const otherTab = await openOtherTab();
+                otherTab.saveTokens(tokens);
+                expireAccessToken();
+                const received = mockRotatingRefresh();
+
+                await Promise.all([api.post("/auth/verify"), otherTab.api.post("/auth/verify")]);
+
+                expect(received).toEqual(["refresh-token", "refresh-token-1"]);
+                expect(getRefreshToken()).toBe("refresh-token-2");
+                expect([getAccessToken(), otherTab.getAccessToken()].sort())
+                    .toEqual(["access-token-1", "access-token-2"]);
+                expect(sessionEnded).not.toHaveBeenCalled();
+            });
+
+            it("both end the session when the other tab's refresh ended it", async () => {
+                saveTokens(tokens);
+                const otherTab = await openOtherTab();
+                otherTab.saveTokens(tokens);
+                const otherSessionEnded = vi.fn();
+                const stopOtherListening = otherTab.onSessionEnded(otherSessionEnded);
+                expireAccessToken();
+                const refreshes = mockRequest("post", "/auth/refresh", {status: 401});
+
+                const results = await Promise.allSettled([api.post("/auth/verify"), otherTab.api.post("/auth/verify")]);
+
+                expect(results).toMatchObject([
+                    {status: "rejected", reason: {response: {status: 401}}},
+                    {status: "rejected", reason: {response: {status: 401}}},
+                ]);
+                expect(refreshes).toHaveLength(1);
+                expect(getAccessToken()).toBeNull();
+                expect(otherTab.getAccessToken()).toBeNull();
+                expect(sessionEnded).toHaveBeenCalledOnce();
+                expect(otherSessionEnded).toHaveBeenCalledOnce();
+                stopOtherListening();
+            });
         });
 
         it("doesn't refresh on 401 without tokens", async () => {

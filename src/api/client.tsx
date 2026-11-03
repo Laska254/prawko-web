@@ -35,30 +35,54 @@ function authorization(): string | undefined {
     }
 }
 
+// Also the name other tabs of this site take the lock under.
+const REFRESH_LOCK = "prawko-token-refresh";
+
+// Runs `task` once no other tab runs one under the lock. Browsers have Web Locks only on HTTPS and localhost;
+// without them it runs at once.
+function withRefreshLock(task: () => Promise<void>): Promise<void> {
+    if (!navigator.locks) {
+        return task();
+    }
+    // `void`: the DOM types don't unwrap the promise `task` returns, which the lock waits for.
+    return navigator.locks.request<void>(REFRESH_LOCK, task);
+}
+
+// Reads the refresh token only once holding the lock, as another tab may have swapped it, or ended the session,
+// while this one waited. Rejects with the request's error; a `401` ends the session, any other error keeps it for a
+// later try.
+async function sendRefresh(): Promise<void> {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+        endSession();
+        return;
+    }
+    const body: RefreshTokenDto = {refreshToken};
+    const response = await refreshApi.post<AuthTokensDto>("/auth/refresh", body).catch((error: AxiosError) => {
+        if (error.response?.status === 401) {
+            endSession();
+        }
+        throw error;
+    });
+    saveTokens(response.data);
+}
+
 let refreshing: Promise<void> | null = null;
 
 // Swaps the refresh token for a new pair. The server accepts each refresh token once, so parallel calls share one
-// request. Rejects with the request's error; a `401` ends the session, any other error keeps it for a later try.
-function refreshTokens(refreshToken: string): Promise<void> {
-    refreshing ??= refreshApi.post<AuthTokensDto>("/auth/refresh", {refreshToken} satisfies RefreshTokenDto)
-        .then(response => saveTokens(response.data), (error: AxiosError) => {
-            if (error.response?.status === 401) {
-                endSession();
-            }
-            throw error;
-        })
-        .finally(() => {
-            refreshing = null;
-        });
+// request and tabs refresh one at a time, each with the token the previous one stored.
+function refreshTokens(): Promise<void> {
+    refreshing ??= withRefreshLock(sendRefresh).finally(() => {
+        refreshing = null;
+    });
     return refreshing;
 }
 
 api.interceptors.request.use(async config => {
-    const refreshToken = getRefreshToken();
     // After a reload only the refresh token is left: get an access token first instead of waiting for a `401`.
-    if (!getAccessToken() && refreshToken) {
+    if (!getAccessToken() && isAuthenticated()) {
         try {
-            await refreshTokens(refreshToken);
+            await refreshTokens();
         } catch (error) {
             // A session that ended sends the request without a token, as it may not need one (e.g. verifying an email).
             if (isAuthenticated()) {
@@ -77,8 +101,7 @@ api.interceptors.response.use(response => {
     response.data = parseInstants(response.data);
     return response;
 }, async (error: AxiosError) => {
-    const refreshToken = getRefreshToken();
-    if (error.response?.status !== 401 || !refreshToken) {
+    if (error.response?.status !== 401 || !isAuthenticated()) {
         throw error;
     }
     // Every response carries the config of its request.
@@ -89,7 +112,7 @@ api.interceptors.response.use(response => {
     }
     // A request sent with an older access token failed after another request's refresh got a new one.
     if (request.headers.Authorization === authorization()) {
-        await refreshTokens(refreshToken);
+        await refreshTokens();
     }
     return api.request({...request, retried: true});
 });
