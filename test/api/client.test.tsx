@@ -97,6 +97,8 @@ describe("client", () => {
         afterEach(() => {
             stopListening();
             sessionEnded.mockReset();
+            // Here, not at a test's end, so a failed assertion doesn't leave `navigator.locks` spied on for later tests.
+            vi.restoreAllMocks();
         });
 
         function respondWith(status: number) {
@@ -271,7 +273,6 @@ describe("client", () => {
 
             await expect(api.post("/auth/verify")).resolves.toMatchObject({status: 204});
             expect(refreshes).toHaveLength(1);
-            vi.restoreAllMocks();
         });
 
         describe("in two tabs", () => {
