@@ -8,7 +8,7 @@ declare module "axios" {
     // biome-ignore lint/suspicious/noExplicitAny: merging the interface needs axios' own type parameters.
     interface AxiosRequestConfig<D = any, P = any> {
         // Set on a request sent again with a new access token, so a second `401` ends the session.
-        retried?: boolean;
+        readonly retried?: boolean;
     }
 }
 
