@@ -210,7 +210,10 @@ describe("client", () => {
             await Promise.all([api.post("/auth/verify"), api.post("/auth/verify"), api.post("/auth/verify")]);
 
             expect(refreshes).toHaveLength(1);
-            expect(authorizations.filter(authorization => authorization === "Bearer new-access-token")).toHaveLength(3);
+            expect(authorizations.toSorted()).toEqual([
+                ...Array(3).fill("Bearer access-token"),
+                ...Array(3).fill("Bearer new-access-token"),
+            ]);
         });
 
         it("sends a request again without refreshing when another request's refresh got a new token", async () => {
