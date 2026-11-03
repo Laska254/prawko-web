@@ -117,11 +117,10 @@ describe("tokens", () => {
             expect(listener).not.toHaveBeenCalled();
         });
 
-        it("doesn't end a session that is already over when another key changes", () => {
-            clearTokens();
-
+        it("keeps the session when another key changes", () => {
             changeInAnotherTab(() => localStorage.setItem("mui-mode", "dark"), "mui-mode");
 
+            expect(getAccessToken()).toBe("access-token");
             expect(listener).not.toHaveBeenCalled();
         });
     });
