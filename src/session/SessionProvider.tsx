@@ -21,9 +21,16 @@ export function SessionProvider({children}: SessionProviderProps) {
     const [hasTokens, setHasTokens] = useState(isAuthenticated);
     const user = useQuery({...currentUserQuery, enabled: hasTokens});
 
-    // Signs out when the session ends, through `clearSession` or in the API client once the refresh token is no longer
-    // valid.
+    // Signs out when the session ends, through `clearSession`, in the API client once the refresh token is no longer
+    // valid, or in another tab.
     useEffect(() => onSessionEnded(() => {
+        // Another tab signed in again before this one heard of its removal: like a reload, this tab takes the stored
+        // session, so its state and the tokens its requests send agree. Resetting empties the cache and fetches the
+        // user again, which `clear` wouldn't, as the queries it drops tell no one.
+        if (isAuthenticated()) {
+            void queryClient.resetQueries();
+            return;
+        }
         setHasTokens(false);
         // The next user to sign in mustn't see this one's cached data.
         queryClient.clear();

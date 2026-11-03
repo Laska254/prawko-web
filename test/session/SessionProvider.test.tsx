@@ -141,4 +141,30 @@ describe("SessionProvider", () => {
         expect(status()).toBe("signedOut");
         expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
     });
+
+    it("takes the stored session and loads its user when another tab signed in again before this one heard of the removal", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const {queryClient} = renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        queryClient.setQueryData(["other"], "Jan's data");
+        const refreshes = mockPost("/auth/refresh", 200, {accessToken: "access-token-2", refreshToken: "refresh-token-2"});
+        server.use(http.get(apiUrl("/users/me"), ({request}) => {
+            if (request.headers.get("Authorization") === "Bearer access-token-2") {
+                return HttpResponse.json({...user, id: 2, firstName: "Anna"});
+            }
+            return new HttpResponse(null, {status: 401});
+        }));
+
+        // Browsers send `storage` events only to the other tabs, so the test plays the tab that changed the storage.
+        localStorage.setItem("refreshToken", "refresh-token-1");
+        act(() => {
+            window.dispatchEvent(new StorageEvent("storage", {key: "refreshToken", newValue: null, storageArea: localStorage}));
+        });
+
+        expect(await screen.findByText("Anna")).toBeInTheDocument();
+        expect(status()).toBe("signedIn");
+        expect(refreshes).toEqual([{refreshToken: "refresh-token-1"}]);
+        expect(queryClient.getQueryData(["other"])).toBeUndefined();
+    });
 });
