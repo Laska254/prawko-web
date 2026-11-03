@@ -1,5 +1,5 @@
 import axios, {type AxiosError, type AxiosResponse, type CreateAxiosDefaults} from "axios";
-import {endSession, getAccessToken, getRefreshToken, saveTokens} from "./tokens.tsx";
+import {endSession, getAccessToken, getRefreshToken, isAuthenticated, saveTokens} from "./tokens.tsx";
 import {parseInstants} from "./instants.tsx";
 import type {AuthTokensDto} from "./dto/AuthTokensDto.tsx";
 import type {RefreshTokenDto} from "./dto/RefreshTokenDto.tsx";
@@ -7,7 +7,7 @@ import type {RefreshTokenDto} from "./dto/RefreshTokenDto.tsx";
 declare module "axios" {
     // biome-ignore lint/suspicious/noExplicitAny: merging the interface needs axios' own type parameters.
     interface AxiosRequestConfig<D = any, P = any> {
-        // Set on a request sent again with a new access token, so a second `401` ends the session instead of refreshing.
+        // Set on a request sent again with a new access token, so a second `401` ends the session.
         retried?: boolean;
     }
 }
@@ -35,14 +35,6 @@ function authorization(): string | undefined {
     }
 }
 
-api.interceptors.request.use(config => {
-    const header = authorization();
-    if (header) {
-        config.headers.Authorization = header;
-    }
-    return config;
-});
-
 let refreshing: Promise<void> | null = null;
 
 // Swaps the refresh token for a new pair. The server accepts each refresh token once, so parallel calls share one
@@ -60,6 +52,26 @@ function refreshTokens(refreshToken: string): Promise<void> {
         });
     return refreshing;
 }
+
+api.interceptors.request.use(async config => {
+    const refreshToken = getRefreshToken();
+    // After a reload only the refresh token is left: get an access token first instead of waiting for a `401`.
+    if (!getAccessToken() && refreshToken) {
+        try {
+            await refreshTokens(refreshToken);
+        } catch (error) {
+            // A session that ended sends the request without a token, as it may not need one (e.g. verifying an email).
+            if (isAuthenticated()) {
+                throw error;
+            }
+        }
+    }
+    const header = authorization();
+    if (header) {
+        config.headers.Authorization = header;
+    }
+    return config;
+});
 
 api.interceptors.response.use(response => {
     response.data = parseInstants(response.data);

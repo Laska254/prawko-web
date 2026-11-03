@@ -156,14 +156,47 @@ describe("client", () => {
             expect(getRefreshToken()).toBe("new-refresh-token");
         });
 
-        it("refreshes the tokens on 401 after a reload", async () => {
+        it("refreshes the tokens before the first request after a reload", async () => {
             const authorizations = requireNewToken("/auth/verify");
             const refreshes = mockRefresh();
             localStorage.setItem("refreshToken", "refresh-token");
 
             await expect(api.post("/auth/verify")).resolves.toMatchObject({status: 204});
+            expect(refreshes).toEqual([{search: "", body: {refreshToken: "refresh-token"}}]);
+            expect(authorizations).toEqual(["Bearer new-access-token"]);
+        });
+
+        it("refreshes once for parallel requests after a reload", async () => {
+            const authorizations = requireNewToken("/auth/verify");
+            const refreshes = mockRefresh();
+            localStorage.setItem("refreshToken", "refresh-token");
+
+            await Promise.all([api.post("/auth/verify"), api.post("/auth/verify"), api.post("/auth/verify")]);
+
             expect(refreshes).toHaveLength(1);
-            expect(authorizations).toEqual([null, "Bearer new-access-token"]);
+            expect(authorizations).toEqual(Array(3).fill("Bearer new-access-token"));
+        });
+
+        it("sends the request without a token when the refresh after a reload ends the session", async () => {
+            const authorization = respondWith(204);
+            mockRequest("post", "/auth/refresh", {status: 401});
+            localStorage.setItem("refreshToken", "refresh-token");
+
+            await expect(api.post("/auth/verify")).resolves.toMatchObject({status: 204});
+            expect(authorization()).toBeNull();
+            expect(getRefreshToken()).toBeNull();
+            expect(sessionEnded).toHaveBeenCalledOnce();
+        });
+
+        it("fails without sending the request when the refresh after a reload gets no answer", async () => {
+            const authorizations = requireNewToken("/auth/verify");
+            server.use(http.post(apiUrl("/auth/refresh"), () => HttpResponse.error()));
+            localStorage.setItem("refreshToken", "refresh-token");
+
+            await expect(api.post("/auth/verify")).rejects.toMatchObject({code: "ERR_NETWORK"});
+            expect(authorizations).toEqual([]);
+            expect(getRefreshToken()).toBe("refresh-token");
+            expect(sessionEnded).not.toHaveBeenCalled();
         });
 
         it("refreshes once for parallel 401s", async () => {
