@@ -30,13 +30,23 @@ export function isAuthenticated(): boolean {
 }
 
 const sessionEndedListeners = new Set<() => void>();
+const sessionStartedListeners = new Set<() => void>();
+
+function addListener(listeners: Set<() => void>, listener: () => void): () => void {
+    listeners.add(listener);
+    return () => {
+        listeners.delete(listener);
+    };
+}
 
 // Calls `listener` each time the session ends; returns a function that stops it.
 export function onSessionEnded(listener: () => void): () => void {
-    sessionEndedListeners.add(listener);
-    return () => {
-        sessionEndedListeners.delete(listener);
-    };
+    return addListener(sessionEndedListeners, listener);
+}
+
+// Calls `listener` each time another tab starts a session where there was none; returns a function that stops it.
+export function onSessionStarted(listener: () => void): () => void {
+    return addListener(sessionStartedListeners, listener);
 }
 
 // Clears the tokens and tells the listeners, e.g. the session state, that the session is over.
@@ -58,8 +68,14 @@ function endSessionInThisTab(): void {
 // Decided from the event, not the storage: a tab frozen in the background gets its events late, when another tab may
 // already have signed in again, possibly as another user. Only this tab's session ends: removing the token here would
 // take the new session from that tab, and from every other one with it.
+// Another tab stored a refresh token where there was none: it signed in, so this tab, signed out until now, takes the
+// session too, as it would on a reload, instead of sending that session's tokens while showing the sign-in page.
 window.addEventListener("storage", event => {
     if ((event.key === REFRESH_TOKEN_KEY && event.newValue === null) || event.key === null) {
         endSessionInThisTab();
+    } else if (event.key === REFRESH_TOKEN_KEY && event.oldValue === null) {
+        for (const listener of sessionStartedListeners) {
+            listener();
+        }
     }
 });

@@ -167,4 +167,45 @@ describe("SessionProvider", () => {
         expect(refreshes).toEqual([{refreshToken: "refresh-token-1"}]);
         expect(queryClient.getQueryData(["other"])).toBeUndefined();
     });
+
+    // Browsers send `storage` events only to the other tabs, so the tests below play the tab that changed the storage.
+    function changeRefreshTokenInAnotherTab(oldValue: string | null, newValue: string | null): void {
+        if (newValue === null) {
+            localStorage.removeItem("refreshToken");
+        } else {
+            localStorage.setItem("refreshToken", newValue);
+        }
+        act(() => {
+            window.dispatchEvent(new StorageEvent("storage", {key: "refreshToken", oldValue, newValue, storageArea: localStorage}));
+        });
+    }
+
+    it("signs in and loads the user when another tab signs in", async () => {
+        renderSession();
+        const refreshes = mockPost("/auth/refresh", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+
+        changeRefreshTokenInAnotherTab(null, "refresh-token-1");
+
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        expect(status()).toBe("signedIn");
+        expect(refreshes).toEqual([{refreshToken: "refresh-token-1"}]);
+    });
+
+    it("follows another tab signing in again instead of staying signed out", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        mockPost("/auth/refresh", 200, {accessToken: "access-token-2", refreshToken: "refresh-token-2"});
+        server.use(http.get(apiUrl("/users/me"), () => HttpResponse.json({...user, id: 2, firstName: "Anna"})));
+
+        // Signing in clears the tokens before `POST /auth` returns the new ones.
+        changeRefreshTokenInAnotherTab("refresh-token", null);
+        expect(status()).toBe("signedOut");
+        changeRefreshTokenInAnotherTab(null, "refresh-token-1");
+
+        expect(await screen.findByText("Anna")).toBeInTheDocument();
+        expect(status()).toBe("signedIn");
+    });
 });

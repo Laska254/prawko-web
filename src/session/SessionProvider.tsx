@@ -1,7 +1,7 @@
 import {type ReactNode, useEffect, useState} from "react";
 import {queryOptions, useQuery, useQueryClient} from "@tanstack/react-query";
 import {login} from "@/api/auth.tsx";
-import {clearTokens, endSession, isAuthenticated, onSessionEnded} from "@/api/tokens.tsx";
+import {clearTokens, endSession, isAuthenticated, onSessionEnded, onSessionStarted} from "@/api/tokens.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
 import {getCurrentUser} from "@/api/users.tsx";
@@ -35,6 +35,9 @@ export function SessionProvider({children}: SessionProviderProps) {
         // The next user to sign in mustn't see this one's cached data.
         queryClient.clear();
     }), [queryClient]);
+
+    // Signs in when another tab does. Signing out emptied the cache, so the user query enabled here fetches the user.
+    useEffect(() => onSessionStarted(() => setHasTokens(true)), []);
 
     async function signIn(loginDto: LoginDto): Promise<void> {
         await login(loginDto);
