@@ -98,6 +98,7 @@ describe("tokens", () => {
             }, "refreshToken");
 
             expect(getAccessToken()).toBeNull();
+            expect(getRefreshToken()).toBe("refresh-token-1");
             expect(listener).toHaveBeenCalledOnce();
         });
 

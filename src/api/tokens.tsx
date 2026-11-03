@@ -41,7 +41,13 @@ export function onSessionEnded(listener: () => void): () => void {
 
 // Clears the tokens and tells the listeners, e.g. the session state, that the session is over.
 export function endSession(): void {
-    clearTokens();
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    endSessionInThisTab();
+}
+
+// Leaves the stored refresh token alone, as it is shared by all tabs.
+function endSessionInThisTab(): void {
+    accessToken = null;
     for (const listener of sessionEndedListeners) {
         listener();
     }
@@ -50,9 +56,10 @@ export function endSession(): void {
 // Another tab removed the refresh token (`key` is the removed one, or null for `localStorage.clear()`): its session
 // ended, e.g. by signing out or a refresh token no longer valid, so this tab's ends too instead of failing every request.
 // Decided from the event, not the storage: a tab frozen in the background gets its events late, when another tab may
-// already have signed in again, possibly as another user.
+// already have signed in again, possibly as another user. Only this tab's session ends: removing the token here would
+// take the new session from that tab, and from every other one with it.
 window.addEventListener("storage", event => {
     if ((event.key === REFRESH_TOKEN_KEY && event.newValue === null) || event.key === null) {
-        endSession();
+        endSessionInThisTab();
     }
 });
