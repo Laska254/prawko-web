@@ -1,7 +1,8 @@
 import {screen, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {AuthPage} from "@/features/auth/pages/AuthPage.tsx";
-import {renderWithProviders} from "@test/support/render.tsx";
+import {currentLocation, renderAtRoute, renderWithProviders} from "@test/support/render.tsx";
+import {ShowLocation} from "@test/support/ShowLocation.tsx";
 
 describe("AuthPage", () => {
     it("shows the sign in form next to the app panel", () => {
@@ -43,7 +44,7 @@ describe("AuthPage", () => {
         ["verified", "Your email is verified. You can sign in now.", "SuccessOutlinedIcon"],
         ["passwordReset", "Your password has been changed. You can sign in now.", "SuccessOutlinedIcon"],
         ["sessionExpired", "Your session has expired. Sign in again to continue.", "InfoOutlinedIcon"],
-    ])("shows the %s notice only on sign in", async (notice, message, icon) => {
+    ])("shows the %s notice until the user switches forms", async (notice, message, icon) => {
         const user = userEvent.setup();
         renderWithProviders(<AuthPage/>, {route: "/auth", state: {notice}});
 
@@ -51,6 +52,24 @@ describe("AuthPage", () => {
         expect(within(screen.getByRole("alert")).getByTestId(icon)).toBeInTheDocument();
 
         await user.click(screen.getByRole("button", {name: "Create one"}));
-        expect(screen.queryByText(message)).not.toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", {name: "Sign in"}));
+        expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("clears the notice from the navigation state, so a reload or going back doesn't show it again", () => {
+        renderAtRoute(<><AuthPage/><ShowLocation/></>, "/auth", {notice: "sessionExpired"});
+
+        expect(screen.getByRole("alert")).toHaveTextContent("Your session has expired. Sign in again to continue.");
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: null});
+    });
+
+    it("leaves the navigation state alone without a notice", () => {
+        renderAtRoute(<><AuthPage/><ShowLocation/></>, "/auth", {other: true});
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {other: true}});
     });
 });
