@@ -52,6 +52,10 @@ export function SessionProvider({children}: SessionProviderProps) {
         setHasTokens(true);
     }
 
+    function clearExpired() {
+        setExpired(false);
+    }
+
     function state(): SessionState {
         if (!hasTokens) {
             return {status: "signedOut", expired: isExpired};
@@ -67,8 +71,7 @@ export function SessionProvider({children}: SessionProviderProps) {
     }
 
     return (
-        <SessionContext value={{...state(), signIn, signOut: logout, clearSession: endSession,
-            clearExpired: () => setExpired(false)}}>
+        <SessionContext value={{...state(), signIn, signOut: logout, clearSession: endSession, clearExpired}}>
             {children}
         </SessionContext>
     );
