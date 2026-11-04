@@ -1,10 +1,13 @@
 import {AxiosError, type AxiosResponse} from "axios";
+import type {AuthTokensDto} from "@/api/dto/AuthTokensDto.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import type {ProblemDetail} from "@/api/dto/ProblemDetail.tsx";
 import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 
 export const credentials: LoginDto = {userName: "jan", password: "secret"};
+
+export const tokens: AuthTokensDto = {accessToken: "access-token", refreshToken: "refresh-token", expiresIn: 900};
 
 export const registerDto: RegisterDto = {
     firstName: "Jan",

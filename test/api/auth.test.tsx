@@ -1,7 +1,7 @@
 import {http, HttpResponse} from "msw/http";
 import {apiUrl, mockPost, server} from "@test/support/server.tsx";
-import {credentials} from "@test/support/data.tsx";
-import {getCredentials, saveCredentials} from "@/api/credentials.tsx";
+import {credentials, tokens} from "@test/support/data.tsx";
+import {getAccessToken, getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {forgotPassword, login, resendVerification, resetPassword, verifyEmail} from "@/api/auth.tsx";
 
 describe("auth", () => {
@@ -24,34 +24,45 @@ describe("auth", () => {
     });
 
     describe("login", () => {
-        it("saves the credentials after signing in", async () => {
-            const requests = mockPost("/auth");
+        it("saves the returned tokens after signing in", async () => {
+            const requests = mockPost("/auth", 200, tokens);
 
             await login(credentials);
 
             expect(requests).toEqual([credentials]);
-            expect(getCredentials()).toBe(btoa("jan:secret"));
+            expect(getAccessToken()).toBe("access-token");
+            expect(getRefreshToken()).toBe("refresh-token");
         });
 
-        it("doesn't send the previous credentials", async () => {
+        it("stores no password", async () => {
+            mockPost("/auth", 200, tokens);
+
+            await login(credentials);
+
+            expect({...localStorage}).toEqual({refreshToken: "refresh-token"});
+            expect(sessionStorage).toHaveLength(0);
+        });
+
+        it("doesn't send the previous access token", async () => {
             let authorization: string | null = "";
             server.use(http.post(apiUrl("/auth"), ({request}) => {
                 authorization = request.headers.get("Authorization");
-                return new HttpResponse(null, {status: 204});
+                return HttpResponse.json(tokens);
             }));
-            saveCredentials({userName: "old", password: "old"});
+            saveTokens({...tokens, accessToken: "old", refreshToken: "old"});
 
             await login(credentials);
 
             expect(authorization).toBeNull();
         });
 
-        it("doesn't save the credentials when signing in fails", async () => {
+        it("drops the previous tokens when signing in fails", async () => {
             mockPost("/auth", 401);
-            saveCredentials({userName: "old", password: "old"});
+            saveTokens({...tokens, accessToken: "old", refreshToken: "old"});
 
             await expect(login(credentials)).rejects.toMatchObject({response: {status: 401}});
-            expect(getCredentials()).toBeNull();
+            expect(getAccessToken()).toBeNull();
+            expect(getRefreshToken()).toBeNull();
         });
     });
 });
