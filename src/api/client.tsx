@@ -25,8 +25,9 @@ const defaults: CreateAxiosDefaults = {
 
 export const api = axios.create(defaults);
 
-// Sends the refresh without `api`'s interceptors: its `401` means the refresh token is no longer valid.
-const refreshApi = axios.create(defaults);
+// Sends the refresh and logout without `api`'s interceptors: a refresh's `401` means the refresh token is no longer
+// valid, and a logout mustn't refresh the session it ends.
+export const tokenApi = axios.create(defaults);
 
 function authorization(): string | undefined {
     const accessToken = getAccessToken();
@@ -38,14 +39,14 @@ function authorization(): string | undefined {
 // Also the name other tabs of this site take the lock under.
 const REFRESH_LOCK = "prawko-token-refresh";
 
-// Runs `task` once no other tab runs one under the lock. Browsers have Web Locks only on HTTPS and localhost;
-// without them it runs at once.
-function withRefreshLock(task: () => Promise<void>): Promise<void> {
+// Runs `task` once no other tab, or refresh of this one, runs one under the lock. Browsers have Web Locks only on HTTPS
+// and localhost; without them it runs at once.
+export async function withRefreshLock<T>(task: () => Promise<T>): Promise<T> {
     if (!navigator.locks) {
         return task();
     }
-    // `void`: the DOM types don't unwrap the promise `task` returns, which the lock waits for.
-    return navigator.locks.request<void>(REFRESH_LOCK, task);
+    // `Promise<T>`: the DOM types don't unwrap the promise `task` returns, which the lock waits for.
+    return navigator.locks.request<Promise<T>>(REFRESH_LOCK, task);
 }
 
 // Reads the refresh token only once holding the lock, as another tab may have swapped it, or ended the session,
@@ -58,7 +59,7 @@ async function sendRefresh(): Promise<void> {
         return;
     }
     const body: RefreshTokenDto = {refreshToken};
-    const response = await refreshApi.post<AuthTokensDto>("/auth/refresh", body).catch((error: AxiosError) => {
+    const response = await tokenApi.post<AuthTokensDto>("/auth/refresh", body).catch((error: AxiosError) => {
         if (error.response?.status === 401) {
             endSession();
         }

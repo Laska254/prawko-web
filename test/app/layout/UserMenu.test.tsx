@@ -1,7 +1,11 @@
 import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {withRefreshLock} from "@/api/client.tsx";
+import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {UserMenu} from "@/app/layout/UserMenu.tsx";
+import {tokens, user} from "@test/support/data.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
+import {mockPost, mockRequest} from "@test/support/server.tsx";
 
 describe("UserMenu", () => {
     it("is closed at first", () => {
@@ -36,5 +40,32 @@ describe("UserMenu", () => {
 
         await waitFor(() => expect(menu).not.toBeVisible());
         expect(button).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("shows it's signing out while a refresh holds the lock", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const logouts = mockPost("/auth/logout");
+        // A refresh in flight, here or in another tab.
+        let release!: () => void;
+        const refresh = withRefreshLock(() => new Promise<void>(resolve => release = resolve));
+        const userEvents = userEvent.setup();
+        renderAtRoute(<UserMenu/>);
+
+        await userEvents.click(screen.getByRole("button", {name: "Account"}));
+        await userEvents.click(screen.getByRole("menuitem", {name: "Sign out"}));
+
+        const signOut = screen.getByRole("menuitem", {name: "Sign out"});
+        expect(signOut).toHaveAttribute("aria-disabled", "true");
+        expect(screen.getByRole("progressbar", {name: "Loading"})).toBeInTheDocument();
+        expect(getRefreshToken()).toBe("refresh-token");
+
+        release();
+        await refresh;
+
+        await waitFor(() => expect(signOut).not.toHaveAttribute("aria-disabled"));
+        expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+        expect(getRefreshToken()).toBeNull();
+        expect(logouts).toEqual([{refreshToken: "refresh-token"}]);
     });
 });

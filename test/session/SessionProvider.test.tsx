@@ -88,6 +88,22 @@ describe("SessionProvider", () => {
         expect(getRefreshToken()).toBeNull();
     });
 
+    it("signs out, revokes the refresh token and clears the cached data", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const logouts = mockPost("/auth/logout");
+        const {queryClient} = renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Sign out"}));
+
+        expect(status()).toBe("signedOut");
+        expect(screen.queryByText("Jan")).not.toBeInTheDocument();
+        expect(getRefreshToken()).toBeNull();
+        expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
+        await waitFor(() => expect(logouts).toEqual([{refreshToken: "refresh-token"}]));
+    });
+
     it("clears the session, its tokens and the cached data", async () => {
         saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
