@@ -2,10 +2,9 @@ import {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router";
 import {useSession} from "@/session/useSession.tsx";
 import {FORM_CONFIGS, type FormType} from "../formConfig.tsx";
+import type {AuthNoticeType} from "../authNotice.tsx";
 import {AuthForm, type AuthNotice} from "../components/AuthForm.tsx";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
-
-type AuthNoticeType = "verified" | "passwordReset" | "sessionExpired";
 
 const NOTICES: Record<AuthNoticeType, AuthNotice> = {
     verified: {message: "notices.verified", severity: "success"},

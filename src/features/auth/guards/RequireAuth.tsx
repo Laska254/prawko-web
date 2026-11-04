@@ -3,11 +3,12 @@ import {useTranslation} from "react-i18next";
 import {PageError} from "@/components/feedback/PageError.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
 import {useSession} from "@/session/useSession.tsx";
+import {authNoticeState} from "../authNotice.tsx";
 
 // An expired session tells the sign in page why the user is back there.
 function signedOutState(expired: boolean) {
     if (expired) {
-        return {notice: "sessionExpired"};
+        return authNoticeState("sessionExpired");
     }
 }
 
