@@ -1,7 +1,7 @@
 import {act, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {http, HttpResponse} from "msw/http";
-import {endSession, getRefreshToken, saveTokens} from "@/api/tokens.tsx";
+import {endSession, expireSession, getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
 import {credentials, tokens, user} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
@@ -88,6 +88,22 @@ describe("SessionProvider", () => {
         expect(getRefreshToken()).toBeNull();
     });
 
+    it("signs out, revokes the refresh token and clears the cached data", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const logouts = mockPost("/auth/logout");
+        const {queryClient} = renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Sign out"}));
+
+        expect(status()).toBe("signedOut");
+        expect(screen.queryByText("Jan")).not.toBeInTheDocument();
+        expect(getRefreshToken()).toBeNull();
+        expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
+        await waitFor(() => expect(logouts).toEqual([{refreshToken: "refresh-token"}]));
+    });
+
     it("clears the session, its tokens and the cached data", async () => {
         saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
@@ -119,7 +135,7 @@ describe("SessionProvider", () => {
         expect(refreshes).toEqual([{refreshToken: "refresh-token"}]);
     });
 
-    it("signs out after a reload when the refresh token is no longer valid", async () => {
+    it("signs out as expired after a reload when the refresh token is no longer valid", async () => {
         localStorage.setItem("refreshToken", "refresh-token");
         mockRequest("get", "/users/me", {status: 401});
         mockPost("/auth/refresh", 401);
@@ -127,6 +143,7 @@ describe("SessionProvider", () => {
         renderSession();
 
         await waitFor(() => expect(status()).toBe("signedOut"));
+        expect(screen.getByText("Expired")).toBeInTheDocument();
         expect(getRefreshToken()).toBeNull();
     });
 
@@ -139,7 +156,52 @@ describe("SessionProvider", () => {
         act(() => endSession());
 
         expect(status()).toBe("signedOut");
+        expect(screen.queryByText("Expired")).not.toBeInTheDocument();
         expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
+    });
+
+    it("signs out as expired and clears the cached data when the API client expires the session", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const {queryClient} = renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+
+        act(() => expireSession());
+
+        expect(status()).toBe("signedOut");
+        expect(screen.getByText("Expired")).toBeInTheDocument();
+        expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
+    });
+
+    it("stays signed out but isn't expired once it forgets the expiry", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        act(() => expireSession());
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Clear expired"}));
+
+        expect(status()).toBe("signedOut");
+        expect(screen.queryByText("Expired")).not.toBeInTheDocument();
+    });
+
+    it("isn't expired once the next session ends by signing out", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        mockPost("/auth", 200, tokens);
+        mockPost("/auth/logout");
+        renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        act(() => expireSession());
+        const userEvents = userEvent.setup();
+
+        await userEvents.click(screen.getByRole("button", {name: "Sign in"}));
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        await userEvents.click(screen.getByRole("button", {name: "Sign out"}));
+
+        expect(status()).toBe("signedOut");
+        expect(screen.queryByText("Expired")).not.toBeInTheDocument();
     });
 
     it("takes the stored session and loads its user when another tab signed in again before this one heard of the removal", async () => {

@@ -1,6 +1,6 @@
 import {type ReactNode, useEffect, useState} from "react";
 import {queryOptions, useQuery, useQueryClient} from "@tanstack/react-query";
-import {login} from "@/api/auth.tsx";
+import {login, logout} from "@/api/auth.tsx";
 import {clearTokens, endSession, isAuthenticated, onSessionEnded, onSessionStarted} from "@/api/tokens.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
@@ -19,11 +19,12 @@ export function SessionProvider({children}: SessionProviderProps) {
     const queryClient = useQueryClient();
     // Storing the tokens doesn't trigger a render, so signing in sets this too.
     const [hasTokens, setHasTokens] = useState(isAuthenticated);
+    const [isExpired, setExpired] = useState(false);
     const user = useQuery({...currentUserQuery, enabled: hasTokens});
 
     // Signs out when the session ends, through `clearSession`, in the API client once the refresh token is no longer
     // valid, or in another tab.
-    useEffect(() => onSessionEnded(() => {
+    useEffect(() => onSessionEnded(expired => {
         // Another tab signed in again before this one heard of its removal: like a reload, this tab takes the stored
         // session, so its state and the tokens its requests send agree. Resetting empties the cache and fetches the
         // user again, which `clear` wouldn't, as the queries it drops tell no one.
@@ -32,6 +33,7 @@ export function SessionProvider({children}: SessionProviderProps) {
             return;
         }
         setHasTokens(false);
+        setExpired(expired);
         // The next user to sign in mustn't see this one's cached data.
         queryClient.clear();
     }), [queryClient]);
@@ -50,9 +52,13 @@ export function SessionProvider({children}: SessionProviderProps) {
         setHasTokens(true);
     }
 
+    function clearExpired() {
+        setExpired(false);
+    }
+
     function state(): SessionState {
         if (!hasTokens) {
-            return {status: "signedOut"};
+            return {status: "signedOut", expired: isExpired};
         }
         switch (user.status) {
             case "pending":
@@ -64,5 +70,9 @@ export function SessionProvider({children}: SessionProviderProps) {
         }
     }
 
-    return <SessionContext value={{...state(), signIn, clearSession: endSession}}>{children}</SessionContext>;
+    return (
+        <SessionContext value={{...state(), signIn, signOut: logout, clearSession: endSession, clearExpired}}>
+            {children}
+        </SessionContext>
+    );
 }

@@ -1,6 +1,7 @@
 import {
     clearTokens,
     endSession,
+    expireSession,
     getAccessToken,
     getRefreshToken,
     isAuthenticated,
@@ -53,7 +54,20 @@ describe("tokens", () => {
 
         expect(getAccessToken()).toBeNull();
         expect(getRefreshToken()).toBeNull();
-        expect(listener).toHaveBeenCalledOnce();
+        expect(listener).toHaveBeenCalledExactlyOnceWith(false);
+        stopListening();
+    });
+
+    it("clears the tokens and tells the listeners that the session expired", () => {
+        const listener = vi.fn();
+        const stopListening = onSessionEnded(listener);
+        saveTokens(tokens);
+
+        expireSession();
+
+        expect(getAccessToken()).toBeNull();
+        expect(getRefreshToken()).toBeNull();
+        expect(listener).toHaveBeenCalledExactlyOnceWith(true);
         stopListening();
     });
 
@@ -92,12 +106,12 @@ describe("tokens", () => {
             window.dispatchEvent(new StorageEvent("storage", {...event, storageArea: localStorage}));
         }
 
-        it("ends the session when the refresh token is removed", () => {
+        it("ends the session, not knowing whether it expired, when the refresh token is removed", () => {
             changeInAnotherTab(() => localStorage.removeItem("refreshToken"),
                 {key: "refreshToken", oldValue: "refresh-token"});
 
             expect(getAccessToken()).toBeNull();
-            expect(listener).toHaveBeenCalledOnce();
+            expect(listener).toHaveBeenCalledExactlyOnceWith(false);
             expect(startedListener).not.toHaveBeenCalled();
         });
 

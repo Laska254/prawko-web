@@ -187,6 +187,8 @@ Prawko Server must allow CORS requests from the application URL.
 
 * `/auth`
     + `POST` sign in
+    + `POST /refresh` get a new token pair
+    + `POST /logout` sign out (revoke the refresh token)
     + `POST /verify` verify email
     + `POST /verify/resend` resend verification link
     + `POST /password/forgot` request a password reset link

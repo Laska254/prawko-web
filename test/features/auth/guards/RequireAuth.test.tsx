@@ -2,10 +2,11 @@ import {screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {Route, Routes} from "react-router";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
-import {renderWithProviders} from "@test/support/render.tsx";
+import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
 import {saveTokens} from "@/api/tokens.tsx";
 import {tokens, user} from "@test/support/data.tsx";
-import {mockPendingRequest, mockRequest} from "@test/support/server.tsx";
+import {mockPendingRequest, mockPost, mockRequest} from "@test/support/server.tsx";
+import {ShowLocation} from "@test/support/ShowLocation.tsx";
 
 function renderRoutes() {
     renderWithProviders(
@@ -13,7 +14,7 @@ function renderRoutes() {
             <Route element={<RequireAuth/>}>
                 <Route path="/" element={<p>Home</p>}/>
             </Route>
-            <Route path="/auth" element={<p>Auth</p>}/>
+            <Route path="/auth" element={<ShowLocation/>}/>
         </Routes>
     );
 }
@@ -48,6 +49,17 @@ describe("RequireAuth", () => {
     it("redirects to /auth when signed out", () => {
         renderRoutes();
 
-        expect(screen.getByText("Auth")).toBeInTheDocument();
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: null});
+    });
+
+    it("redirects to /auth with the expired session notice when the refresh token is no longer valid", async () => {
+        localStorage.setItem("refreshToken", "refresh-token");
+        mockRequest("get", "/users/me", {status: 401});
+        mockPost("/auth/refresh", 401);
+
+        renderRoutes();
+
+        expect(await screen.findByTestId("location")).toBeInTheDocument();
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {notice: "sessionExpired"}});
     });
 });

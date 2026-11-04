@@ -9,6 +9,7 @@ import {EmailLinkForm} from "../components/EmailLinkForm.tsx";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 import {AuthCard} from "../components/AuthCard.tsx";
 import {isInvalidToken} from "../tokenErrors.tsx";
+import {authNoticeState} from "../authNotice.tsx";
 
 function BackLink() {
     const {t} = useTranslation("auth");
@@ -30,7 +31,7 @@ export function VerifyEmailPage() {
         if (!token || sentAttemptRef.current === attempt) return;
         sentAttemptRef.current = attempt;
         verifyEmail({token})
-            .then(() => navigate("/auth", {replace: true, state: {notice: "verified"}}))
+            .then(() => navigate("/auth", {replace: true, state: authNoticeState("verified")}))
             .catch(caught => setError(toApiError(caught)));
     }, [token, attempt, navigate]);
 

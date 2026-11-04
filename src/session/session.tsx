@@ -3,19 +3,24 @@ import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 
 // Who is signed in. `loading` while the stored tokens' user is fetched; `error` when that failed with no answer
-// or a server error (a `401` that a refresh can't fix ends the session in the API client instead).
+// or a server error (a `401` that a refresh can't fix ends the session in the API client instead). `expired` when this
+// tab's session ended as the server no longer accepted it, not as the user signed out.
 export type SessionState =
     | {readonly status: "loading"}
     | {readonly status: "signedIn"; readonly user: UserDto}
-    | {readonly status: "signedOut"}
+    | {readonly status: "signedOut"; readonly expired: boolean}
     | {readonly status: "error"; readonly retry: () => void};
 
 // Checking `status` narrows the state, e.g. to read `user` once it's `signedIn`.
 export type Session = SessionState & {
     // Signs in and loads the user; rejects with the failed request's error and stays signed out.
     readonly signIn: (loginDto: LoginDto) => Promise<void>;
+    // Signs out here and in every other tab at once, even offline, and tells the server; never rejects.
+    readonly signOut: () => Promise<void>;
     // Forgets the session in this browser without telling the server, e.g. after the server revoked it.
     readonly clearSession: () => void;
+    // Forgets that the session expired, once the user was told, so `expired` doesn't tell them again.
+    readonly clearExpired: () => void;
 };
 
 export const SessionContext = createContext<Session | null>(null);
