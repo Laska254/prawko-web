@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {Divider, IconButton, ListItemIcon, Menu, MenuItem, Tooltip} from "@mui/material";
+import {CircularProgress, Divider, IconButton, ListItemIcon, Menu, MenuItem, Tooltip} from "@mui/material";
 import {AccountCircle, Logout} from "@mui/icons-material";
 import {useTranslation} from "react-i18next";
 import {Link} from "react-router";
@@ -10,6 +10,21 @@ export function UserMenu() {
     const close = () => setAnchor(null);
     const {t} = useTranslation("app");
     const {signOut} = useSession();
+    const [isSigningOut, setIsSigningOut] = useState(false);
+
+    // Signing out first waits for a refresh in flight, in this tab or another, for up to a request's timeout. Until
+    // then the item shows it's busy and takes no more clicks.
+    function onSignOut(): void {
+        setIsSigningOut(true);
+        void signOut().finally(() => setIsSigningOut(false));
+    }
+
+    function signOutIcon() {
+        if (isSigningOut) {
+            return <CircularProgress size={20}/>;
+        }
+        return <Logout fontSize="small"/>;
+    }
 
     return (
         <>
@@ -26,8 +41,8 @@ export function UserMenu() {
                 <MenuItem component={Link} to="/settings" onClick={close}>{t("userMenu.settings")}</MenuItem>
                 <Divider/>
                 {/* `RequireAuth` then replaces the page with /auth, so back doesn't return to it. */}
-                <MenuItem onClick={() => void signOut()}>
-                    <ListItemIcon><Logout fontSize="small"/></ListItemIcon>
+                <MenuItem onClick={onSignOut} disabled={isSigningOut}>
+                    <ListItemIcon>{signOutIcon()}</ListItemIcon>
                     {t("userMenu.signOut")}
                 </MenuItem>
             </Menu>
