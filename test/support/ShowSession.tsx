@@ -2,8 +2,8 @@ import {useState} from "react";
 import {useSession} from "@/session/useSession.tsx";
 import {credentials} from "./data.tsx";
 
-// Shows the session's status, its user or whether it expired, with buttons to sign in (as `credentials`), to retry a failed session, to sign
-// out and to clear the session.
+// Shows the session's status, its user or whether it expired, with buttons to sign in (as `credentials`), to retry a
+// failed session, to sign out and to clear the session.
 export function ShowSession() {
     const session = useSession();
     const [isFailed, setFailed] = useState(false);
