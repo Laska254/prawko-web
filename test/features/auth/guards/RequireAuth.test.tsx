@@ -54,6 +54,7 @@ describe("RequireAuth", () => {
 
     it("redirects to /auth with the expired session notice when the refresh token is no longer valid", async () => {
         localStorage.setItem("refreshToken", "refresh-token");
+        mockRequest("get", "/users/me", {status: 401});
         mockPost("/auth/refresh", 401);
 
         renderRoutes();

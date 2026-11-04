@@ -108,6 +108,7 @@ describe("App", () => {
 
     it("tells the user their session expired once when the refresh token is no longer valid", async () => {
         localStorage.setItem("refreshToken", "refresh-token");
+        mockRequest("get", "/users/me", {status: 401});
         const refreshes = mockPost("/auth/refresh", 401);
         // Home comes first, so back goes to a signed-in page of this test.
         window.history.pushState({}, "", "/");
