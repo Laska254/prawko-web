@@ -9,7 +9,8 @@
   "userMenu": {
     "label": "Konto",
     "profile": "Profil",
-    "settings": "Ustawienia"
+    "settings": "Ustawienia",
+    "signOut": "Wyloguj się"
   },
   "notFound": {
     "title": "Nie znaleziono strony",

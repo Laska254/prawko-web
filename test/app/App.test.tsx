@@ -1,4 +1,4 @@
-import {screen, waitFor} from "@testing-library/react";
+import {act, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {App} from "@/app/App.tsx";
 import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
@@ -58,6 +58,50 @@ describe("App", () => {
 
         const heading = await screen.findByRole("heading", {name});
         expect(screen.getByRole("main")).toContainElement(heading);
+    });
+
+    it("signs out from the user menu to sign in, and back doesn't return to the signed-in page", async () => {
+        signIn();
+        const logouts = mockPost("/auth/logout");
+        const userEvents = userEvent.setup();
+        // Opened from home, as the window's history is shared by the tests: back then goes home, not to another test.
+        renderAt("/");
+        await userEvents.click(await screen.findByRole("link", {name: "History"}));
+        expect(await screen.findByRole("heading", {name: "History"})).toBeInTheDocument();
+
+        await userEvents.click(screen.getByRole("button", {name: "Account"}));
+        await userEvents.click(screen.getByRole("menuitem", {name: "Sign out"}));
+
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/auth");
+        expect(getRefreshToken()).toBeNull();
+        await waitFor(() => expect(logouts).toEqual([{refreshToken: "refresh-token"}]));
+
+        // jsdom goes back after a task, so the test waits for it before checking where the app went.
+        await act(() => new Promise(resolve => {
+            window.addEventListener("popstate", resolve, {once: true});
+            window.history.back();
+        }));
+
+        await waitFor(() => expect(window.location.pathname).toBe("/auth"));
+        expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(screen.queryByRole("banner")).not.toBeInTheDocument();
+    });
+
+    it("signs out when another tab signs out", async () => {
+        signIn();
+        renderAt("/history");
+        expect(await screen.findByRole("heading", {name: "History"})).toBeInTheDocument();
+
+        // Browsers send `storage` events only to the other tabs, so the test plays the tab that signed out.
+        act(() => {
+            localStorage.removeItem("refreshToken");
+            window.dispatchEvent(new StorageEvent("storage",
+                {key: "refreshToken", oldValue: "refresh-token", storageArea: localStorage}));
+        });
+
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/auth");
     });
 
     describe.each([

@@ -1,6 +1,6 @@
 import {type ReactNode, useEffect, useState} from "react";
 import {queryOptions, useQuery, useQueryClient} from "@tanstack/react-query";
-import {login} from "@/api/auth.tsx";
+import {login, logout} from "@/api/auth.tsx";
 import {clearTokens, endSession, isAuthenticated, onSessionEnded, onSessionStarted} from "@/api/tokens.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
@@ -64,5 +64,9 @@ export function SessionProvider({children}: SessionProviderProps) {
         }
     }
 
-    return <SessionContext value={{...state(), signIn, clearSession: endSession}}>{children}</SessionContext>;
+    return (
+        <SessionContext value={{...state(), signIn, signOut: logout, clearSession: endSession}}>
+            {children}
+        </SessionContext>
+    );
 }
