@@ -3,7 +3,7 @@ import {useSession} from "@/session/useSession.tsx";
 import {credentials} from "./data.tsx";
 
 // Shows the session's status, its user or whether it expired, with buttons to sign in (as `credentials`), to retry a
-// failed session, to sign out and to clear the session.
+// failed session, to sign out, to clear the session and to forget that it expired.
 export function ShowSession() {
     const session = useSession();
     const [isFailed, setFailed] = useState(false);
@@ -20,6 +20,7 @@ export function ShowSession() {
             {isFailed && <p>Sign in failed</p>}
             <button type="button" onClick={session.signOut}>Sign out</button>
             <button type="button" onClick={session.clearSession}>Clear session</button>
+            <button type="button" onClick={session.clearExpired}>Clear expired</button>
         </>
     );
 }

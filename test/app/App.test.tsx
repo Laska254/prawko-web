@@ -109,6 +109,8 @@ describe("App", () => {
     it("tells the user their session expired once when the refresh token is no longer valid", async () => {
         localStorage.setItem("refreshToken", "refresh-token");
         const refreshes = mockPost("/auth/refresh", 401);
+        // Home comes first, so back goes to a signed-in page of this test.
+        window.history.pushState({}, "", "/");
 
         renderAt("/history");
 
@@ -116,6 +118,15 @@ describe("App", () => {
         expect(window.location.pathname).toBe("/auth");
         expect(screen.getByRole("alert")).toHaveTextContent("Your session has expired. Sign in again to continue.");
         expect(refreshes).toHaveLength(1);
+
+        await act(() => new Promise(resolve => {
+            window.addEventListener("popstate", resolve, {once: true});
+            window.history.back();
+        }));
+
+        await waitFor(() => expect(window.location.pathname).toBe("/auth"));
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
     describe.each([

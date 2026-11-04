@@ -67,7 +67,8 @@ export function SessionProvider({children}: SessionProviderProps) {
     }
 
     return (
-        <SessionContext value={{...state(), signIn, signOut: logout, clearSession: endSession}}>
+        <SessionContext value={{...state(), signIn, signOut: logout, clearSession: endSession,
+            clearExpired: () => setExpired(false)}}>
             {children}
         </SessionContext>
     );

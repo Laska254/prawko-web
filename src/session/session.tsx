@@ -19,6 +19,8 @@ export type Session = SessionState & {
     readonly signOut: () => Promise<void>;
     // Forgets the session in this browser without telling the server, e.g. after the server revoked it.
     readonly clearSession: () => void;
+    // Forgets that the session expired, once the user was told, so `expired` doesn't tell them again.
+    readonly clearExpired: () => void;
 };
 
 export const SessionContext = createContext<Session | null>(null);

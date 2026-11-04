@@ -173,6 +173,19 @@ describe("SessionProvider", () => {
         expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
     });
 
+    it("stays signed out but isn't expired once it forgets the expiry", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        act(() => expireSession());
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Clear expired"}));
+
+        expect(status()).toBe("signedOut");
+        expect(screen.queryByText("Expired")).not.toBeInTheDocument();
+    });
+
     it("isn't expired once the next session ends by signing out", async () => {
         saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
