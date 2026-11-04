@@ -1,20 +1,20 @@
 import {useState} from "react";
-import type {ParseKeys} from "i18next";
 import {useLocation} from "react-router";
 import {FORM_CONFIGS, type FormType} from "../formConfig.tsx";
-import {AuthForm} from "../components/AuthForm.tsx";
+import {AuthForm, type AuthNotice} from "../components/AuthForm.tsx";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 
-type AuthNotice = "verified" | "passwordReset";
+type AuthNoticeType = "verified" | "passwordReset" | "sessionExpired";
 
-const NOTICES: Record<AuthNotice, ParseKeys<"auth">> = {
-    verified: "notices.verified",
-    passwordReset: "notices.passwordReset",
+const NOTICES: Record<AuthNoticeType, AuthNotice> = {
+    verified: {message: "notices.verified", severity: "success"},
+    passwordReset: {message: "notices.passwordReset", severity: "success"},
+    sessionExpired: {message: "notices.sessionExpired", severity: "info"},
 };
 
 export function AuthPage() {
     const [active, setActive] = useState<FormType>("login");
-    const stateNotice: AuthNotice | undefined = useLocation().state?.notice;
+    const stateNotice: AuthNoticeType | undefined = useLocation().state?.notice;
     const notice = stateNotice && active === "login" ? NOTICES[stateNotice] : undefined;
 
     return (

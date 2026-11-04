@@ -4,6 +4,13 @@ import {PageError} from "@/components/feedback/PageError.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
 import {useSession} from "@/session/useSession.tsx";
 
+// An expired session tells the sign in page why the user is back there.
+function signedOutState(expired: boolean) {
+    if (expired) {
+        return {notice: "sessionExpired"};
+    }
+}
+
 export function RequireAuth() {
     const session = useSession();
     const {t} = useTranslation();
@@ -16,6 +23,6 @@ export function RequireAuth() {
         case "signedIn":
             return <Outlet/>;
         case "signedOut":
-            return <Navigate to="/auth" replace/>;
+            return <Navigate to="/auth" replace state={signedOutState(session.expired)}/>;
     }
 }
