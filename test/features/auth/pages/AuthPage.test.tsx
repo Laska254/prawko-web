@@ -1,4 +1,4 @@
-import {screen} from "@testing-library/react";
+import {screen, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {AuthPage} from "@/features/auth/pages/AuthPage.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
@@ -40,13 +40,15 @@ describe("AuthPage", () => {
     });
 
     it.each([
-        ["verified", "Your email is verified. You can sign in now."],
-        ["passwordReset", "Your password has been changed. You can sign in now."],
-    ])("shows the %s notice only on sign in", async (notice, message) => {
+        ["verified", "Your email is verified. You can sign in now.", "SuccessOutlinedIcon"],
+        ["passwordReset", "Your password has been changed. You can sign in now.", "SuccessOutlinedIcon"],
+        ["sessionExpired", "Your session has expired. Sign in again to continue.", "InfoOutlinedIcon"],
+    ])("shows the %s notice only on sign in", async (notice, message, icon) => {
         const user = userEvent.setup();
         renderWithProviders(<AuthPage/>, {route: "/auth", state: {notice}});
 
-        expect(screen.getByText(message)).toBeInTheDocument();
+        expect(screen.getByRole("alert")).toHaveTextContent(message);
+        expect(within(screen.getByRole("alert")).getByTestId(icon)).toBeInTheDocument();
 
         await user.click(screen.getByRole("button", {name: "Create one"}));
         expect(screen.queryByText(message)).not.toBeInTheDocument();

@@ -74,6 +74,7 @@ describe("App", () => {
 
         expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
         expect(window.location.pathname).toBe("/auth");
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
         expect(getRefreshToken()).toBeNull();
         await waitFor(() => expect(logouts).toEqual([{refreshToken: "refresh-token"}]));
 
@@ -102,6 +103,19 @@ describe("App", () => {
 
         expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
         expect(window.location.pathname).toBe("/auth");
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("tells the user their session expired once when the refresh token is no longer valid", async () => {
+        localStorage.setItem("refreshToken", "refresh-token");
+        const refreshes = mockPost("/auth/refresh", 401);
+
+        renderAt("/history");
+
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/auth");
+        expect(screen.getByRole("alert")).toHaveTextContent("Your session has expired. Sign in again to continue.");
+        expect(refreshes).toHaveLength(1);
     });
 
     describe.each([

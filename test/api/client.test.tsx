@@ -188,7 +188,7 @@ describe("client", () => {
             await expect(api.post("/auth/verify")).resolves.toMatchObject({status: 204});
             expect(authorization()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledOnce();
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(true);
         });
 
         it("fails without sending the request when the refresh after a reload gets no answer", async () => {
@@ -233,7 +233,7 @@ describe("client", () => {
             expect(slowAuthorizations).toEqual(["Bearer access-token", "Bearer new-access-token"]);
         });
 
-        it("ends the session when the refresh token is no longer valid", async () => {
+        it("expires the session when the refresh token is no longer valid", async () => {
             const authorizations = requireNewToken("/auth/verify");
             mockRequest("post", "/auth/refresh", {status: 401});
             saveTokens(tokens);
@@ -242,7 +242,7 @@ describe("client", () => {
             expect(authorizations).toHaveLength(1);
             expect(getAccessToken()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledOnce();
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(true);
         });
 
         it("keeps the session when the refresh gets no answer", async () => {
@@ -256,7 +256,7 @@ describe("client", () => {
             expect(sessionEnded).not.toHaveBeenCalled();
         });
 
-        it("ends the session when the new access token gets a 401 too", async () => {
+        it("expires the session when the new access token gets a 401 too", async () => {
             const authorization = respondWith(401);
             const refreshes = mockRefresh();
             saveTokens(tokens);
@@ -265,7 +265,7 @@ describe("client", () => {
             expect(refreshes).toHaveLength(1);
             expect(authorization()).toBe("Bearer new-access-token");
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledOnce();
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(true);
         });
 
         it("refreshes without Web Locks", async () => {
@@ -331,7 +331,7 @@ describe("client", () => {
                 expect(sessionEnded).not.toHaveBeenCalled();
             });
 
-            it("both end the session when the other tab's refresh ended it", async () => {
+            it("both end the session when the other tab's refresh ended it, and only that tab knows it expired", async () => {
                 saveTokens(tokens);
                 const otherTab = await openOtherTab();
                 otherTab.saveTokens(tokens);
@@ -349,8 +349,8 @@ describe("client", () => {
                 expect(refreshes).toHaveLength(1);
                 expect(getAccessToken()).toBeNull();
                 expect(otherTab.getAccessToken()).toBeNull();
-                expect(sessionEnded).toHaveBeenCalledOnce();
-                expect(otherSessionEnded).toHaveBeenCalledOnce();
+                expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(true);
+                expect(otherSessionEnded).toHaveBeenCalledExactlyOnceWith(false);
                 stopOtherListening();
             });
         });

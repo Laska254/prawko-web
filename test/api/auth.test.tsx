@@ -97,7 +97,7 @@ describe("auth", () => {
             expect(authorization).toBeNull();
             expect(getAccessToken()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledOnce();
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(false);
         });
 
         it("ends the session without refreshing it after a reload", async () => {
@@ -119,7 +119,7 @@ describe("auth", () => {
             await expect(logout()).resolves.toBeUndefined();
             expect(getAccessToken()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledOnce();
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(false);
         });
 
         it("sends nothing when another tab signed out first", async () => {
@@ -128,7 +128,7 @@ describe("auth", () => {
             await logout();
 
             expect(requests).toEqual([]);
-            expect(sessionEnded).toHaveBeenCalledOnce();
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(false);
         });
 
         it("waits for a refresh already sent and revokes the refresh token it stored", async () => {

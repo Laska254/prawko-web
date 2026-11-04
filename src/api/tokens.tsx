@@ -29,10 +29,13 @@ export function isAuthenticated(): boolean {
     return getRefreshToken() !== null;
 }
 
-const sessionEndedListeners = new Set<() => void>();
+// `expired` is true when the server no longer accepted the session, so it ended without the user asking.
+type SessionEndedListener = (expired: boolean) => void;
+
+const sessionEndedListeners = new Set<SessionEndedListener>();
 const sessionStartedListeners = new Set<() => void>();
 
-function addListener(listeners: Set<() => void>, listener: () => void): () => void {
+function addListener<T>(listeners: Set<T>, listener: T): () => void {
     listeners.add(listener);
     return () => {
         listeners.delete(listener);
@@ -40,7 +43,7 @@ function addListener(listeners: Set<() => void>, listener: () => void): () => vo
 }
 
 // Calls `listener` each time the session ends; returns a function that stops it.
-export function onSessionEnded(listener: () => void): () => void {
+export function onSessionEnded(listener: SessionEndedListener): () => void {
     return addListener(sessionEndedListeners, listener);
 }
 
@@ -51,15 +54,24 @@ export function onSessionStarted(listener: () => void): () => void {
 
 // Clears the tokens and tells the listeners, e.g. the session state, that the session is over.
 export function endSession(): void {
+    endStoredSession(false);
+}
+
+// Like `endSession`, for a session the server no longer accepts, so the user learns why they were signed out.
+export function expireSession(): void {
+    endStoredSession(true);
+}
+
+function endStoredSession(expired: boolean): void {
     localStorage.removeItem(REFRESH_TOKEN_KEY);
-    endSessionInThisTab();
+    endSessionInThisTab(expired);
 }
 
 // Leaves the stored refresh token alone, as it is shared by all tabs.
-function endSessionInThisTab(): void {
+function endSessionInThisTab(expired: boolean): void {
     accessToken = null;
     for (const listener of sessionEndedListeners) {
-        listener();
+        listener(expired);
     }
 }
 
@@ -72,7 +84,8 @@ function endSessionInThisTab(): void {
 // session too, as it would on a reload, instead of sending that session's tokens while showing the sign-in page.
 window.addEventListener("storage", event => {
     if ((event.key === REFRESH_TOKEN_KEY && event.newValue === null) || event.key === null) {
-        endSessionInThisTab();
+        // Only the tab whose refresh failed knows the session expired.
+        endSessionInThisTab(false);
     } else if (event.key === REFRESH_TOKEN_KEY && event.oldValue === null) {
         for (const listener of sessionStartedListeners) {
             listener();
