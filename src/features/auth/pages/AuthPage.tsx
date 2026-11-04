@@ -16,7 +16,7 @@ export function AuthPage() {
     const [active, setActive] = useState<FormType>("login");
     const location = useLocation();
     const navigate = useNavigate();
-    const [notice, setNotice] = useState<AuthNoticeType | undefined>(location.state?.notice);
+    const [noticeType, setNoticeType] = useState<AuthNoticeType | undefined>(location.state?.notice);
 
     // The browser keeps the navigation state for reloads and back navigation, so the notice is read once (above) and
     // cleared from it.
@@ -28,13 +28,13 @@ export function AuthPage() {
 
     // The notice is about signing in, so it goes away for good once the user switches to another form.
     function switchForm(form: FormType) {
-        setNotice(undefined);
+        setNoticeType(undefined);
         setActive(form);
     }
 
     return (
         <AuthPageLayout>
-            <AuthForm form={FORM_CONFIGS[active]} setActive={switchForm} notice={notice && NOTICES[notice]}/>
+            <AuthForm form={FORM_CONFIGS[active]} setActive={switchForm} notice={noticeType && NOTICES[noticeType]}/>
         </AuthPageLayout>
     );
 }
