@@ -8,7 +8,7 @@ import {useSession} from "@/session/useSession.tsx";
 export function UserMenu() {
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
     const close = () => setAnchor(null);
-    const {t} = useTranslation("app");
+    const {t} = useTranslation(["app", "common"]);
     const {signOut} = useSession();
     const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -21,7 +21,7 @@ export function UserMenu() {
 
     function signOutIcon() {
         if (isSigningOut) {
-            return <CircularProgress size={20}/>;
+            return <CircularProgress size={20} aria-label={t("common:loading")}/>;
         }
         return <Logout fontSize="small"/>;
     }

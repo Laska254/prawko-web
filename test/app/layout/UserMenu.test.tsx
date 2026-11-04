@@ -57,7 +57,7 @@ describe("UserMenu", () => {
 
         const signOut = screen.getByRole("menuitem", {name: "Sign out"});
         expect(signOut).toHaveAttribute("aria-disabled", "true");
-        expect(screen.getByRole("progressbar")).toBeInTheDocument();
+        expect(screen.getByRole("progressbar", {name: "Loading"})).toBeInTheDocument();
         expect(getRefreshToken()).toBe("refresh-token");
 
         release();
