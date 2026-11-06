@@ -1,11 +1,14 @@
 import {AxiosError, type AxiosResponse} from "axios";
 import type {AuthTokensDto} from "@/api/dto/AuthTokensDto.tsx";
+import type {GoogleSignInDto} from "@/api/dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import type {ProblemDetail} from "@/api/dto/ProblemDetail.tsx";
 import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 
 export const credentials: LoginDto = {userName: "jan", password: "secret"};
+
+export const googleSignInDto: GoogleSignInDto = {idToken: "google-id-token"};
 
 export const tokens: AuthTokensDto = {accessToken: "access-token", refreshToken: "refresh-token", expiresIn: 900};
 
@@ -27,6 +30,8 @@ export const user: UserDto = {
     awaitingNewEmailConfirmation: false,
     awaitingCurrentEmailConfirmation: false,
     role: "USER",
+    hasPassword: true,
+    providers: [],
 };
 
 // A ProblemDetail of `status`; `details` are the errors per field of a `400`/`409`.

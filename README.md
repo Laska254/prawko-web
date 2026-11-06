@@ -169,6 +169,23 @@ Server URL: `http://localhost:8080/` (set via `VITE_API_URL` in `.env.developmen
 
 Prawko Server must allow CORS requests from the application URL.
 
+### Sign in with Google
+
+Optional: without `VITE_GOOGLE_CLIENT_ID` the button isn't shown.
+
+1. In the [Google Cloud console](https://console.cloud.google.com/apis/credentials), create an OAuth client ID of type
+   *Web application*. Under *Authorized JavaScript origins* add the application URL of each environment; for development
+   that's both `http://localhost` and `http://localhost:5173`.
+2. Set its ID as `VITE_GOOGLE_CLIENT_ID`, in `.env.development.local` (not committed) or the environment of a production
+   build.
+3. Give the server the same ID, as it checks that ID tokens were issued for it; without it `POST /auth/google` answers
+   `404`. In production set `GOOGLE_CLIENT_IDS`; locally set `google.client-ids` in `application-dev.yaml`, see the
+   server's README › Local configuration.
+
+A Content Security Policy has to allow Google's script: `https://accounts.google.com/gsi/client` in `script-src`,
+`https://accounts.google.com/gsi/` in `frame-src` and `connect-src`, and `https://accounts.google.com/gsi/style` in
+`style-src`.
+
 ### Pages
 
 * `/auth` sign in and create an account
@@ -187,6 +204,7 @@ Prawko Server must allow CORS requests from the application URL.
 
 * `/auth`
     + `POST` sign in
+    + `POST /google` sign in with a Google ID token
     + `POST /refresh` get a new token pair
     + `POST /logout` sign out (revoke the refresh token)
     + `POST /verify` verify email
