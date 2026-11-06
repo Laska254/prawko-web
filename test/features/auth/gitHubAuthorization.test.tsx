@@ -1,4 +1,4 @@
-import {gitHubRedirectUri, takeGitHubCodeVerifier} from "@/features/auth/gitHubAuthorization.tsx";
+import {gitHubRedirectUri, isGitHubSignInSupported, takeGitHubCodeVerifier} from "@/features/auth/gitHubAuthorization.tsx";
 import {startSignIn} from "@test/support/gitHubSignIn.tsx";
 
 // The example of RFC 7636, appendix B.
@@ -42,13 +42,14 @@ describe("gitHubAuthorization", () => {
         expect(first.searchParams.get("code_challenge")).not.toBe(second.searchParams.get("code_challenge"));
     });
 
-    it("rejects where the browser has no crypto.subtle, and stores nothing", async () => {
+    it("is supported with crypto.subtle", () => {
+        expect(isGitHubSignInSupported()).toBe(true);
+    });
+
+    it("isn't supported without crypto.subtle, as outside a secure context", () => {
         vi.spyOn(crypto, "subtle", "get").mockReturnValue(undefined as unknown as SubtleCrypto);
 
-        await expect(startSignIn()).rejects.toThrow();
-        vi.unstubAllGlobals();
-
-        expect(sessionStorage).toHaveLength(0);
+        expect(isGitHubSignInSupported()).toBe(false);
     });
 
     it("gives the verifier for the started sign in's state, only once", async () => {

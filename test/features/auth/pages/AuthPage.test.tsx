@@ -55,6 +55,18 @@ describe("AuthPage", () => {
         expect(screen.getByRole("button", {name: "Continue with Google"})).toBeInTheDocument();
     });
 
+    it("keeps the GitHub button on both forms with a client ID", async () => {
+        vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
+        const user = userEvent.setup();
+        renderWithProviders(<AuthPage/>, {route: "/auth"});
+        expect(screen.getByRole("button", {name: "Continue with GitHub"})).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", {name: "Create one"}));
+
+        expect(screen.getByRole("heading", {name: "Create account"})).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Continue with GitHub"})).toBeInTheDocument();
+    });
+
     it("drops a Google error when switching forms, and the button still signs in", async () => {
         vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
         const user = userEvent.setup();

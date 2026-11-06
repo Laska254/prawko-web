@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {Alert, Box, Divider, LinearProgress, Stack, useColorScheme} from "@mui/material";
+import {Alert, Box, LinearProgress, Stack, useColorScheme} from "@mui/material";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router";
@@ -28,13 +28,14 @@ function buttonTheme(colorScheme: string | undefined): GoogleButtonOptions["them
 interface GoogleSignInProps {
     clientId: string;
     formType: FormType;
+    // Told when the script can't be loaded, as the parent then leaves this out: the password forms still work, and the
+    // script isn't tried again until the page is opened again. A state setter, as a new function renders the button again.
+    setUnavailable: (isUnavailable: boolean) => void;
 }
 
-// Google's own button, which hands over the ID token. Left out if its script can't be loaded, as the password forms
-// still work.
-export function GoogleSignIn({clientId, formType}: GoogleSignInProps) {
+// Google's own button, which hands over the ID token.
+export function GoogleSignIn({clientId, formType, setUnavailable}: GoogleSignInProps) {
     const buttonRef = useRef<HTMLDivElement>(null);
-    const [isUnavailable, setUnavailable] = useState(false);
     const [error, setError] = useState<ApiError | null>(null);
     const [isSending, setIsSending] = useState(false);
     const [prevFormType, setPrevFormType] = useState(formType);
@@ -64,11 +65,7 @@ export function GoogleSignIn({clientId, formType}: GoogleSignInProps) {
 
     // Google's button is an iframe that doesn't follow the page, so it's rendered again with the new theme or language.
     useEffect(() => {
-        const parent = buttonRef.current;
-        // The script failed to load and the button is gone: it isn't tried again until the page is opened again.
-        if (!parent) {
-            return;
-        }
+        const parent = buttonRef.current!;
         let isCurrent = true;
         loadGoogleIdentity(clientId)
             .then(google => {
@@ -86,11 +83,7 @@ export function GoogleSignIn({clientId, formType}: GoogleSignInProps) {
         return () => {
             isCurrent = false;
         };
-    }, [clientId, colorScheme, locale]);
-
-    if (isUnavailable) {
-        return null;
-    }
+    }, [clientId, colorScheme, locale, setUnavailable]);
 
     return (
         <Stack spacing={2}>
@@ -99,7 +92,6 @@ export function GoogleSignIn({clientId, formType}: GoogleSignInProps) {
             <Box ref={buttonRef} display="flex" justifyContent="center" minHeight={BUTTON_HEIGHT} inert={isSending}
                  sx={{colorScheme: "light"}}/>
             {isSending && <LinearProgress/>}
-            <Divider>{t("providers.or")}</Divider>
         </Stack>
     );
 }

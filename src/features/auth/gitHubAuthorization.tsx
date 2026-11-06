@@ -26,7 +26,12 @@ export function gitHubRedirectUri(): string {
     return `${window.location.origin}/auth/github/callback`;
 }
 
-// Leaves the app for GitHub's consent page. Rejects outside a secure context, where browsers have no `crypto.subtle`.
+// Whether a sign in can start: outside a secure context (HTTPS or localhost), browsers have no `crypto.subtle`.
+export function isGitHubSignInSupported(): boolean {
+    return crypto.subtle !== undefined;
+}
+
+// Leaves the app for GitHub's consent page.
 export async function startGitHubSignIn(clientId: string): Promise<void> {
     const state = randomString(STATE_BYTES);
     const codeVerifier = randomString(CODE_VERIFIER_BYTES);
