@@ -12,7 +12,7 @@ const CLIENT_ID = "client-id";
 const {idToken} = googleSignInDto;
 
 function renderGoogleSignIn() {
-    return renderAtRoute(<GoogleSignIn clientId={CLIENT_ID}/>, "/auth");
+    return renderAtRoute(<GoogleSignIn clientId={CLIENT_ID} formType="login"/>, "/auth");
 }
 
 function findButton() {

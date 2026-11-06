@@ -1,11 +1,11 @@
-import {screen, within} from "@testing-library/react";
+import {screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {AuthPage} from "@/features/auth/pages/AuthPage.tsx";
 import {googleSignInDto} from "@test/support/data.tsx";
 import {currentLocation, renderAtRoute, renderWithProviders} from "@test/support/render.tsx";
 import {mockProblem} from "@test/support/server.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
-import {googleScripts, loadGoogleScript} from "@test/support/googleScript.tsx";
+import {failGoogleScript, googleScripts, loadGoogleScript} from "@test/support/googleScript.tsx";
 
 describe("AuthPage", () => {
     afterEach(() => {
@@ -74,6 +74,33 @@ describe("AuthPage", () => {
         await sendCredential(googleSignInDto.idToken);
 
         expect(await screen.findByRole("alert")).toHaveTextContent("Signing in with Google failed. Please try again.");
+    });
+
+    it("keeps Google's button when switching forms, without rendering it again", async () => {
+        vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
+        const user = userEvent.setup();
+        renderWithProviders(<AuthPage/>, {route: "/auth"});
+        const {buttons} = loadGoogleScript();
+        await screen.findByRole("button", {name: "Continue with Google"});
+
+        await user.click(screen.getByRole("button", {name: "Create one"}));
+
+        expect(screen.getByRole("heading", {name: "Create account"})).toBeInTheDocument();
+        expect(buttons).toHaveLength(1);
+    });
+
+    it("doesn't try Google's script again when switching forms", async () => {
+        vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
+        const user = userEvent.setup();
+        renderWithProviders(<AuthPage/>, {route: "/auth"});
+        failGoogleScript();
+        await waitFor(() => expect(screen.queryByRole("separator")).not.toBeInTheDocument());
+
+        await user.click(screen.getByRole("button", {name: "Create one"}));
+
+        expect(screen.getByRole("heading", {name: "Create account"})).toBeInTheDocument();
+        expect(googleScripts()).toHaveLength(0);
+        expect(screen.queryByRole("separator")).not.toBeInTheDocument();
     });
 
     it("switches between sign in and registration", async () => {

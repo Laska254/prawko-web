@@ -6,6 +6,7 @@ import {RegisterForm} from "./components/RegisterForm.tsx";
 export type FormType = "login" | "register";
 
 export interface FormConfig {
+    readonly type: FormType;
     readonly title: ParseKeys<"auth">;
     readonly subtitle: ParseKeys<"auth">;
     readonly switchPrompt: ParseKeys<"auth">;
@@ -16,6 +17,7 @@ export interface FormConfig {
 
 export const FORM_CONFIGS: Record<FormType, FormConfig> = {
     login: {
+        type: "login",
         title: "login.title",
         subtitle: "login.subtitle",
         switchPrompt: "login.switchPrompt",
@@ -24,6 +26,7 @@ export const FORM_CONFIGS: Record<FormType, FormConfig> = {
         FormComponent: LoginForm,
     },
     register: {
+        type: "register",
         title: "register.title",
         subtitle: "register.subtitle",
         switchPrompt: "register.switchPrompt",

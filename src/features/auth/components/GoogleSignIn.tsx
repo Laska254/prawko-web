@@ -5,6 +5,7 @@ import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router";
 import {type ApiError, errorMessage, type StatusMessages, toApiError} from "@/api/errors.tsx";
 import {useSession} from "@/session/useSession.tsx";
+import type {FormType} from "../formConfig.tsx";
 import {type GoogleButtonOptions, loadGoogleIdentity, onGoogleCredential} from "../googleIdentity.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
@@ -26,20 +27,28 @@ function buttonTheme(colorScheme: string | undefined): GoogleButtonOptions["them
 
 interface GoogleSignInProps {
     clientId: string;
+    formType: FormType;
 }
 
 // Google's own button, which hands over the ID token. Left out if its script can't be loaded, as the password forms
 // still work.
-export function GoogleSignIn({clientId}: GoogleSignInProps) {
+export function GoogleSignIn({clientId, formType}: GoogleSignInProps) {
     const buttonRef = useRef<HTMLDivElement>(null);
     const [isUnavailable, setUnavailable] = useState(false);
     const [error, setError] = useState<ApiError | null>(null);
     const [isSending, setIsSending] = useState(false);
+    const [prevFormType, setPrevFormType] = useState(formType);
     const navigate = useNavigate();
     const {signInWithGoogle} = useSession();
     const {t, i18n} = useTranslation(["auth", "errors"]);
     const {colorScheme} = useColorScheme();
     const locale = i18n.resolvedLanguage;
+
+    // The error goes away on a form switch, like the form's own. Done while rendering, so the old error is never painted.
+    if (formType !== prevFormType) {
+        setPrevFormType(formType);
+        setError(null);
+    }
 
     function onCredential(idToken: string): void {
         setError(null);
