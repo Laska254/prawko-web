@@ -1,13 +1,13 @@
 import {Alert, type AlertColor, Link, Stack, Typography} from "@mui/material";
 import {useTranslation} from "react-i18next";
-import type {AuthFailureMessage} from "../authNotice.tsx";
+import type {AuthMessage} from "../authNotice.tsx";
 import type {FormConfig, FormType} from "../formConfig.tsx";
 import {AuthCard} from "./AuthCard.tsx";
 import {ProviderSignIn} from "./ProviderSignIn.tsx";
 
 // A message shown above the form, e.g. why the user is on the sign in page.
 export interface AuthNotice {
-    readonly message: AuthFailureMessage;
+    readonly message: AuthMessage;
     readonly severity: AlertColor;
 }
 

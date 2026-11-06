@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import {useNavigate, useSearchParams} from "react-router";
 import {errorMessage, type StatusMessages, toApiError} from "@/api/errors.tsx";
 import {useSession} from "@/session/useSession.tsx";
-import {type AuthFailureMessage, authFailureState} from "../authNotice.tsx";
+import {type AuthMessage, authFailureState} from "../authNotice.tsx";
 import {AuthCard} from "../components/AuthCard.tsx";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 import {gitHubRedirectUri, takeGitHubCodeVerifier} from "../gitHubAuthorization.tsx";
@@ -31,7 +31,7 @@ export function GitHubCallbackPage() {
         if (isHandledRef.current) return;
         isHandledRef.current = true;
 
-        function fail(message: AuthFailureMessage): void {
+        function fail(message: AuthMessage): void {
             navigate("/auth", {replace: true, state: authFailureState(message)});
         }
 
