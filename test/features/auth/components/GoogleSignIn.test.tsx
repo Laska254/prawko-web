@@ -11,8 +11,10 @@ import {cssRules} from "@test/support/styles.tsx";
 const CLIENT_ID = "client-id";
 const {idToken} = googleSignInDto;
 
+const setUnavailable = vi.fn();
+
 function renderGoogleSignIn() {
-    return renderAtRoute(<GoogleSignIn clientId={CLIENT_ID} formType="login"/>, "/auth");
+    return renderAtRoute(<GoogleSignIn clientId={CLIENT_ID} formType="login" setUnavailable={setUnavailable}/>, "/auth");
 }
 
 function findButton() {
@@ -27,7 +29,10 @@ async function renderLoaded() {
 }
 
 describe("GoogleSignIn", () => {
-    afterEach(() => vi.restoreAllMocks());
+    afterEach(() => {
+        vi.restoreAllMocks();
+        setUnavailable.mockClear();
+    });
 
     it("loads Google's script once and initializes it once with the client ID", async () => {
         const {configs} = await renderLoaded();
@@ -43,7 +48,7 @@ describe("GoogleSignIn", () => {
 
         expect(screen.getAllByRole("button")).toHaveLength(1);
         expect(buttons.at(-1)).toEqual({theme: "outline", text: "continue_with", width: 358, locale: "en"});
-        expect(screen.getByRole("separator")).toHaveTextContent("or");
+        expect(setUnavailable).not.toHaveBeenCalled();
     });
 
     it("renders the dark button in dark mode", async () => {
@@ -70,7 +75,6 @@ describe("GoogleSignIn", () => {
 
         await waitFor(() => expect(buttons.at(-1)?.locale).toBe("pl"));
         expect(screen.getAllByRole("button")).toHaveLength(1);
-        expect(screen.getByRole("separator")).toHaveTextContent("lub");
         expect(configs).toHaveLength(1);
     });
 
@@ -182,30 +186,19 @@ describe("GoogleSignIn", () => {
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
-    it("leaves itself out when the script can't be loaded", async () => {
+    it("tells the parent when the script can't be loaded", async () => {
         renderGoogleSignIn();
 
         failGoogleScript();
 
-        await waitFor(() => expect(screen.queryByRole("separator")).not.toBeInTheDocument());
-        expect(googleScripts()).toHaveLength(0);
-    });
-
-    it("doesn't try the script again when the language changes", async () => {
-        renderGoogleSignIn();
-        failGoogleScript();
-        await waitFor(() => expect(screen.queryByRole("separator")).not.toBeInTheDocument());
-
-        await i18n.changeLanguage("pl");
-
-        await waitFor(() => expect(document.documentElement.lang).toBe("pl"));
+        await waitFor(() => expect(setUnavailable).toHaveBeenCalledWith(true));
         expect(googleScripts()).toHaveLength(0);
     });
 
     it("tries the script again when the page is opened again", async () => {
         const {unmount} = renderGoogleSignIn();
         failGoogleScript();
-        await waitFor(() => expect(screen.queryByRole("separator")).not.toBeInTheDocument());
+        await waitFor(() => expect(setUnavailable).toHaveBeenCalledWith(true));
         unmount();
 
         await renderLoaded();

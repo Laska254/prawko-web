@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import {App} from "@/app/App.tsx";
 import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {tokens, user} from "@test/support/data.tsx";
+import {startedState} from "@test/support/gitHubSignIn.tsx";
 import {renderWithoutRouter} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 
@@ -25,6 +26,7 @@ describe("App", () => {
         ["/history", "/auth"],
         ["/profile", "/auth"],
         ["/settings", "/auth"],
+        ["/auth/github/callback", "/auth"],
     ])("sends a guest from %s to %s", async (path, expected) => {
         renderAt(path);
 
@@ -36,6 +38,7 @@ describe("App", () => {
         ["/", "/"],
         ["/exam", "/exam"],
         ["/auth", "/"],
+        ["/auth/github/callback", "/"],
     ])("sends a signed in user from %s to %s", async (path, expected) => {
         signIn();
 
@@ -45,6 +48,33 @@ describe("App", () => {
         await waitFor(() => expect(screen.queryByRole("progressbar")).not.toBeInTheDocument());
         expect(window.location.pathname).toBe(expected);
         expect(screen.queryByRole("heading", {name: "Sign in"})).not.toBeInTheDocument();
+    });
+
+    it("replaces the GitHub callback with the home page, so going back doesn't return to it", async () => {
+        const state = await startedState();
+        mockPost("/auth/github", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+
+        renderAt(`/auth/github/callback?code=code&state=${state}`);
+        const {length} = window.history;
+
+        expect(await screen.findByRole("banner")).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/");
+        expect(window.location.search).toBe("");
+        expect(window.history.length).toBe(length);
+    });
+
+    it("replaces the GitHub callback with the sign in page when signing in fails", async () => {
+        const state = await startedState();
+        mockPost("/auth/github", 401);
+
+        renderAt(`/auth/github/callback?code=code&state=${state}`);
+        const {length} = window.history;
+
+        expect(await screen.findByRole("alert")).toHaveTextContent("Signing in with GitHub failed. Please try again.");
+        expect(window.location.pathname).toBe("/auth");
+        expect(window.location.search).toBe("");
+        expect(window.history.length).toBe(length);
     });
 
     it.each([

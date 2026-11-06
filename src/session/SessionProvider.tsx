@@ -1,7 +1,8 @@
 import {type ReactNode, useEffect, useState} from "react";
 import {queryOptions, useQuery, useQueryClient} from "@tanstack/react-query";
-import {login, loginWithGoogle, logout} from "@/api/auth.tsx";
+import {login, loginWithGitHub, loginWithGoogle, logout} from "@/api/auth.tsx";
 import {clearTokens, endSession, isAuthenticated, onSessionEnded, onSessionStarted} from "@/api/tokens.tsx";
+import type {GitHubSignInDto} from "@/api/dto/GitHubSignInDto.tsx";
 import type {GoogleSignInDto} from "@/api/dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
@@ -61,6 +62,10 @@ export function SessionProvider({children}: SessionProviderProps) {
         return startSession(() => loginWithGoogle(googleSignInDto));
     }
 
+    function signInWithGitHub(gitHubSignInDto: GitHubSignInDto): Promise<void> {
+        return startSession(() => loginWithGitHub(gitHubSignInDto));
+    }
+
     function clearExpired() {
         setExpired(false);
     }
@@ -80,7 +85,15 @@ export function SessionProvider({children}: SessionProviderProps) {
     }
 
     return (
-        <SessionContext value={{...state(), signIn, signInWithGoogle, signOut: logout, clearSession: endSession, clearExpired}}>
+        <SessionContext value={{
+            ...state(),
+            signIn,
+            signInWithGoogle,
+            signInWithGitHub,
+            signOut: logout,
+            clearSession: endSession,
+            clearExpired,
+        }}>
             {children}
         </SessionContext>
     );

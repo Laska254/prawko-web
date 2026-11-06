@@ -1,4 +1,5 @@
 import {createContext} from "react";
+import type {GitHubSignInDto} from "@/api/dto/GitHubSignInDto.tsx";
 import type {GoogleSignInDto} from "@/api/dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
@@ -18,6 +19,8 @@ export type Session = SessionState & {
     readonly signIn: (loginDto: LoginDto) => Promise<void>;
     // Like `signIn`, with an ID token from Google.
     readonly signInWithGoogle: (googleSignInDto: GoogleSignInDto) => Promise<void>;
+    // Like `signIn`, with the result of GitHub's authorization code flow.
+    readonly signInWithGitHub: (gitHubSignInDto: GitHubSignInDto) => Promise<void>;
     // Signs out here and in every other tab at once, even offline, and tells the server; never rejects.
     readonly signOut: () => Promise<void>;
     // Forgets the session in this browser without telling the server, e.g. after the server revoked it.

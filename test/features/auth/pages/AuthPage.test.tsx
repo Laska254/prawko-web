@@ -55,6 +55,18 @@ describe("AuthPage", () => {
         expect(screen.getByRole("button", {name: "Continue with Google"})).toBeInTheDocument();
     });
 
+    it("keeps the GitHub button on both forms with a client ID", async () => {
+        vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
+        const user = userEvent.setup();
+        renderWithProviders(<AuthPage/>, {route: "/auth"});
+        expect(screen.getByRole("button", {name: "Continue with GitHub"})).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", {name: "Create one"}));
+
+        expect(screen.getByRole("heading", {name: "Create account"})).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Continue with GitHub"})).toBeInTheDocument();
+    });
+
     it("drops a Google error when switching forms, and the button still signs in", async () => {
         vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
         const user = userEvent.setup();
@@ -154,6 +166,31 @@ describe("AuthPage", () => {
         await user.click(screen.getByRole("button", {name: "Sign in"}));
         expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("shows a failure from another page as an error until the user switches forms", async () => {
+        const user = userEvent.setup();
+        renderWithProviders(<AuthPage/>, {route: "/auth", state: {failure: "messages.gitHubDenied"}});
+
+        expect(screen.getByRole("alert")).toHaveTextContent("Signing in with GitHub was cancelled.");
+        expect(within(screen.getByRole("alert")).getByTestId("ErrorOutlineIcon")).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", {name: "Create one"}));
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("shows a generic failure from another page", () => {
+        renderWithProviders(<AuthPage/>, {route: "/auth", state: {failure: "errors:network"}});
+
+        expect(screen.getByRole("alert")).toHaveTextContent("Can't reach the server. Check your connection and try again.");
+    });
+
+    it("clears a failure from the navigation state, so a reload or going back doesn't show it again", () => {
+        renderAtRoute(<><AuthPage/><ShowLocation/></>, "/auth", {failure: "messages.gitHubDenied"});
+
+        expect(screen.getByRole("alert")).toHaveTextContent("Signing in with GitHub was cancelled.");
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: null});
     });
 
     it("clears the notice from the navigation state, so a reload or going back doesn't show it again", () => {

@@ -15,6 +15,7 @@ const ProfilePage = lazyPage(() => import("@/features/profile/pages/ProfilePage.
 const SettingsPage = lazyPage(() => import("@/features/profile/pages/SettingsPage.tsx"), "SettingsPage");
 // Guests
 const AuthPage = lazyPage(() => import("@/features/auth/pages/AuthPage.tsx"), "AuthPage");
+const GitHubCallbackPage = lazyPage(() => import("@/features/auth/pages/GitHubCallbackPage.tsx"), "GitHubCallbackPage");
 // Public
 const VerifyEmailPage = lazyPage(() => import("@/features/auth/pages/VerifyEmailPage.tsx"), "VerifyEmailPage");
 const VerificationSentPage = lazyPage(() => import("@/features/auth/pages/VerificationSentPage.tsx"),
@@ -43,6 +44,7 @@ export function App() {
                         {/* Guests: signed-in users go home. */}
                         <Route element={<RequireGuest/>}>
                             <Route path="/auth" element={<AuthPage/>}/>
+                            <Route path="/auth/github/callback" element={<GitHubCallbackPage/>}/>
                         </Route>
                         {/* Public: email verification, password recovery and 404, signed in or not. */}
                         <Route path="/auth/verify" element={<VerifyEmailPage/>}/>

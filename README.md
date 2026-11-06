@@ -186,6 +186,21 @@ A Content Security Policy has to allow Google's script: `https://accounts.google
 `https://accounts.google.com/gsi/` in `frame-src` and `connect-src`, and `https://accounts.google.com/gsi/style` in
 `style-src`.
 
+### Sign in with GitHub
+
+Optional: without `VITE_GITHUB_CLIENT_ID` the button isn't shown. It also needs HTTPS or `localhost`, as browsers can't
+create the PKCE challenge anywhere else.
+
+1. In [GitHub's developer settings](https://github.com/settings/developers), create an OAuth app for each environment,
+   as an app has only one callback URL. Set its *Authorization callback URL* to the application URL followed by
+   `/auth/github/callback`; for development that's `http://localhost:5173/auth/github/callback`.
+2. Set its client ID as `VITE_GITHUB_CLIENT_ID`, in `.env.development.local` (not committed) or the environment of a
+   production build.
+3. Generate a client secret and give the server both, as it exchanges the code for GitHub's access token; without them
+   `POST /auth/github` answers `404`. In production set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`; locally set
+   `github.client-id` and `github.client-secret` in `application-dev.yaml`, see the server's README › Local
+   configuration.
+
 ### Pages
 
 * `/auth` sign in and create an account
@@ -194,6 +209,7 @@ A Content Security Policy has to allow Google's script: `https://accounts.google
 * `/history` past exams (placeholder)
 * `/profile` account (placeholder)
 * `/settings` preferences (placeholder)
+* `/auth/github/callback` finishes signing in with GitHub
 * `/auth/verify` verify email
 * `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
@@ -205,6 +221,7 @@ A Content Security Policy has to allow Google's script: `https://accounts.google
 * `/auth`
     + `POST` sign in
     + `POST /google` sign in with a Google ID token
+    + `POST /github` sign in with a GitHub authorization code
     + `POST /refresh` get a new token pair
     + `POST /logout` sign out (revoke the refresh token)
     + `POST /verify` verify email
