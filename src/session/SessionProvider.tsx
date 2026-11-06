@@ -1,7 +1,8 @@
 import {type ReactNode, useEffect, useState} from "react";
 import {queryOptions, useQuery, useQueryClient} from "@tanstack/react-query";
-import {login, logout} from "@/api/auth.tsx";
+import {login, loginWithGoogle, logout} from "@/api/auth.tsx";
 import {clearTokens, endSession, isAuthenticated, onSessionEnded, onSessionStarted} from "@/api/tokens.tsx";
+import type {GoogleSignInDto} from "@/api/dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
 import {getCurrentUser} from "@/api/users.tsx";
@@ -41,8 +42,8 @@ export function SessionProvider({children}: SessionProviderProps) {
     // Signs in when another tab does. Signing out emptied the cache, so the user query enabled here fetches the user.
     useEffect(() => onSessionStarted(() => setHasTokens(true)), []);
 
-    async function signIn(loginDto: LoginDto): Promise<void> {
-        await login(loginDto);
+    async function startSession(requestTokens: () => Promise<unknown>): Promise<void> {
+        await requestTokens();
         try {
             await queryClient.fetchQuery(currentUserQuery);
         } catch (error) {
@@ -50,6 +51,14 @@ export function SessionProvider({children}: SessionProviderProps) {
             throw error;
         }
         setHasTokens(true);
+    }
+
+    function signIn(loginDto: LoginDto): Promise<void> {
+        return startSession(() => login(loginDto));
+    }
+
+    function signInWithGoogle(googleSignInDto: GoogleSignInDto): Promise<void> {
+        return startSession(() => loginWithGoogle(googleSignInDto));
     }
 
     function clearExpired() {
@@ -71,7 +80,7 @@ export function SessionProvider({children}: SessionProviderProps) {
     }
 
     return (
-        <SessionContext value={{...state(), signIn, signOut: logout, clearSession: endSession, clearExpired}}>
+        <SessionContext value={{...state(), signIn, signInWithGoogle, signOut: logout, clearSession: endSession, clearExpired}}>
             {children}
         </SessionContext>
     );

@@ -1,4 +1,5 @@
 import {createContext} from "react";
+import type {GoogleSignInDto} from "@/api/dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 
@@ -15,6 +16,8 @@ export type SessionState =
 export type Session = SessionState & {
     // Signs in and loads the user; rejects with the failed request's error and stays signed out.
     readonly signIn: (loginDto: LoginDto) => Promise<void>;
+    // Like `signIn`, with an ID token from Google.
+    readonly signInWithGoogle: (googleSignInDto: GoogleSignInDto) => Promise<void>;
     // Signs out here and in every other tab at once, even offline, and tells the server; never rejects.
     readonly signOut: () => Promise<void>;
     // Forgets the session in this browser without telling the server, e.g. after the server revoked it.

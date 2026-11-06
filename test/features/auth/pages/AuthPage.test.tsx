@@ -3,8 +3,13 @@ import userEvent from "@testing-library/user-event";
 import {AuthPage} from "@/features/auth/pages/AuthPage.tsx";
 import {currentLocation, renderAtRoute, renderWithProviders} from "@test/support/render.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
+import {googleScripts, loadGoogleScript} from "@test/support/googleScript.tsx";
 
 describe("AuthPage", () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
     it("shows the sign in form next to the app panel", () => {
         renderWithProviders(<AuthPage/>, {route: "/auth"});
 
@@ -25,6 +30,27 @@ describe("AuthPage", () => {
 
         expect(screen.getByText(title)).toBeInTheDocument();
         expect(screen.getByText(description)).toBeInTheDocument();
+    });
+
+    it("has no Google sign in without a client ID", () => {
+        renderWithProviders(<AuthPage/>, {route: "/auth"});
+
+        expect(googleScripts()).toHaveLength(0);
+        expect(screen.queryByRole("separator")).not.toBeInTheDocument();
+    });
+
+    it("keeps the Google button on both forms with a client ID", async () => {
+        vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
+        const user = userEvent.setup();
+        renderWithProviders(<AuthPage/>, {route: "/auth"});
+        const {configs} = loadGoogleScript();
+        expect(await screen.findByRole("button", {name: "Continue with Google"})).toBeInTheDocument();
+        expect(configs[0].client_id).toBe("client-id");
+
+        await user.click(screen.getByRole("button", {name: "Create one"}));
+
+        expect(screen.getByRole("heading", {name: "Create account"})).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Continue with Google"})).toBeInTheDocument();
     });
 
     it("switches between sign in and registration", async () => {
