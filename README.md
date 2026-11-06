@@ -194,6 +194,7 @@ A Content Security Policy has to allow Google's script: `https://accounts.google
 * `/history` past exams (placeholder)
 * `/profile` account (placeholder)
 * `/settings` preferences (placeholder)
+* `/auth/github/callback` finishes signing in with GitHub
 * `/auth/verify` verify email
 * `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
