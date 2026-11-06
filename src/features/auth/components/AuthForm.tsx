@@ -28,7 +28,8 @@ export function AuthForm({form, setActive, notice}: AuthFormProps) {
                 <Typography variant="h4" fontWeight={700}>{t(form.title)}</Typography>
                 <Typography color="text.secondary">{t(form.subtitle)}</Typography>
             </Stack>
-            {googleClientId && <GoogleSignIn clientId={googleClientId}/>}
+            {/* Keyed by form: its error goes away on a switch, like the form's own. */}
+            {googleClientId && <GoogleSignIn key={form.switchTo} clientId={googleClientId}/>}
             <form.FormComponent/>
             <Typography color="text.secondary">
                 {t(form.switchPrompt)}{" "}

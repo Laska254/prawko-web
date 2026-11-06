@@ -1,7 +1,9 @@
 import {screen, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {AuthPage} from "@/features/auth/pages/AuthPage.tsx";
+import {googleSignInDto} from "@test/support/data.tsx";
 import {currentLocation, renderAtRoute, renderWithProviders} from "@test/support/render.tsx";
+import {mockProblem} from "@test/support/server.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
 import {googleScripts, loadGoogleScript} from "@test/support/googleScript.tsx";
 
@@ -51,6 +53,27 @@ describe("AuthPage", () => {
 
         expect(screen.getByRole("heading", {name: "Create account"})).toBeInTheDocument();
         expect(screen.getByRole("button", {name: "Continue with Google"})).toBeInTheDocument();
+    });
+
+    it("drops a Google error when switching forms, and the button still signs in", async () => {
+        vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
+        const user = userEvent.setup();
+        renderWithProviders(<AuthPage/>, {route: "/auth"});
+        const {sendCredential} = loadGoogleScript();
+        await screen.findByRole("button", {name: "Continue with Google"});
+        mockProblem("/auth/google", 409);
+        await sendCredential(googleSignInDto.idToken);
+        expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", {name: "Create one"}));
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(await screen.findByRole("button", {name: "Continue with Google"})).toBeInTheDocument();
+
+        mockProblem("/auth/google", 401);
+        await sendCredential(googleSignInDto.idToken);
+
+        expect(await screen.findByRole("alert")).toHaveTextContent("Signing in with Google failed. Please try again.");
     });
 
     it("switches between sign in and registration", async () => {
