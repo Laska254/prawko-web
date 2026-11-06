@@ -339,8 +339,14 @@ describe("client", () => {
                 const stopOtherListening = otherTab.onSessionEnded(otherSessionEnded);
                 expireAccessToken();
                 const refreshes = mockRequest("post", "/auth/refresh", {status: 401});
+                const lockRequests = vi.spyOn(navigator.locks, "request");
+                server.use(http.post(apiUrl("/auth/refresh"), async () => {
+                    await vi.waitFor(() => expect(lockRequests).toHaveBeenCalledTimes(2));
+                }));
 
-                const results = await Promise.allSettled([api.post("/auth/verify"), otherTab.api.post("/auth/verify")]);
+                const request = api.post("/auth/verify");
+                await vi.waitFor(() => expect(lockRequests).toHaveBeenCalledOnce());
+                const results = await Promise.allSettled([request, otherTab.api.post("/auth/verify")]);
 
                 expect(results).toMatchObject([
                     {status: "rejected", reason: {response: {status: 401}}},
