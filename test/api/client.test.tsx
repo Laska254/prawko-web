@@ -340,6 +340,8 @@ describe("client", () => {
                 expireAccessToken();
                 const refreshes = mockRequest("post", "/auth/refresh", {status: 401});
                 const lockRequests = vi.spyOn(navigator.locks, "request");
+                // Holds the refresh until the other tab waits for the lock: a `401` arriving after the session ended
+                // wouldn't end its session. Returns nothing, so the `mockRequest` above answers.
                 server.use(http.post(apiUrl("/auth/refresh"), async () => {
                     await vi.waitFor(() => expect(lockRequests).toHaveBeenCalledTimes(2));
                 }));
