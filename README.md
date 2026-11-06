@@ -205,6 +205,7 @@ A Content Security Policy has to allow Google's script: `https://accounts.google
 * `/auth`
     + `POST` sign in
     + `POST /google` sign in with a Google ID token
+    + `POST /github` sign in with a GitHub authorization code
     + `POST /refresh` get a new token pair
     + `POST /logout` sign out (revoke the refresh token)
     + `POST /verify` verify email
