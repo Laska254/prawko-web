@@ -27,6 +27,8 @@ async function renderLoaded() {
 }
 
 describe("GoogleSignIn", () => {
+    afterEach(() => vi.restoreAllMocks());
+
     it("loads Google's script once and initializes it once with the client ID", async () => {
         const {configs} = await renderLoaded();
 
@@ -34,11 +36,13 @@ describe("GoogleSignIn", () => {
         expect(configs.map(config => config.client_id)).toEqual([CLIENT_ID]);
     });
 
-    it("renders one button in the app's language and light theme", async () => {
+    it("renders one button as wide as the form, in the app's language and light theme", async () => {
+        vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(358);
+
         const {buttons} = await renderLoaded();
 
         expect(screen.getAllByRole("button")).toHaveLength(1);
-        expect(buttons.at(-1)).toEqual({theme: "outline", text: "continue_with", width: 0, locale: "en"});
+        expect(buttons.at(-1)).toEqual({theme: "outline", text: "continue_with", width: 358, locale: "en"});
         expect(screen.getByRole("separator")).toHaveTextContent("or");
     });
 

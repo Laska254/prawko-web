@@ -14,9 +14,6 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     409: "messages.googleEmailConflict",
 };
 
-// The widest Google's button gets.
-const MAX_BUTTON_WIDTH = 400;
-
 // The height of Google's button, kept free while its script loads so the form below doesn't jump.
 const BUTTON_HEIGHT = 40;
 
@@ -71,7 +68,7 @@ export function GoogleSignIn({clientId}: GoogleSignInProps) {
                     google.renderButton(parent, {
                         theme: buttonTheme(colorScheme),
                         text: "continue_with",
-                        width: Math.min(parent.clientWidth, MAX_BUTTON_WIDTH),
+                        width: parent.clientWidth,
                         locale,
                     });
                 }
