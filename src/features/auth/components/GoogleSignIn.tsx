@@ -6,7 +6,7 @@ import {useNavigate} from "react-router";
 import {type ApiError, errorMessage, type StatusMessages, toApiError} from "@/api/errors.tsx";
 import {useSession} from "@/session/useSession.tsx";
 import type {FormType} from "../formConfig.tsx";
-import {type GoogleButtonOptions, loadGoogleIdentity, onGoogleCredential} from "../googleIdentity.tsx";
+import {GOOGLE_BUTTON_HEIGHT, type GoogleButtonOptions, loadGoogleIdentity, onGoogleCredential} from "../googleIdentity.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     401: "messages.googleInvalid",
@@ -14,9 +14,6 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     404: "messages.googleNotConfigured",
     409: "messages.googleEmailConflict",
 };
-
-// The height of Google's button, kept free while its script loads so the form below doesn't jump.
-const BUTTON_HEIGHT = 40;
 
 function buttonTheme(colorScheme: string | undefined): GoogleButtonOptions["theme"] {
     if (colorScheme === "dark") {
@@ -88,8 +85,9 @@ export function GoogleSignIn({clientId, formType, setUnavailable}: GoogleSignInP
     return (
         <Stack spacing={2}>
             {error && <Alert severity="error">{t(errorMessage(error, STATUS_MESSAGES))}</Alert>}
+            {/* The height is kept free while the script loads, so the form below doesn't jump. */}
             {/* Google's iframe has a light page. On a dark page, a browser paints an opaque white backdrop behind it. */}
-            <Box ref={buttonRef} display="flex" justifyContent="center" minHeight={BUTTON_HEIGHT} inert={isSending}
+            <Box ref={buttonRef} display="flex" justifyContent="center" minHeight={GOOGLE_BUTTON_HEIGHT} inert={isSending}
                  sx={{colorScheme: "light"}}/>
             {isSending && <LinearProgress/>}
         </Stack>

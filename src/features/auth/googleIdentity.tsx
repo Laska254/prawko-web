@@ -3,6 +3,9 @@
 
 const SCRIPT_URL = "https://accounts.google.com/gsi/client";
 
+// The height Google's button renders at.
+export const GOOGLE_BUTTON_HEIGHT = 40;
+
 export interface GoogleButtonOptions {
     readonly theme: "outline" | "filled_black";
     readonly text: "continue_with";
