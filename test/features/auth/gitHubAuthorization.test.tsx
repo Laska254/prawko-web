@@ -67,6 +67,13 @@ describe("gitHubAuthorization", () => {
         expect(takeGitHubCodeVerifier(searchParams.get("state"))).toBeNull();
     });
 
+    it("gives no verifier for a link without a state, and ends the started sign in", async () => {
+        const {searchParams} = await startSignIn();
+
+        expect(takeGitHubCodeVerifier(null)).toBeNull();
+        expect(takeGitHubCodeVerifier(searchParams.get("state"))).toBeNull();
+    });
+
     it("gives no verifier when there's no state and no sign in was started", () => {
         expect(takeGitHubCodeVerifier(null)).toBeNull();
     });

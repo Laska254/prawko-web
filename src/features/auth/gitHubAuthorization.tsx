@@ -56,7 +56,7 @@ export function takeGitHubCodeVerifier(state: string | null): string | null {
     const codeVerifier = sessionStorage.getItem(CODE_VERIFIER_KEY);
     sessionStorage.removeItem(STATE_KEY);
     sessionStorage.removeItem(CODE_VERIFIER_KEY);
-    if (state === null || state !== storedState) {
+    if (state !== storedState) {
         return null;
     }
     return codeVerifier;
