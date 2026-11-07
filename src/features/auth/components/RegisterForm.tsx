@@ -18,6 +18,7 @@ import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {startEmailLinkCooldown} from "../emailLinkCooldown.tsx";
+import {EMAIL_LENGTH} from "../fieldLengths.tsx";
 
 const NAME_LENGTH = {minLength: 3, maxLength: 31};
 
@@ -104,7 +105,7 @@ export function RegisterForm() {
                     inputRef={emailRef}
                     errorText={errors.email && t(errors.email)}
                     required
-                    slotProps={{htmlInput: {minLength: 5, maxLength: 254}}}
+                    slotProps={{htmlInput: EMAIL_LENGTH}}
                 />
                 <PasswordField
                     label={t("fields.password")}
