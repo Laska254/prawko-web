@@ -3,21 +3,13 @@ import {Alert, Link, Stack} from "@mui/material";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
-import {
-    type ApiError,
-    errorMessage,
-    type FieldErrors,
-    type FieldMessages,
-    fieldErrors,
-    hasFieldErrors,
-    type StatusMessages,
-    toApiError,
-} from "@/api/errors.tsx";
+import type {ApiError, FieldMessages, StatusMessages} from "@/api/errors.tsx";
 import {Link as RouterLink, useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useSession} from "@/session/useSession.tsx";
+import {useFormSubmission} from "../hooks/useFormSubmission.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     401: "messages.wrongCredentials",
@@ -36,42 +28,30 @@ function isNotVerified(error: ApiError): boolean {
 export function LoginForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
-    const [error, setError] = useState<ApiError | null>(null);
-    const [errors, setErrors] = useState<FieldErrors<keyof LoginDto, ParseKeys<"auth">>>({});
     const [email, setEmail] = useState<string>();
-    const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
     const {signIn} = useSession();
+    const {submit, isSending, fieldErrors, failure} = useFormSubmission(signIn, {
+        fieldMessages: FIELD_MESSAGES,
+        statusMessages: STATUS_MESSAGES,
+        onSuccess: () => navigate("/"),
+    });
     const {t} = useTranslation(["auth", "errors"]);
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
         const userName = userNameRef.current!.value;
-        const password = passwordRef.current!.value;
-        setError(null);
-        setErrors({});
         setEmail(userName.includes("@") ? userName : undefined);
-        setIsSending(true);
-        signIn({userName, password})
-            .then(() => navigate("/"))
-            .catch(caught => {
-                const apiError = toApiError(caught);
-                const marked = fieldErrors(apiError, FIELD_MESSAGES);
-                setErrors(marked);
-                if (!hasFieldErrors(marked)) {
-                    setError(apiError);
-                }
-            })
-            .finally(() => setIsSending(false));
+        submit({userName, password: passwordRef.current!.value});
     }
 
     return (
         <form onSubmit={onSubmit}>
             <Stack spacing={2}>
-                {error && (
+                {failure && (
                     <Alert severity="error">
-                        {t(errorMessage(error, STATUS_MESSAGES))}{" "}
-                        {isNotVerified(error) && (
+                        {t(failure.message)}{" "}
+                        {isNotVerified(failure.error) && (
                             <Link component={RouterLink} to="/auth/verify/sent" state={{email}}>{t("login.sendNewLink")}</Link>
                         )}
                     </Alert>
@@ -80,14 +60,14 @@ export function LoginForm() {
                     label={t("fields.login")}
                     type="text"
                     inputRef={userNameRef}
-                    errorText={errors.userName && t(errors.userName)}
+                    errorText={fieldErrors.userName && t(fieldErrors.userName)}
                     placeholder={t("fields.loginPlaceholder")}
                     required
                 />
                 <PasswordField
                     label={t("fields.password")}
                     inputRef={passwordRef}
-                    errorText={errors.password && t(errors.password)}
+                    errorText={fieldErrors.password && t(fieldErrors.password)}
                     placeholder={t("fields.password")}
                     required
                 />
