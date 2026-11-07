@@ -8,11 +8,12 @@ import {mockNetworkError, mockPendingPost, mockPost, mockProblem} from "@test/su
 
 interface FormDto {
     readonly name: string;
+    readonly email: string;
 }
 
-const dto: FormDto = {name: "Jan"};
+const dto: FormDto = {name: "Jan", email: "jan@example.com"};
 
-const FIELD_MESSAGES = {name: {400: "nameInvalid", 409: "nameTaken"}} as const;
+const FIELD_MESSAGES = {name: {400: "nameInvalid", 409: "nameTaken"}, email: {400: "emailInvalid"}} as const;
 
 function sendForm(formDto: FormDto) {
     return api.post<string>("/form", formDto);
@@ -64,8 +65,18 @@ describe("useFormSubmission", () => {
         expect(request.requestCount()).toBe(1);
     });
 
-    it("marks the fields of a validation error with their message for its status", async () => {
-        mockProblem("/form", 409, {name: "Name is taken."});
+    it("marks each field of a validation error with its message", async () => {
+        mockProblem("/form", 400, {name: "Size must be 3-31.", email: "Required."});
+        const {result} = renderSubmission();
+
+        act(() => result.current.submit(dto));
+
+        await waitFor(() => expect(result.current.fieldErrors).toEqual({name: "nameInvalid", email: "emailInvalid"}));
+        expect(result.current.failure).toBeNull();
+    });
+
+    it("marks only the fields with a message for the status", async () => {
+        mockProblem("/form", 409, {name: "Name is taken.", email: "Email is taken."});
         const {result} = renderSubmission();
 
         act(() => result.current.submit(dto));
@@ -107,6 +118,7 @@ describe("useFormSubmission", () => {
             error: {kind: "http", status: 401},
             message: "wrongCredentials",
         }));
+        expect(result.current.fieldErrors).toEqual({});
     });
 
     it.each([

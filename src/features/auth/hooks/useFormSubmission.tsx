@@ -1,16 +1,13 @@
 import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
-import {
-    type ApiError,
-    errorMessage,
-    type FieldErrors,
-    type FieldMessages,
-    fieldErrors,
-    type GenericMessageKey,
-    hasFieldErrors,
-    type StatusMessages,
-    toApiError,
-} from "@/api/errors.tsx";
+import {type ApiError, errorMessage, type GenericMessageKey, type StatusMessages, toApiError} from "@/api/errors.tsx";
+
+// The client's messages for each form field. The server's texts don't say which rule failed, so a field has one
+// message per status (e.g. `400` invalid, `409` taken).
+export type FieldMessages<F extends string, K extends string> = Readonly<Record<F, StatusMessages<K>>>;
+
+// The client message per field of a form; fields without an error are left out.
+type FieldErrors<F extends string, K extends string> = Partial<Record<F, K>>;
 
 // A failure no field of the form shows: the error, e.g. to add a link for its status, and its message.
 interface SubmissionFailure<K extends string> {
@@ -31,6 +28,24 @@ interface SubmissionErrors<F extends string, K extends string> {
     readonly failure: SubmissionFailure<K> | null;
 }
 
+// The client messages for the fields of a validation error. Fields (or statuses) missing from `messages` are left out.
+function markedFields<F extends string, K extends string>(
+    error: ApiError,
+    messages: FieldMessages<F, K>,
+): FieldErrors<F, K> {
+    if (error.kind !== "validation") {
+        return {};
+    }
+    const marked: FieldErrors<F, K> = {};
+    for (const field of Object.keys(messages) as F[]) {
+        const message = messages[field][error.status];
+        if (error.fields[field] !== undefined && message !== undefined) {
+            marked[field] = message;
+        }
+    }
+    return marked;
+}
+
 function submissionErrors<F extends string, K extends string>(
     caught: Error | null,
     fieldMessages: FieldMessages<F, K> | undefined,
@@ -41,8 +56,9 @@ function submissionErrors<F extends string, K extends string>(
     }
     const error = toApiError(caught);
     if (fieldMessages) {
-        const marked = fieldErrors(error, fieldMessages);
-        if (hasFieldErrors(marked)) {
+        const marked = markedFields(error, fieldMessages);
+        // Without a marked field, the failure shows as a general error instead.
+        if (Object.keys(marked).length > 0) {
             return {fieldErrors: marked, failure: null};
         }
     }
