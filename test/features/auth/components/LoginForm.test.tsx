@@ -55,7 +55,7 @@ describe("LoginForm", () => {
 
     it("marks the invalid fields on a 400", async () => {
         mockProblem("/auth", 400, {
-            userName: "Username or email must not be blank and between 3 and 63 characters.",
+            userName: "Username or email must not be blank and between 3 and 254 characters.",
             password: "Password must not be blank and between 7 and 63 characters.",
         });
 
