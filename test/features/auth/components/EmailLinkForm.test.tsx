@@ -39,7 +39,8 @@ describe("EmailLinkForm", () => {
         const send = vi.fn().mockResolvedValue(undefined);
         renderForm(send);
 
-        await user.type(screen.getByRole("textbox", {name: "Email"}), longestEmail);
+        await user.click(screen.getByRole("textbox", {name: "Email"}));
+        await user.paste(longestEmail);
         await user.click(screen.getByRole("button", {name: "Send link"}));
 
         expect(await screen.findByText("Link sent.")).toBeInTheDocument();
