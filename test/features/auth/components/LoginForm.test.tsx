@@ -62,7 +62,7 @@ describe("LoginForm", () => {
         await signIn(user, "ja", "short");
 
         expect(await screen.findByRole("textbox", {name: "Login"}))
-            .toHaveAccessibleDescription("Enter a username or email of 3 to 63 characters.");
+            .toHaveAccessibleDescription("Enter a username or email of 3 to 254 characters.");
         expect(screen.getByLabelText(/^Password/)).toHaveAccessibleDescription("Password must be 7 to 63 characters.");
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
