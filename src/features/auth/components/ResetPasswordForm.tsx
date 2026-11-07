@@ -20,6 +20,7 @@ import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useSession} from "@/session/useSession.tsx";
 import {isInvalidToken} from "../tokenErrors.tsx";
 import {authNoticeState} from "../authNotice.tsx";
+import {PASSWORD_LENGTH} from "../fieldLengths.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     400: "messages.resetLinkInvalid",
@@ -94,7 +95,7 @@ export function ResetPasswordForm({token}: ResetPasswordFormProps) {
                     errorText={errors.newPassword && t(errors.newPassword)}
                     placeholder={t("fields.newPasswordPlaceholder")}
                     required
-                    slotProps={{htmlInput: {minLength: 7, maxLength: 63}}}
+                    slotProps={{htmlInput: PASSWORD_LENGTH}}
                 />
                 <PasswordField
                     label={t("fields.confirmPassword")}

@@ -55,14 +55,14 @@ describe("LoginForm", () => {
 
     it("marks the invalid fields on a 400", async () => {
         mockProblem("/auth", 400, {
-            userName: "Username or email must not be blank and between 3 and 63 characters.",
+            userName: "Username or email must not be blank and between 3 and 254 characters.",
             password: "Password must not be blank and between 7 and 63 characters.",
         });
 
         await signIn(user, "ja", "short");
 
         expect(await screen.findByRole("textbox", {name: "Login"}))
-            .toHaveAccessibleDescription("Enter a username or email of 3 to 63 characters.");
+            .toHaveAccessibleDescription("Enter a username or email of 3 to 254 characters.");
         expect(screen.getByLabelText(/^Password/)).toHaveAccessibleDescription("Password must be 7 to 63 characters.");
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });

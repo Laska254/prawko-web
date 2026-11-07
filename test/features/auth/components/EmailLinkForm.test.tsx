@@ -3,7 +3,7 @@ import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {AxiosError} from "axios";
 import {EmailLinkForm} from "@/features/auth/components/EmailLinkForm.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
-import {httpError} from "@test/support/data.tsx";
+import {httpError, longestEmail} from "@test/support/data.tsx";
 
 function renderForm(send: (email: string) => Promise<unknown>, defaultEmail?: string) {
     return renderWithProviders(
@@ -33,6 +33,18 @@ describe("EmailLinkForm", () => {
 
         expect(await screen.findByText("Link sent.")).toBeInTheDocument();
         expect(send).toHaveBeenCalledWith("jan@example.com");
+    });
+
+    it("sends an email of 254 characters", async () => {
+        const send = vi.fn().mockResolvedValue(undefined);
+        renderForm(send);
+
+        await user.click(screen.getByRole("textbox", {name: "Email"}));
+        await user.paste(longestEmail);
+        await user.click(screen.getByRole("button", {name: "Send link"}));
+
+        expect(await screen.findByText("Link sent.")).toBeInTheDocument();
+        expect(send).toHaveBeenCalledWith(longestEmail);
     });
 
     it("fills in the default email", () => {
