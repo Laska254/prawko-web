@@ -58,7 +58,7 @@ export function RegisterForm() {
             .then(() => {
                 // Registering sends the first verification link, so the server won't send another for a while.
                 startEmailLinkCooldown("verification", email);
-                navigate('/auth/verify/sent', {state: {email}});
+                navigate("/auth/verify/sent", {state: {email}});
             })
             .catch(caught => {
                 const apiError = toApiError(caught);

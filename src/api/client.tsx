@@ -17,7 +17,7 @@ const TIMEOUT_MS = 15_000;
 
 const defaults: CreateAxiosDefaults = {
     baseURL: import.meta.env.VITE_API_URL,
-    headers: {'Content-Type': 'application/json'},
+    headers: {"Content-Type": "application/json"},
     timeout: TIMEOUT_MS,
     // Reports a timeout as `ETIMEDOUT` instead of the `ECONNABORTED` of an aborted request, see `toApiError`.
     transitional: {clarifyTimeoutError: true},

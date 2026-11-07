@@ -53,7 +53,7 @@ export function LoginForm() {
         setEmail(userName.includes("@") ? userName : undefined);
         setIsSending(true);
         signIn({userName, password})
-            .then(() => navigate('/'))
+            .then(() => navigate("/"))
             .catch(caught => {
                 const apiError = toApiError(caught);
                 const marked = fieldErrors(apiError, FIELD_MESSAGES);
