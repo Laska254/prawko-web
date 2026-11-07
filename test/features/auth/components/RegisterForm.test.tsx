@@ -5,14 +5,14 @@ import {COOLDOWN_MS, emailLinkCooldownKey} from "@/features/auth/emailLinkCooldo
 import {useCooldown} from "@/features/auth/hooks/useCooldown.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
 import {apiUrl, mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
-import {registerDto} from "@test/support/data.tsx";
+import {longestEmail, registerDto} from "@test/support/data.tsx";
 
-async function register(user: UserEvent) {
-    await user.type(screen.getByRole("textbox", {name: "First name"}), registerDto.firstName);
-    await user.type(screen.getByRole("textbox", {name: "Last name"}), registerDto.lastName);
-    await user.type(screen.getByRole("textbox", {name: "Username"}), registerDto.userName);
-    await user.type(screen.getByRole("textbox", {name: "Email"}), registerDto.email);
-    await user.type(screen.getByLabelText(/^Password/), registerDto.password);
+async function register(user: UserEvent, dto = registerDto) {
+    await user.type(screen.getByRole("textbox", {name: "First name"}), dto.firstName);
+    await user.type(screen.getByRole("textbox", {name: "Last name"}), dto.lastName);
+    await user.type(screen.getByRole("textbox", {name: "Username"}), dto.userName);
+    await user.type(screen.getByRole("textbox", {name: "Email"}), dto.email);
+    await user.type(screen.getByLabelText(/^Password/), dto.password);
     await user.click(screen.getByRole("button", {name: "Register"}));
 }
 
@@ -33,6 +33,17 @@ describe("RegisterForm", () => {
         expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation()).toMatchObject({pathname: "/auth/verify/sent", state: {email: registerDto.email}});
         expect(requests).toEqual([{search: "", body: registerDto}]);
+    });
+
+    it("sends an email of 254 characters", async () => {
+        const requests = mockRequest("post", "/users",
+            {status: 201, headers: {Location: apiUrl("/users/5")}});
+        const dto = {...registerDto, email: longestEmail};
+
+        await register(user, dto);
+
+        expect(await screen.findByTestId("location")).toBeInTheDocument();
+        expect(requests).toEqual([{search: "", body: dto}]);
     });
 
     it("starts the verification link cooldown", async () => {

@@ -104,7 +104,7 @@ export function RegisterForm() {
                     inputRef={emailRef}
                     errorText={errors.email && t(errors.email)}
                     required
-                    slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
+                    slotProps={{htmlInput: {minLength: 5, maxLength: 254}}}
                 />
                 <PasswordField
                     label={t("fields.password")}

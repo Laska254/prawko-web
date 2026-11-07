@@ -27,6 +27,9 @@ export const registerDto: RegisterDto = {
     password: "secret1",
 };
 
+// The longest email the server accepts: 254 characters, every domain label within its 63.
+export const longestEmail = `${"a".repeat(64)}@${"b".repeat(63)}.${"c".repeat(63)}.${"d".repeat(58)}.pl`;
+
 export const user: UserDto = {
     id: 1,
     firstName: "Jan",

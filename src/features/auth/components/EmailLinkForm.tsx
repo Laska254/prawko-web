@@ -69,7 +69,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send, cooldownKey, defa
                     onChange={e => setEmail(e.target.value)}
                     placeholder={t("fields.email")}
                     required
-                    slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
+                    slotProps={{htmlInput: {minLength: 5, maxLength: 254}}}
                 />
                 <SubmitButton loading={status === "sending"} disabled={secondsLeft > 0}>{buttonLabel()}</SubmitButton>
             </Stack>
