@@ -1,24 +1,17 @@
-import {useRef, useState} from "react";
+import {useRef} from "react";
 import {Alert, Stack} from "@mui/material";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import {register} from "@/api/users.tsx";
 import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
-import {
-    type ApiError,
-    errorMessage,
-    type FieldErrors,
-    type FieldMessages,
-    fieldErrors,
-    hasFieldErrors,
-    toApiError,
-} from "@/api/errors.tsx";
+import type {FieldMessages} from "@/api/errors.tsx";
 import {useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {startEmailLinkCooldown} from "../emailLinkCooldown.tsx";
 import {EMAIL_LENGTH, PASSWORD_LENGTH} from "../fieldLengths.tsx";
+import {useFormSubmission} from "../hooks/useFormSubmission.tsx";
 
 const NAME_LENGTH = {minLength: 3, maxLength: 31};
 
@@ -36,50 +29,37 @@ export function RegisterForm() {
     const userNameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
-    const [errors, setErrors] = useState<FieldErrors<keyof RegisterDto, ParseKeys<"auth">>>({});
-    const [error, setError] = useState<ApiError | null>(null);
-    const [isSending, setIsSending] = useState(false);
     const navigate = useNavigate();
+    const {submit, isSending, fieldErrors, failure} = useFormSubmission(register, {
+        fieldMessages: FIELD_MESSAGES,
+        onSuccess: (_id, {email}) => {
+            // Registering sends the first verification link, so the server won't send another for a while.
+            startEmailLinkCooldown("verification", email);
+            navigate("/auth/verify/sent", {state: {email}});
+        },
+    });
     const {t} = useTranslation(["auth", "errors"]);
 
     function onSubmit(e: React.FormEvent): void {
         e.preventDefault();
-        const email = emailRef.current!.value;
-        setErrors({});
-        setError(null);
-        setIsSending(true);
-        register({
+        submit({
             firstName: firstNameRef.current!.value,
             lastName: lastNameRef.current!.value,
             userName: userNameRef.current!.value,
-            email,
+            email: emailRef.current!.value,
             password: passwordRef.current!.value,
-        })
-            .then(() => {
-                // Registering sends the first verification link, so the server won't send another for a while.
-                startEmailLinkCooldown("verification", email);
-                navigate("/auth/verify/sent", {state: {email}});
-            })
-            .catch(caught => {
-                const apiError = toApiError(caught);
-                const marked = fieldErrors(apiError, FIELD_MESSAGES);
-                setErrors(marked);
-                if (!hasFieldErrors(marked)) {
-                    setError(apiError);
-                }
-            })
-            .finally(() => setIsSending(false));
+        });
     }
 
     return (
         <form onSubmit={onSubmit}>
             <Stack spacing={2}>
-                {error && <Alert severity="error">{t(errorMessage(error))}</Alert>}
+                {failure && <Alert severity="error">{t(failure.message)}</Alert>}
                 <FormTextField
                     label={t("fields.firstName")}
                     type="text"
                     inputRef={firstNameRef}
-                    errorText={errors.firstName && t(errors.firstName)}
+                    errorText={fieldErrors.firstName && t(fieldErrors.firstName)}
                     required
                     slotProps={{htmlInput: NAME_LENGTH}}
                 />
@@ -87,7 +67,7 @@ export function RegisterForm() {
                     label={t("fields.lastName")}
                     type="text"
                     inputRef={lastNameRef}
-                    errorText={errors.lastName && t(errors.lastName)}
+                    errorText={fieldErrors.lastName && t(fieldErrors.lastName)}
                     required
                     slotProps={{htmlInput: NAME_LENGTH}}
                 />
@@ -95,7 +75,7 @@ export function RegisterForm() {
                     label={t("fields.userName")}
                     type="text"
                     inputRef={userNameRef}
-                    errorText={errors.userName && t(errors.userName)}
+                    errorText={fieldErrors.userName && t(fieldErrors.userName)}
                     required
                     slotProps={{htmlInput: NAME_LENGTH}}
                 />
@@ -103,14 +83,14 @@ export function RegisterForm() {
                     label={t("fields.email")}
                     type="email"
                     inputRef={emailRef}
-                    errorText={errors.email && t(errors.email)}
+                    errorText={fieldErrors.email && t(fieldErrors.email)}
                     required
                     slotProps={{htmlInput: EMAIL_LENGTH}}
                 />
                 <PasswordField
                     label={t("fields.password")}
                     inputRef={passwordRef}
-                    errorText={errors.password && t(errors.password)}
+                    errorText={fieldErrors.password && t(fieldErrors.password)}
                     required
                     slotProps={{htmlInput: PASSWORD_LENGTH}}
                 />
