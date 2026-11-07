@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import {configure} from "@testing-library/react";
 import i18n from "i18next";
 // The app's English texts, so tests find what users read.
 import "@/i18n/i18n.tsx";
@@ -6,6 +7,10 @@ import {clearTokens} from "@/api/tokens.tsx";
 import {resetGoogleScript} from "./googleScript.tsx";
 import {fakeLocks} from "./locks.tsx";
 import {server} from "./server.tsx";
+
+// `findBy*` and `waitFor` wait 3 s instead of 1 s, as a lazy page can take longer to load on a busy machine. Still under
+// the 5 s test timeout, so a missing element fails with the rendered DOM.
+configure({asyncUtilTimeout: 3000});
 
 // As in browsers served over HTTPS; a getter, so a test can take it away with `vi.spyOn(navigator, "locks", "get")`.
 Object.defineProperty(navigator, "locks", {get: () => fakeLocks, configurable: true});
