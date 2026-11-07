@@ -8,7 +8,7 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   test: {
-    environment: 'jsdom',
+    environment: './test/support/environment.tsx',
     globals: true,
     setupFiles: ['./test/support/setup.tsx'],
     coverage: {
