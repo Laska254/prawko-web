@@ -150,7 +150,7 @@ describe("GoogleSignIn", () => {
         [401, "Signing in with Google failed. Please try again."],
         [403, "Google hasn't verified the email address of this account."],
         [404, "Signing in with Google isn't available right now."],
-        [409, "An account with this email already exists and can't use this Google account. Sign in to it another way."],
+        [409, "An account with this email already exists and can't use this Google account. Try again, or sign in to it another way."],
         [429, "Too many attempts. Wait a moment and try again."],
         [503, "The service is temporarily unavailable. Please try again later."],
     ])("shows the message of a %i and stays", async (status, message) => {

@@ -62,7 +62,7 @@ describe("GitHubCallbackPage", () => {
         [401, "Signing in with GitHub failed. Please try again."],
         [403, "GitHub hasn't verified the primary email address of this account."],
         [404, "Signing in with GitHub isn't available right now."],
-        [409, "An account with this email already exists and can't use this GitHub account. Sign in to it another way."],
+        [409, "An account with this email already exists and can't use this GitHub account. Try again, or sign in to it another way."],
         [429, "Too many attempts. Wait a moment and try again."],
         [503, "The service is temporarily unavailable. Please try again later."],
     ])("goes back to sign in with the message of a %i", async (status, message) => {
