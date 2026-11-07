@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import {http, HttpResponse} from "msw/http";
 import {endSession, expireSession, getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
-import {credentials, tokens, user} from "@test/support/data.tsx";
+import {credentials, gitHubSignInDto, googleSignInDto, tokens, user} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {apiUrl, mockPost, mockRequest, server} from "@test/support/server.tsx";
 import {ShowSession} from "@test/support/ShowSession.tsx";
@@ -62,6 +62,50 @@ describe("SessionProvider", () => {
         // Enabling the query after signing in mustn't fetch the user again.
         await waitFor(() => expect(queryClient.isFetching()).toBe(0));
         expect(requests).toHaveLength(1);
+    });
+
+    it("signs in with Google and loads the user", async () => {
+        const signIns = mockPost("/auth/google", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+        renderSession();
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Sign in with Google"}));
+
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        expect(status()).toBe("signedIn");
+        expect(signIns).toEqual([googleSignInDto]);
+    });
+
+    it("stays signed out when signing in with Google fails", async () => {
+        mockPost("/auth/google", 401);
+        renderSession();
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Sign in with Google"}));
+
+        expect(await screen.findByText("Sign in failed")).toBeInTheDocument();
+        expect(status()).toBe("signedOut");
+    });
+
+    it("signs in with GitHub and loads the user", async () => {
+        const signIns = mockPost("/auth/github", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+        renderSession();
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Sign in with GitHub"}));
+
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+        expect(status()).toBe("signedIn");
+        expect(signIns).toEqual([gitHubSignInDto]);
+    });
+
+    it("stays signed out when signing in with GitHub fails", async () => {
+        mockPost("/auth/github", 401);
+        renderSession();
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Sign in with GitHub"}));
+
+        expect(await screen.findByText("Sign in failed")).toBeInTheDocument();
+        expect(status()).toBe("signedOut");
     });
 
     it("stays signed out and loads no user when signing in fails", async () => {

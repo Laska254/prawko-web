@@ -1,4 +1,6 @@
 import {api, tokenApi, withRefreshLock} from "./client.tsx";
+import type {GitHubSignInDto} from "./dto/GitHubSignInDto.tsx";
+import type {GoogleSignInDto} from "./dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "./dto/LoginDto.tsx";
 import type {VerifyEmailDto} from "./dto/VerifyEmailDto.tsx";
 import type {ResendVerificationDto} from "./dto/ResendVerificationDto.tsx";
@@ -8,11 +10,23 @@ import type {AuthTokensDto} from "./dto/AuthTokensDto.tsx";
 import type {RefreshTokenDto} from "./dto/RefreshTokenDto.tsx";
 import {clearTokens, endSession, getRefreshToken, saveTokens} from "./tokens.tsx";
 
-export async function login(loginDto: LoginDto) {
+async function requestTokens(path: string, body: LoginDto | GoogleSignInDto | GitHubSignInDto) {
     clearTokens();
-    const response = await api.post<AuthTokensDto>("/auth", loginDto);
+    const response = await api.post<AuthTokensDto>(path, body);
     saveTokens(response.data);
     return response;
+}
+
+export function login(loginDto: LoginDto) {
+    return requestTokens("/auth", loginDto);
+}
+
+export function loginWithGoogle(googleSignInDto: GoogleSignInDto) {
+    return requestTokens("/auth/google", googleSignInDto);
+}
+
+export function loginWithGitHub(gitHubSignInDto: GitHubSignInDto) {
+    return requestTokens("/auth/github", gitHubSignInDto);
 }
 
 // Ends the session in every tab, then asks the server to revoke its refresh token. Ending it first works offline too;

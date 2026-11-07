@@ -6,6 +6,7 @@ import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useCooldown} from "../hooks/useCooldown.tsx";
 import {COOLDOWN_MS, emailLinkCooldownKey} from "../emailLinkCooldown.tsx";
+import {EMAIL_LENGTH} from "../fieldLengths.tsx";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";
 
@@ -69,7 +70,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send, cooldownKey, defa
                     onChange={e => setEmail(e.target.value)}
                     placeholder={t("fields.email")}
                     required
-                    slotProps={{htmlInput: {minLength: 5, maxLength: 63}}}
+                    slotProps={{htmlInput: EMAIL_LENGTH}}
                 />
                 <SubmitButton loading={status === "sending"} disabled={secondsLeft > 0}>{buttonLabel()}</SubmitButton>
             </Stack>

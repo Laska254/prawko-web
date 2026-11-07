@@ -1,12 +1,13 @@
 import {Alert, type AlertColor, Link, Stack, Typography} from "@mui/material";
-import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
+import type {AuthMessage} from "../authNotice.tsx";
 import type {FormConfig, FormType} from "../formConfig.tsx";
 import {AuthCard} from "./AuthCard.tsx";
+import {ProviderSignIn} from "./ProviderSignIn.tsx";
 
 // A message shown above the form, e.g. why the user is on the sign in page.
 export interface AuthNotice {
-    readonly message: ParseKeys<"auth">;
+    readonly message: AuthMessage;
     readonly severity: AlertColor;
 }
 
@@ -17,7 +18,7 @@ interface AuthFormProps {
 }
 
 export function AuthForm({form, setActive, notice}: AuthFormProps) {
-    const {t} = useTranslation("auth");
+    const {t} = useTranslation(["auth", "errors"]);
 
     return (
         <AuthCard>
@@ -26,6 +27,7 @@ export function AuthForm({form, setActive, notice}: AuthFormProps) {
                 <Typography variant="h4" fontWeight={700}>{t(form.title)}</Typography>
                 <Typography color="text.secondary">{t(form.subtitle)}</Typography>
             </Stack>
+            <ProviderSignIn formType={form.type}/>
             <form.FormComponent/>
             <Typography color="text.secondary">
                 {t(form.switchPrompt)}{" "}

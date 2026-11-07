@@ -1,9 +1,18 @@
 import {http, HttpResponse} from "msw/http";
 import {apiUrl, mockNetworkError, mockPendingRequest, mockPost, mockRequest, server} from "@test/support/server.tsx";
-import {credentials, tokens} from "@test/support/data.tsx";
+import {credentials, gitHubSignInDto, googleSignInDto, tokens} from "@test/support/data.tsx";
 import {getAccessToken, getRefreshToken, onSessionEnded, saveTokens} from "@/api/tokens.tsx";
 import {api} from "@/api/client.tsx";
-import {forgotPassword, login, logout, resendVerification, resetPassword, verifyEmail} from "@/api/auth.tsx";
+import {
+    forgotPassword,
+    login,
+    loginWithGitHub,
+    loginWithGoogle,
+    logout,
+    resendVerification,
+    resetPassword,
+    verifyEmail,
+} from "@/api/auth.tsx";
 
 describe("auth", () => {
     const verifyEmailDto = {token: "token"};
@@ -22,6 +31,50 @@ describe("auth", () => {
 
         expect(response.status).toBe(204);
         expect(requests).toEqual([body]);
+    });
+
+    describe("loginWithGoogle", () => {
+        it("saves the returned tokens after signing in", async () => {
+            const requests = mockPost("/auth/google", 200, tokens);
+
+            await loginWithGoogle(googleSignInDto);
+
+            expect(requests).toEqual([googleSignInDto]);
+            expect(getAccessToken()).toBe("access-token");
+            expect(getRefreshToken()).toBe("refresh-token");
+        });
+
+        it("drops the previous tokens when signing in fails", async () => {
+            mockPost("/auth/google", 401);
+            saveTokens({...tokens, accessToken: "old", refreshToken: "old"});
+
+            await expect(loginWithGoogle(googleSignInDto)).rejects.toThrow();
+
+            expect(getAccessToken()).toBeNull();
+            expect(getRefreshToken()).toBeNull();
+        });
+    });
+
+    describe("loginWithGitHub", () => {
+        it("saves the returned tokens after signing in", async () => {
+            const requests = mockPost("/auth/github", 200, tokens);
+
+            await loginWithGitHub(gitHubSignInDto);
+
+            expect(requests).toEqual([gitHubSignInDto]);
+            expect(getAccessToken()).toBe("access-token");
+            expect(getRefreshToken()).toBe("refresh-token");
+        });
+
+        it("drops the previous tokens when signing in fails", async () => {
+            mockPost("/auth/github", 401);
+            saveTokens({...tokens, accessToken: "old", refreshToken: "old"});
+
+            await expect(loginWithGitHub(gitHubSignInDto)).rejects.toThrow();
+
+            expect(getAccessToken()).toBeNull();
+            expect(getRefreshToken()).toBeNull();
+        });
     });
 
     describe("login", () => {
