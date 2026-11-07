@@ -52,7 +52,7 @@ export function GoogleSignIn({clientId, formType, setUnavailable}: GoogleSignInP
         setError(null);
         setIsSending(true);
         signInWithGoogle({idToken})
-            .then(() => navigate('/'))
+            .then(() => navigate("/"))
             .catch(caught => setError(toApiError(caught)))
             .finally(() => setIsSending(false));
     }
