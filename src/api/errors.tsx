@@ -54,36 +54,6 @@ export function toApiError(error: unknown): ApiError {
 // The client's message per response status. The server's own texts can't be shown.
 export type StatusMessages<K extends string = string> = Readonly<Partial<Record<number, K>>>;
 
-// The client's messages for each form field. The server's texts don't say which rule failed, so a field has one
-// message per status (e.g. `400` invalid, `409` taken).
-export type FieldMessages<F extends string, K extends string = string> = Readonly<Record<F, StatusMessages<K>>>;
-
-// The client message per field of a form; fields without an error are left out.
-export type FieldErrors<F extends string, K extends string = string> = Partial<Record<F, K>>;
-
-// The client messages for the fields of a validation error. Fields (or statuses) missing from `messages` are left out.
-export function fieldErrors<F extends string, K extends string>(
-    error: ApiError,
-    messages: FieldMessages<F, K>,
-): FieldErrors<F, K> {
-    if (error.kind !== "validation") {
-        return {};
-    }
-    const errors: FieldErrors<F, K> = {};
-    for (const field of Object.keys(messages) as F[]) {
-        const message = messages[field][error.status];
-        if (error.fields[field] !== undefined && message !== undefined) {
-            errors[field] = message;
-        }
-    }
-    return errors;
-}
-
-// Whether any field is marked; without one, the form has to show a general error instead.
-export function hasFieldErrors(errors: FieldErrors<string>): boolean {
-    return Object.keys(errors).length > 0;
-}
-
 // Keys in the `errors` namespace; a key missing there fails the build where it's translated.
 export type GenericMessageKey =
     `errors:${"network" | "timeout" | "unexpected" | "tooManyRequests" | "unavailable"}`;

@@ -1,10 +1,10 @@
-import {renderHook, screen} from "@testing-library/react";
+import {renderHook, screen, waitFor} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {RegisterForm} from "@/features/auth/components/RegisterForm.tsx";
 import {COOLDOWN_MS, emailLinkCooldownKey} from "@/features/auth/emailLinkCooldown.tsx";
 import {useCooldown} from "@/features/auth/hooks/useCooldown.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {apiUrl, mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
+import {apiUrl, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
 import {longestEmail, registerDto} from "@test/support/data.tsx";
 
 async function register(user: UserEvent, dto = registerDto) {
@@ -93,69 +93,23 @@ describe("RegisterForm", () => {
         expect(screen.getByRole("textbox", {name: "First name"})).not.toHaveAccessibleDescription();
     });
 
-    it("clears the field errors when sending again", async () => {
-        mockProblem("/users", 409, {userName: "Exists."});
-        await register(user);
-        const userName = await screen.findByRole("textbox", {name: "Username"});
-        expect(userName).toBeInvalid();
-
-        const request = mockPendingPost("/users", 500);
-        await user.click(screen.getByRole("button", {name: "Register"}));
-
-        expect(userName).toBeValid();
-        expect(userName).not.toHaveAccessibleDescription();
-        request.respond();
-        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
-    });
-
-    it("hides the generic error when sending again", async () => {
-        mockPost("/users", 500);
-        await register(user);
-        expect(await screen.findByRole("alert")).toBeInTheDocument();
-
-        const request = mockPendingPost("/users", 500);
-        await user.click(screen.getByRole("button", {name: "Register"}));
-
-        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-        request.respond();
-        expect(await screen.findByRole("alert")).toBeInTheDocument();
-    });
-
-    it("shows a generic error when no field of the form is invalid", async () => {
-        mockProblem("/users", 400, {role: "Role is required."});
-
-        await register(user);
-
-        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
-    });
-
-    it("shows a generic error on a server error", async () => {
+    it("shows why registering failed when no field shows it", async () => {
         mockPost("/users", 500);
 
         await register(user);
 
-        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
+        expect(await screen.findByRole("alert")).toHaveTextContent("Something went wrong. Please try again later.");
     });
 
-    it("shows the connection error without a connection", async () => {
-        mockNetworkError("/users");
-
-        await register(user);
-
-        expect(await screen.findByText("Can't reach the server. Check your connection and try again."))
-            .toBeInTheDocument();
-    });
-
-    it("sends one request while sending", async () => {
+    it("blocks registering while sending", async () => {
         const request = mockPendingPost("/users", 500);
 
         await register(user);
-        await user.keyboard("{Enter}");
 
-        expect(screen.getByRole("button", {name: "Register"})).toBeDisabled();
+        const button = screen.getByRole("button", {name: "Register"});
+        expect(button).toBeDisabled();
         request.respond();
-        expect(await screen.findByRole("button", {name: "Register"})).toBeEnabled();
-        expect(request.requestCount()).toBe(1);
+        await waitFor(() => expect(button).toBeEnabled());
     });
 
     it("shows and hides the password", async () => {

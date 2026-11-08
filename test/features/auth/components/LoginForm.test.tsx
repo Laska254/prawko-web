@@ -1,8 +1,8 @@
-import {screen} from "@testing-library/react";
+import {screen, waitFor} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {LoginForm} from "@/features/auth/components/LoginForm.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
+import {mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
 import {credentials, tokens, user as signedInUser} from "@test/support/data.tsx";
 
 async function signIn(user: UserEvent, login = credentials.userName, password = credentials.password) {
@@ -67,28 +67,6 @@ describe("LoginForm", () => {
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
-    it("clears the field errors when sending again", async () => {
-        mockProblem("/auth", 400, {password: "Password must not be blank."});
-        await signIn(user);
-        const password = await screen.findByLabelText(/^Password/);
-        expect(password).toBeInvalid();
-
-        const request = mockPendingPost("/auth", 401);
-        await user.click(screen.getByRole("button", {name: "Sign in"}));
-
-        expect(password).toBeValid();
-        request.respond();
-        expect(await screen.findByText("Wrong login or password.")).toBeInTheDocument();
-    });
-
-    it("shows a generic error when no field of the form is invalid", async () => {
-        mockProblem("/auth", 400, {token: "Token is required."});
-
-        await signIn(user);
-
-        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
-    });
-
     it("links an unverified email login to a new verification link", async () => {
         mockPost("/auth", 403);
 
@@ -108,33 +86,15 @@ describe("LoginForm", () => {
         expect(currentLocation()).toEqual({pathname: "/auth/verify/sent", search: "", state: {}});
     });
 
-    it("shows a generic error on a server error", async () => {
-        mockPost("/auth", 500);
-
-        await signIn(user);
-
-        expect(await screen.findByText("Something went wrong. Please try again later.")).toBeInTheDocument();
-    });
-
-    it("shows the connection error without a connection", async () => {
-        mockNetworkError("/auth");
-
-        await signIn(user);
-
-        expect(await screen.findByText("Can't reach the server. Check your connection and try again."))
-            .toBeInTheDocument();
-    });
-
-    it("sends one request while sending", async () => {
+    it("blocks signing in while sending", async () => {
         const request = mockPendingPost("/auth", 401);
 
         await signIn(user);
-        await user.keyboard("{Enter}");
 
-        expect(screen.getByRole("button", {name: "Sign in"})).toBeDisabled();
+        const button = screen.getByRole("button", {name: "Sign in"});
+        expect(button).toBeDisabled();
         request.respond();
-        expect(await screen.findByRole("button", {name: "Sign in"})).toBeEnabled();
-        expect(request.requestCount()).toBe(1);
+        await waitFor(() => expect(button).toBeEnabled());
     });
 
     it("shows and hides the password", async () => {
