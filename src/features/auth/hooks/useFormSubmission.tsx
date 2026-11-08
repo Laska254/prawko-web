@@ -78,7 +78,9 @@ export function useFormSubmission<V, R, F extends string = never, K extends stri
     send: (variables: V) => Promise<R>,
     {fieldMessages, statusMessages, onSuccess}: FormSubmissionOptions<V, R, F, K> = {},
 ) {
-    const mutation = useMutation({mutationFn: send, onSuccess});
+    // Sent even offline, not paused until the connection is back: axios fails at once, and the form shows the network
+    // error.
+    const mutation = useMutation({mutationFn: send, onSuccess, networkMode: "always"});
     // The error `clear` hid. Hidden in state, not with `mutation.reset()`, which renders only after a tick and so
     // can't clear while rendering; the error of a send still running, or of a later one, shows.
     const [clearedError, setClearedError] = useState<Error | null>(null);

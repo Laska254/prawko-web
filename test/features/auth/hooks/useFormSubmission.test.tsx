@@ -1,6 +1,6 @@
 import {type ReactNode, useState} from "react";
 import {act, renderHook, waitFor} from "@testing-library/react";
-import {QueryClientProvider} from "@tanstack/react-query";
+import {onlineManager, QueryClientProvider} from "@tanstack/react-query";
 import {api} from "@/api/client.tsx";
 import {useFormSubmission} from "@/features/auth/hooks/useFormSubmission.tsx";
 import {createTestQueryClient} from "@test/support/render.tsx";
@@ -143,6 +143,24 @@ describe("useFormSubmission", () => {
             error: {kind: "network"},
             message: "errors:network",
         }));
+    });
+
+    it("fails with the connection message while offline instead of waiting for the connection", async () => {
+        mockNetworkError("/form");
+        onlineManager.setOnline(false);
+        const {result} = renderSubmission();
+
+        try {
+            act(() => result.current.submit(dto));
+
+            await waitFor(() => expect(result.current.failure).toEqual({
+                error: {kind: "network"},
+                message: "errors:network",
+            }));
+            expect(result.current.isSending).toBe(false);
+        } finally {
+            onlineManager.setOnline(true);
+        }
     });
 
     it("drops the last errors when sending again", async () => {
