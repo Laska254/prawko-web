@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {useMutation} from "@tanstack/react-query";
 import {type ApiError, errorMessage, type GenericMessageKey, type StatusMessages, toApiError} from "@/api/errors.tsx";
 
@@ -87,11 +87,21 @@ export function useFormSubmission<V, R, F extends string = never, K extends stri
     const {fieldErrors, failure} = submissionErrors(shownError(mutation.error, clearedError), fieldMessages,
         statusMessages);
 
+    // Set at once, unlike `mutation.isPending`, which TanStack Query renders only after a tick: a second submit within
+    // it (a fast double click) would pass the check.
+    const sending = useRef(false);
+
     // Ignored while sending, so the form isn't sent twice; never rejects, the errors show the failure instead.
     function submit(variables: V): void {
-        if (!mutation.isPending) {
-            mutation.mutate(variables);
+        if (sending.current) {
+            return;
         }
+        sending.current = true;
+        mutation.mutate(variables, {
+            onSettled: () => {
+                sending.current = false;
+            },
+        });
     }
 
     // Drops the errors shown, e.g. when the form's own check fails. Can be called while rendering.

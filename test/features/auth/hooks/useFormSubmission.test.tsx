@@ -65,6 +65,20 @@ describe("useFormSubmission", () => {
         expect(request.requestCount()).toBe(1);
     });
 
+    it("sends once when submitted twice before it shows as sending", async () => {
+        const request = mockPendingPost("/form");
+        const {result} = renderSubmission();
+
+        act(() => {
+            result.current.submit(dto);
+            result.current.submit(dto);
+        });
+        request.respond();
+
+        await waitFor(() => expect(result.current.isSending).toBe(false));
+        expect(request.requestCount()).toBe(1);
+    });
+
     it("marks each field of a validation error with its message", async () => {
         mockProblem("/form", 400, {name: "Size must be 3-31.", email: "Required."});
         const {result} = renderSubmission();
