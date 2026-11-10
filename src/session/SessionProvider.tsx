@@ -78,6 +78,11 @@ export function SessionProvider({children}: SessionProviderProps) {
             case "pending":
                 return {status: "loading"};
             case "error":
+                // A failed refetch keeps the user loaded before, so the session stays signed in with it instead of
+                // replacing every page with the error.
+                if (user.data !== undefined) {
+                    return {status: "signedIn", user: user.data};
+                }
                 return {status: "error", retry: () => user.refetch()};
             case "success":
                 return {status: "signedIn", user: user.data};
