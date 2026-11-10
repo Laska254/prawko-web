@@ -1,4 +1,4 @@
-import {screen, waitFor} from "@testing-library/react";
+import {act, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {Route, Routes} from "react-router";
 import {withRefreshLock} from "@/api/client.tsx";
@@ -54,6 +54,34 @@ describe("ProfilePage", () => {
             ["Username", "jan"],
             ["Email", "jan@example.com"],
         ]);
+    });
+
+    it("shows no email change banner without a pending change", async () => {
+        await renderProfile();
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("follows the email change as its links are opened in another tab", async () => {
+        const changingEmail: UserDto = {
+            ...user,
+            pendingEmail: "jan.nowy@example.com",
+            awaitingNewEmailConfirmation: true,
+            awaitingCurrentEmailConfirmation: true,
+        };
+        await renderProfile(changingEmail);
+        expect(screen.getByRole("alert")).toHaveTextContent("Email change in progress");
+
+        mockRequest("get", "/users/me", {body: {...changingEmail, awaitingNewEmailConfirmation: false}});
+        act(() => window.dispatchEvent(new Event("visibilitychange")));
+
+        expect(await screen.findByText("opened")).toBeInTheDocument();
+
+        mockRequest("get", "/users/me", {body: {...user, email: "jan.nowy@example.com"}});
+        act(() => window.dispatchEvent(new Event("visibilitychange")));
+
+        await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+        expect(accountFields()).toContainEqual(["Email", "jan.nowy@example.com"]);
     });
 
     it("opens the settings", async () => {

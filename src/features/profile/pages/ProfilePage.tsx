@@ -6,6 +6,8 @@ import {Link} from "react-router";
 import {Panel} from "@/components/layout/Panel.tsx";
 import {useCurrentUser} from "@/session/useCurrentUser.tsx";
 import {useSignOut} from "@/session/useSignOut.tsx";
+import {PendingEmailBanner} from "../components/PendingEmailBanner.tsx";
+import {useRefetchUserOnFocus} from "../hooks/useRefetchUserOnFocus.tsx";
 
 interface AccountField {
     readonly label: ParseKeys<"profile">;
@@ -29,6 +31,8 @@ function AccountValue({value}: AccountValueProps) {
 export function ProfilePage() {
     const {t} = useTranslation("profile");
     const user = useCurrentUser();
+    // The pending email change follows the links opened in another tab.
+    useRefetchUserOnFocus();
     const {signOut, isSigningOut} = useSignOut();
     const fields: readonly AccountField[] = [
         {label: "profile.firstName", value: user.firstName},
@@ -40,6 +44,7 @@ export function ProfilePage() {
     return (
         <Stack spacing={3}>
             <Typography variant="h4" component="h1" fontWeight={700}>{t("profile.title")}</Typography>
+            <PendingEmailBanner user={user}/>
             <Panel p={3} spacing={2}>
                 <Typography variant="h6" component="h2" fontWeight={700}>{t("profile.account")}</Typography>
                 <Box component="dl" display="grid" gridTemplateColumns={{xs: "1fr", sm: "repeat(2, 1fr)"}} gap={2} m={0}>
