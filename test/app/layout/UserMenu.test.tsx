@@ -1,9 +1,9 @@
 import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {withRefreshLock} from "@/api/client.tsx";
 import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {UserMenu} from "@/app/layout/UserMenu.tsx";
 import {tokens, user} from "@test/support/data.tsx";
+import {holdRefreshLock} from "@test/support/refreshLock.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 
@@ -46,9 +46,7 @@ describe("UserMenu", () => {
         saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
         const logouts = mockPost("/auth/logout");
-        // A refresh in flight, here or in another tab.
-        let release!: () => void;
-        const refresh = withRefreshLock(() => new Promise<void>(resolve => release = resolve));
+        const release = await holdRefreshLock();
         const userEvents = userEvent.setup();
         renderAtRoute(<UserMenu/>);
 
@@ -60,8 +58,7 @@ describe("UserMenu", () => {
         expect(screen.getByRole("progressbar", {name: "Loading"})).toBeInTheDocument();
         expect(getRefreshToken()).toBe("refresh-token");
 
-        release();
-        await refresh;
+        await release();
 
         await waitFor(() => expect(signOut).not.toHaveAttribute("aria-disabled"));
         expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();

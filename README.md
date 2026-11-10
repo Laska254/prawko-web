@@ -207,7 +207,7 @@ create the PKCE challenge anywhere else.
 * `/` home page
 * `/exam` exam (placeholder)
 * `/history` past exams (placeholder)
-* `/profile` account (placeholder)
+* `/profile` account data, settings link and sign out
 * `/settings` preferences (placeholder)
 * `/auth/github/callback` finishes signing in with GitHub
 * `/auth/verify` verify email
