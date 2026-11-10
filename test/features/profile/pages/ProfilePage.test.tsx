@@ -62,7 +62,7 @@ describe("ProfilePage", () => {
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
-    it("follows the email change as its links are opened in another tab", async () => {
+    it("follows the email change as its links are opened in another tab or window", async () => {
         const changingEmail: UserDto = {
             ...user,
             pendingEmail: "jan.nowy@example.com",
@@ -78,7 +78,7 @@ describe("ProfilePage", () => {
         expect(await screen.findByText("opened")).toBeInTheDocument();
 
         mockRequest("get", "/users/me", {body: {...user, email: "jan.nowy@example.com"}});
-        act(() => window.dispatchEvent(new Event("visibilitychange")));
+        act(() => window.dispatchEvent(new Event("focus")));
 
         await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
         expect(accountFields()).toContainEqual(["Email", "jan.nowy@example.com"]);

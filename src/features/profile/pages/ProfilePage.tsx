@@ -31,7 +31,7 @@ function AccountValue({value}: AccountValueProps) {
 export function ProfilePage() {
     const {t} = useTranslation("profile");
     const user = useCurrentUser();
-    // The pending email change follows the links opened in another tab.
+    // The pending email change follows the links opened in another tab, window or device.
     useRefetchUserOnFocus();
     const {signOut, isSigningOut} = useSignOut();
     const fields: readonly AccountField[] = [
