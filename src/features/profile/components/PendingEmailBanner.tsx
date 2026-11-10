@@ -49,6 +49,7 @@ function EmailLink({email, isOpened}: EmailLinkProps) {
 }
 
 // An email change in progress: it completes once the links sent to the new and the current address are both opened.
+// A standing status rather than an error, so `role="status"` keeps screen readers from interrupting on each visit.
 export function PendingEmailBanner({user}: PendingEmailBannerProps) {
     const {t} = useTranslation("profile");
 
@@ -56,7 +57,7 @@ export function PendingEmailBanner({user}: PendingEmailBannerProps) {
         return null;
     }
     return (
-        <Alert severity="info">
+        <Alert severity="info" role="status">
             <AlertTitle>{t("pendingEmail.title")}</AlertTitle>
             <Stack spacing={1}>
                 <Typography variant="body2" sx={{overflowWrap: "anywhere"}}>

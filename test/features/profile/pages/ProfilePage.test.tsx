@@ -59,7 +59,7 @@ describe("ProfilePage", () => {
     it("shows no email change banner without a pending change", async () => {
         await renderProfile();
 
-        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(screen.queryByRole("status")).not.toBeInTheDocument();
     });
 
     it("follows the email change as its links are opened in another tab or window", async () => {
@@ -70,7 +70,7 @@ describe("ProfilePage", () => {
             awaitingCurrentEmailConfirmation: true,
         };
         await renderProfile(changingEmail);
-        expect(screen.getByRole("alert")).toHaveTextContent("Email change in progress");
+        expect(screen.getByRole("status")).toHaveTextContent("Email change in progress");
 
         mockRequest("get", "/users/me", {body: {...changingEmail, awaitingNewEmailConfirmation: false}});
         act(() => window.dispatchEvent(new Event("visibilitychange")));
@@ -80,7 +80,7 @@ describe("ProfilePage", () => {
         mockRequest("get", "/users/me", {body: {...user, email: "jan.nowy@example.com"}});
         act(() => window.dispatchEvent(new Event("focus")));
 
-        await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+        await waitFor(() => expect(screen.queryByRole("status")).not.toBeInTheDocument());
         expect(accountFields()).toContainEqual(["Email", "jan.nowy@example.com"]);
     });
 

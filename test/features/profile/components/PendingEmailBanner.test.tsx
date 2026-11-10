@@ -21,13 +21,13 @@ describe("PendingEmailBanner", () => {
     it("shows nothing without an email change", () => {
         renderWithProviders(<PendingEmailBanner user={user}/>);
 
-        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(screen.queryByRole("status")).not.toBeInTheDocument();
     });
 
     it("shows the new address and both links unopened", () => {
         renderWithProviders(<PendingEmailBanner user={changingEmail}/>);
 
-        const banner = screen.getByRole("alert");
+        const banner = screen.getByRole("status");
         expect(within(banner).getByText("Email change in progress")).toBeInTheDocument();
         expect(banner).toHaveTextContent("Your email changes to jan.nowy@example.com once both links below are opened.");
         expect(links()).toEqual([
