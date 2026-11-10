@@ -1,7 +1,15 @@
 {
   "profile": {
     "title": "Profil",
-    "empty": "Tutaj pojawią się dane twojego konta."
+    "account": "Konto",
+    "firstName": "Imię",
+    "lastName": "Nazwisko",
+    "userName": "Nazwa użytkownika",
+    "email": "E-mail",
+    "notProvided": "Nie podano",
+    "actions": "Działania na koncie",
+    "settings": "Ustawienia",
+    "signOut": "Wyloguj się"
   },
   "settings": {
     "title": "Ustawienia",
