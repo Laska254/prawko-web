@@ -1,13 +1,14 @@
-import {screen} from "@testing-library/react";
+import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {Route, Routes} from "react-router";
+import {withRefreshLock} from "@/api/client.tsx";
 import {saveTokens} from "@/api/tokens.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
 import {tokens, user} from "@test/support/data.tsx";
 import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
-import {mockRequest} from "@test/support/server.tsx";
+import {mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
 
 // Signs in as `signedInUser` and opens the page behind `RequireAuth`, as the app does.
@@ -62,5 +63,25 @@ describe("ProfilePage", () => {
         await userEvents.click(screen.getByRole("link", {name: "Settings"}));
 
         expect(currentLocation().pathname).toBe("/settings");
+    });
+
+    it("signs out", async () => {
+        const logouts = mockPost("/auth/logout");
+        // A refresh in flight holds signing out, to see it's busy.
+        let release!: () => void;
+        const refresh = withRefreshLock(() => new Promise<void>(resolve => release = resolve));
+        const userEvents = userEvent.setup();
+        await renderProfile();
+
+        await userEvents.click(screen.getByRole("button", {name: "Sign out"}));
+
+        expect(screen.getByRole("button", {name: "Sign out"})).toBeDisabled();
+        expect(screen.getByRole("progressbar")).toBeInTheDocument();
+
+        release();
+        await refresh;
+
+        await waitFor(() => expect(currentLocation().pathname).toBe("/auth"));
+        expect(logouts).toEqual([{refreshToken: "refresh-token"}]);
     });
 });

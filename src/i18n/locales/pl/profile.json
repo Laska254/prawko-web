@@ -8,7 +8,8 @@
     "email": "E-mail",
     "notProvided": "Nie podano",
     "actions": "Działania na koncie",
-    "settings": "Ustawienia"
+    "settings": "Ustawienia",
+    "signOut": "Wyloguj się"
   },
   "settings": {
     "title": "Ustawienia",
