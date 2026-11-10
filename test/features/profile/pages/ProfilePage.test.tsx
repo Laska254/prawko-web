@@ -1,12 +1,12 @@
 import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {Route, Routes} from "react-router";
-import {withRefreshLock} from "@/api/client.tsx";
 import {saveTokens} from "@/api/tokens.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
 import {tokens, user} from "@test/support/data.tsx";
+import {holdRefreshLock} from "@test/support/refreshLock.tsx";
 import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
@@ -67,9 +67,7 @@ describe("ProfilePage", () => {
 
     it("signs out", async () => {
         const logouts = mockPost("/auth/logout");
-        // A refresh in flight holds signing out, to see it's busy.
-        let release!: () => void;
-        const refresh = withRefreshLock(() => new Promise<void>(resolve => release = resolve));
+        const release = await holdRefreshLock();
         const userEvents = userEvent.setup();
         await renderProfile();
 
@@ -78,8 +76,7 @@ describe("ProfilePage", () => {
         expect(screen.getByRole("button", {name: "Sign out"})).toBeDisabled();
         expect(screen.getByRole("progressbar")).toBeInTheDocument();
 
-        release();
-        await refresh;
+        await release();
 
         await waitFor(() => expect(currentLocation().pathname).toBe("/auth"));
         expect(logouts).toEqual([{refreshToken: "refresh-token"}]);
