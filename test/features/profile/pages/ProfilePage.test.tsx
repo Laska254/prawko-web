@@ -5,7 +5,7 @@ import {saveTokens} from "@/api/tokens.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
-import {tokens, user} from "@test/support/data.tsx";
+import {changingEmailUser, tokens, user} from "@test/support/data.tsx";
 import {holdRefreshLock} from "@test/support/refreshLock.tsx";
 import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
@@ -63,16 +63,10 @@ describe("ProfilePage", () => {
     });
 
     it("follows the email change as its links are opened in another tab or window", async () => {
-        const changingEmail: UserDto = {
-            ...user,
-            pendingEmail: "jan.nowy@example.com",
-            awaitingNewEmailConfirmation: true,
-            awaitingCurrentEmailConfirmation: true,
-        };
-        await renderProfile(changingEmail);
+        await renderProfile(changingEmailUser);
         expect(screen.getByRole("status")).toHaveTextContent("Email change in progress");
 
-        mockRequest("get", "/users/me", {body: {...changingEmail, awaitingNewEmailConfirmation: false}});
+        mockRequest("get", "/users/me", {body: {...changingEmailUser, awaitingNewEmailConfirmation: false}});
         act(() => window.dispatchEvent(new Event("visibilitychange")));
 
         expect(await screen.findByText("opened")).toBeInTheDocument();

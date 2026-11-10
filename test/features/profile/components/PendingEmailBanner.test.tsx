@@ -1,15 +1,7 @@
 import {screen, within} from "@testing-library/react";
-import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {PendingEmailBanner} from "@/features/profile/components/PendingEmailBanner.tsx";
-import {user} from "@test/support/data.tsx";
+import {changingEmailUser, user} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
-
-const changingEmail: UserDto = {
-    ...user,
-    pendingEmail: "jan.nowy@example.com",
-    awaitingNewEmailConfirmation: true,
-    awaitingCurrentEmailConfirmation: true,
-};
 
 // Each link's address line and whether it was opened.
 function links() {
@@ -25,7 +17,7 @@ describe("PendingEmailBanner", () => {
     });
 
     it("shows the new address and both links unopened", () => {
-        renderWithProviders(<PendingEmailBanner user={changingEmail}/>);
+        renderWithProviders(<PendingEmailBanner user={changingEmailUser}/>);
 
         const banner = screen.getByRole("status");
         expect(within(banner).getByText("Email change in progress")).toBeInTheDocument();
@@ -48,7 +40,7 @@ describe("PendingEmailBanner", () => {
             [["Link sent to jan.nowy@example.com:", "not opened yet"], ["Link sent to jan@example.com:", "opened"]],
         ],
     ])("shows the link to %s opened", (_, opened, expected) => {
-        renderWithProviders(<PendingEmailBanner user={{...changingEmail, ...opened}}/>);
+        renderWithProviders(<PendingEmailBanner user={{...changingEmailUser, ...opened}}/>);
 
         expect(links()).toEqual(expected);
     });
