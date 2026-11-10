@@ -1,7 +1,14 @@
 {
   "profile": {
     "title": "Profile",
-    "empty": "Your account details will show up here."
+    "account": "Account",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "userName": "Username",
+    "email": "Email",
+    "notProvided": "Not provided",
+    "actions": "Account actions",
+    "settings": "Settings"
   },
   "settings": {
     "title": "Settings",
