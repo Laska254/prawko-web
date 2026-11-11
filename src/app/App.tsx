@@ -2,6 +2,8 @@ import {Suspense} from "react";
 import {BrowserRouter, Route, Routes} from "react-router";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {RequireGuest} from "@/features/auth/guards/RequireGuest.tsx";
+import {GITHUB_CALLBACK_PATH} from "@/features/auth/gitHubCallback.tsx";
+import {GITHUB_LINK_CALLBACK_PATH} from "@/features/profile/gitHubLink.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
 import {PageErrorBoundary} from "@/components/feedback/PageErrorBoundary.tsx";
 import {SignedInLayout} from "./layout/SignedInLayout.tsx";
@@ -41,13 +43,13 @@ export function App() {
                                 <Route path="/history" element={<HistoryPage/>}/>
                                 <Route path="/profile" element={<ProfilePage/>}/>
                                 <Route path="/settings" element={<SettingsPage/>}/>
-                                <Route path="/auth/github/callback/link" element={<LinkGitHubCallbackPage/>}/>
+                                <Route path={GITHUB_LINK_CALLBACK_PATH} element={<LinkGitHubCallbackPage/>}/>
                             </Route>
                         </Route>
                         {/* Guests: signed-in users go home. */}
                         <Route element={<RequireGuest/>}>
                             <Route path="/auth" element={<AuthPage/>}/>
-                            <Route path="/auth/github/callback" element={<GitHubCallbackPage/>}/>
+                            <Route path={GITHUB_CALLBACK_PATH} element={<GitHubCallbackPage/>}/>
                         </Route>
                         {/* Public: email verification, password recovery and 404, signed in or not. */}
                         <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
