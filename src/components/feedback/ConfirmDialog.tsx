@@ -1,4 +1,4 @@
-import {useId} from "react";
+import {type FormEvent, type ReactNode, useId} from "react";
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
 import {useTranslation} from "react-i18next";
 
@@ -12,11 +12,14 @@ interface ConfirmDialogProps {
     loading: boolean;
     onConfirm: () => void;
     onCancel: () => void;
+    // Shown under the text, e.g. a password field to confirm with; Enter in a field confirms.
+    children?: ReactNode;
 }
 
 // MUI links the title to the dialog itself; the text is linked through `aria-describedby`.
-export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "secondary", loading, onConfirm, onCancel}: ConfirmDialogProps) {
+export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "secondary", loading, onConfirm, onCancel, children}: ConfirmDialogProps) {
     const textId = useId();
+    const formId = useId();
     const {t} = useTranslation();
 
     // Escape and backdrop clicks can't close the dialog while the action is running.
@@ -26,15 +29,27 @@ export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "
         }
     }
 
+    function handleSubmit(e: FormEvent): void {
+        e.preventDefault();
+        onConfirm();
+    }
+
     return (
         <Dialog open={open} onClose={handleClose} aria-describedby={textId}>
             <DialogTitle>{title}</DialogTitle>
             <DialogContent>
-                <DialogContentText id={textId}>{text}</DialogContentText>
+                {/* Inside the content, so the dialog's paper still lays out the content and actions; the confirm button
+                    submits it through `form`. */}
+                <form id={formId} onSubmit={handleSubmit}>
+                    <DialogContentText id={textId}>{text}</DialogContentText>
+                    {children}
+                </form>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel} disabled={loading}>{t("cancel")}</Button>
-                <Button variant="contained" color={confirmColor} onClick={onConfirm} loading={loading}>{confirmLabel}</Button>
+                <Button type="submit" form={formId} variant="contained" color={confirmColor} loading={loading}>
+                    {confirmLabel}
+                </Button>
             </DialogActions>
         </Dialog>
     );
