@@ -1,6 +1,6 @@
 import {useRef, useState} from "react";
 import {useMutation} from "@tanstack/react-query";
-import {type ApiError, errorMessage, type GenericMessageKey, type StatusMessages, toApiError} from "@/api/errors.tsx";
+import {type ApiError, errorMessage, type GenericMessageKey, type StatusMessages, toApiError} from "./errors.tsx";
 
 // The client's messages for each form field. The server's texts don't say which rule failed, so a field has one
 // message per status (e.g. `400` invalid, `409` taken).

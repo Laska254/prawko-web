@@ -104,7 +104,7 @@ Biome problems then show in the editor, with quick fixes under Alt+Enter.
 src/
   app/          entry (main), route tree (App), theme, layout/ (signed-in app bar and navigation),
                 pages/ (pages outside any feature: 404)
-  api/          axios setup and requests, error model, query client and keys, tokens, dto/
+  api/          axios setup and requests, error model, form submission, query client and keys, tokens, dto/
   session/      signed-in session: context, current user
   i18n/         translations setup, locales/<language>/<namespace>.json
   components/   shared UI with no feature or server knowledge, grouped by role (form/, feedback/, layout/)
@@ -141,7 +141,7 @@ Folders are created when their first file is added.
 * New code starts in the feature that uses it. It moves down to `components/` (or `api/`, `session/`, `utils/`) once
   a second feature needs it, or when it is planned as a shared design-system part.
 * `api/` mirrors the server: one file per resource, all DTOs in `api/dto/`. Hooks that adapt requests to screens live
-  in the feature.
+  in the feature; only `useFormSubmission`, which sends the forms of every feature, lives in `api/`.
 * Server data goes through TanStack Query: feature hooks read with `useQuery` and change with `useMutation`, using
   the keys from `api/queryKeys.tsx`, and a mutation invalidates the keys of the resource it changed.
 * UI text goes in `i18n/locales/<language>/<namespace>.json`, in English (`en`) and Polish (`pl`) with the same keys

@@ -4,10 +4,10 @@ import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from "react-router";
 import type {StatusMessages} from "@/api/errors.tsx";
+import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {useSession} from "@/session/useSession.tsx";
 import type {FormType} from "../formConfig.tsx";
 import {GOOGLE_BUTTON_HEIGHT, type GoogleButtonOptions, loadGoogleIdentity, onGoogleCredential} from "../googleIdentity.tsx";
-import {useFormSubmission} from "../hooks/useFormSubmission.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     401: "messages.googleInvalid",
