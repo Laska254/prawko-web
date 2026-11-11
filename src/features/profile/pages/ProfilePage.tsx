@@ -37,7 +37,7 @@ export function ProfilePage() {
     useRefetchUserOnFocus();
     const {signOut, isSigningOut} = useSignOut();
     // Set when the user comes back from GitHub's page after asking to link it.
-    const {gitHubLink, failure} = useProfilePageState();
+    const {gitHubLink, failure, dropGitHubLink} = useProfilePageState();
     const fields: readonly AccountField[] = [
         {label: "profile.firstName", value: user.firstName},
         {label: "profile.lastName", value: user.lastName},
@@ -61,7 +61,7 @@ export function ProfilePage() {
                     ))}
                 </Box>
             </Panel>
-            <SignInMethods user={user} gitHubLink={gitHubLink}/>
+            <SignInMethods user={user} gitHubLink={gitHubLink} onGitHubLinkDone={dropGitHubLink}/>
             <Panel p={3} spacing={2}>
                 <Typography variant="h6" component="h2" fontWeight={700}>{t("profile.actions")}</Typography>
                 <Stack direction="row" flexWrap="wrap" gap={2}>

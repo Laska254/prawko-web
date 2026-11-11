@@ -16,6 +16,8 @@ interface SignInMethodsProps {
     readonly user: UserDto;
     // GitHub's code, when the user just agreed to linking it on GitHub's page.
     readonly gitHubLink?: GitHubSignInDto;
+    // Called once GitHub's code is used up or the user cancelled linking.
+    readonly onGitHubLinkDone: () => void;
 }
 
 interface SignInMethod {
@@ -58,11 +60,12 @@ interface ProviderActionProps {
     readonly provider: IdentityProvider;
     readonly name: string;
     readonly gitHubLink: GitHubSignInDto | undefined;
+    readonly onGitHubLinkDone: () => void;
 }
 
 // The server keeps at least one way to sign in, so the last one can't be unlinked. A provider is linked only with its
 // client ID, and GitHub only where the browser can start its authorization.
-function ProviderAction({user, provider, name, gitHubLink}: ProviderActionProps) {
+function ProviderAction({user, provider, name, gitHubLink, onGitHubLinkDone}: ProviderActionProps) {
     const {t} = useTranslation("profile");
     const methodCount = user.providers.length + Number(user.hasPassword);
     const googleClientId: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -74,7 +77,8 @@ function ProviderAction({user, provider, name, gitHubLink}: ProviderActionProps)
         }
         if (provider === "GITHUB" && gitHubClientId && isGitHubAuthorizationSupported()) {
             return (
-                <LinkGitHub clientId={gitHubClientId} name={name} hasPassword={user.hasPassword} returned={gitHubLink}/>
+                <LinkGitHub clientId={gitHubClientId} name={name} hasPassword={user.hasPassword} gitHubLink={gitHubLink}
+                            onDone={onGitHubLinkDone}/>
             );
         }
         return null;
@@ -86,7 +90,7 @@ function ProviderAction({user, provider, name, gitHubLink}: ProviderActionProps)
 }
 
 // The ways the user can sign in: their password and each provider account linked to them.
-export function SignInMethods({user, gitHubLink}: SignInMethodsProps) {
+export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethodsProps) {
     const {t} = useTranslation("profile");
     const methods: readonly SignInMethod[] = [
         {
@@ -128,7 +132,7 @@ export function SignInMethods({user, gitHubLink}: SignInMethodsProps) {
                         {method.provider && (
                             <Box ml="auto">
                                 <ProviderAction user={user} provider={method.provider} name={t(method.name)}
-                                                gitHubLink={gitHubLink}/>
+                                                gitHubLink={gitHubLink} onGitHubLinkDone={onGitHubLinkDone}/>
                             </Box>
                         )}
                     </Stack>

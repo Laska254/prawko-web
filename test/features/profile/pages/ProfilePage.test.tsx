@@ -103,6 +103,24 @@ describe("ProfilePage", () => {
         expect(screen.getByRole("button", {name: "Unlink GitHub"})).toBeInTheDocument();
     });
 
+    // GitHub's code works once: sent again, the server's 401 would sign the user out.
+    it("doesn't ask to link GitHub with the used code again once it's unlinked", async () => {
+        vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
+        const userEvents = userEvent.setup();
+        await renderProfile(user, {gitHubLink: gitHubSignInDto});
+        mockRequest("post", "/users/me/identities/github", {status: 204});
+        mockRequest("get", "/users/me", {body: {...user, providers: ["GITHUB"]}});
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret{Enter}");
+        await userEvents.click(await screen.findByRole("button", {name: "Unlink GitHub"}));
+        mockRequest("delete", "/users/me/identities/github", {status: 204});
+        mockRequest("get", "/users/me", {body: user});
+
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret{Enter}");
+
+        expect(await screen.findByRole("button", {name: "Continue with GitHub"})).toBeInTheDocument();
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
     it("drops the navigation state once read, so a reload doesn't send GitHub's code again", async () => {
         vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
         saveTokens(tokens);

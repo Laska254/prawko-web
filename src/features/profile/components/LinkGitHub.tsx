@@ -1,4 +1,3 @@
-import {useState} from "react";
 import {Alert, Stack} from "@mui/material";
 import {useQueryClient} from "@tanstack/react-query";
 import type {ParseKeys} from "i18next";
@@ -33,15 +32,16 @@ interface LinkGitHubProps {
     readonly name: string;
     // Asks for the password only when the user has one.
     readonly hasPassword: boolean;
-    // GitHub's code the profile was opened with, when the user just agreed to linking on GitHub's page.
-    readonly returned: GitHubSignInDto | undefined;
+    // GitHub's code the profile was opened with, when the user just agreed to linking on GitHub's page. Kept while the
+    // dialog is open; GitHub's codes last ten minutes.
+    readonly gitHubLink: GitHubSignInDto | undefined;
+    // Called once the code is used up or the user cancelled, so the profile drops it.
+    readonly onDone: () => void;
 }
 
 // Leaves for GitHub's consent page; back on the profile with its code, links the account after a confirmation. The
 // dialog closes once the user is fetched again with the account linked.
-export function LinkGitHub({clientId, name, hasPassword, returned}: LinkGitHubProps) {
-    // Kept while the dialog is open; GitHub's codes last ten minutes.
-    const [gitHubLink, setGitHubLink] = useState<GitHubSignInDto | null>(returned ?? null);
+export function LinkGitHub({clientId, name, hasPassword, gitHubLink, onDone}: LinkGitHubProps) {
     const queryClient = useQueryClient();
     const {t} = useTranslation(["profile", "errors"]);
     const {submit, isSending, failure} = useFormSubmission(linkGitHub, {
@@ -49,7 +49,12 @@ export function LinkGitHub({clientId, name, hasPassword, returned}: LinkGitHubPr
         // Awaited, so the dialog stays busy until the user is fetched again; closed even if that fetch fails.
         onSuccess: async () => {
             await queryClient.invalidateQueries({queryKey: userKeys.all});
-            setGitHubLink(null);
+            onDone();
+        },
+        onError: error => {
+            if (!isCodeUnused(error)) {
+                onDone();
+            }
         },
     });
     // A failure that used GitHub's code up closes the dialog and shows by the button, which brings a new code.
@@ -65,12 +70,12 @@ export function LinkGitHub({clientId, name, hasPassword, returned}: LinkGitHubPr
                 {spentCodeFailure && <Alert severity="error">{spentCodeFailure}</Alert>}
                 <GitHubButton clientId={clientId} redirectPath={GITHUB_LINK_CALLBACK_PATH}/>
             </Stack>
-            <PasswordConfirmDialog open={gitHubLink !== null && spentCodeFailure === null} title={t("link.title", {provider: name})}
+            <PasswordConfirmDialog open={gitHubLink !== undefined} title={t("link.title", {provider: name})}
                                    text={t("link.text", {provider: name})} confirmLabel={t("link.confirm")}
                                    hasPassword={hasPassword} loading={isSending}
                                    failure={failure && t(failure.message, {provider: name})}
                                    onConfirm={currentPassword => submit({...gitHubLink!, currentPassword})}
-                                   onCancel={() => setGitHubLink(null)}/>
+                                   onCancel={onDone}/>
         </>
     );
 }

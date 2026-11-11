@@ -135,6 +135,17 @@ describe("useFormSubmission", () => {
         expect(result.current.fieldErrors).toEqual({});
     });
 
+    it("hands the error of a failure to onError", async () => {
+        mockPost("/form", 401);
+        const onError = vi.fn();
+        const {result} = renderHook(() => useFormSubmission(sendForm, {onError}), {wrapper});
+
+        act(() => result.current.submit(dto));
+
+        await waitFor(() => expect(onError).toHaveBeenCalledOnce());
+        expect(onError).toHaveBeenCalledWith({kind: "http", status: 401});
+    });
+
     it.each([
         [500, "errors:unexpected"],
         [503, "errors:unavailable"],

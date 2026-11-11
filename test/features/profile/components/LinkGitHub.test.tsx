@@ -2,17 +2,15 @@ import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type {GitHubSignInDto} from "@/api/dto/GitHubSignInDto.tsx";
 import {takeGitHubAuthorization} from "@/components/github/gitHubAuthorization.tsx";
-import {LinkGitHub} from "@/features/profile/components/LinkGitHub.tsx";
 import {gitHubSignInDto, problem} from "@test/support/data.tsx";
+import {LinkGitHubWithCode} from "@test/support/LinkGitHubWithCode.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {mockNetworkError, mockRequest} from "@test/support/server.tsx";
 
 const PATH = "/users/me/identities/github";
 
 function renderLinkGitHub(returned?: GitHubSignInDto, hasPassword = true) {
-    return renderWithProviders(
-        <LinkGitHub clientId="client-id" name="GitHub" hasPassword={hasPassword} returned={returned}/>
-    );
+    return renderWithProviders(<LinkGitHubWithCode returned={returned} hasPassword={hasPassword}/>);
 }
 
 describe("LinkGitHub", () => {
