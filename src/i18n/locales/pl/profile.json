@@ -35,7 +35,8 @@
     "confirm": "Połącz",
     "notConfigured": "Łączenie z {{provider}} jest teraz niedostępne.",
     "conflict": "To konto {{provider}} jest połączone z innym użytkownikiem albo masz już połączone takie konto.",
-    "gitHubInvalid": "Nie udało się połączyć konta GitHub. Spróbuj ponownie."
+    "gitHubInvalid": "Nie udało się połączyć konta GitHub. Spróbuj ponownie.",
+    "gitHubEmailNotVerified": "GitHub nie potwierdził głównego adresu e-mail tego konta."
   },
   "unlink": {
     "button": "Odłącz",

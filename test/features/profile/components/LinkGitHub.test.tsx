@@ -88,6 +88,7 @@ describe("LinkGitHub", () => {
     });
 
     it.each([
+        [403, problem(403), "GitHub hasn't verified the primary email address of this account."],
         [404, problem(404), "Linking GitHub isn't available right now."],
         [409, problem(409), "This GitHub account is linked to another user, or you already have one linked."],
         [500, undefined, "Something went wrong. Please try again later."],

@@ -35,7 +35,8 @@
     "confirm": "Link",
     "notConfigured": "Linking {{provider}} isn't available right now.",
     "conflict": "This {{provider}} account is linked to another user, or you already have one linked.",
-    "gitHubInvalid": "Linking GitHub failed. Please try again."
+    "gitHubInvalid": "Linking GitHub failed. Please try again.",
+    "gitHubEmailNotVerified": "GitHub hasn't verified the primary email address of this account."
   },
   "unlink": {
     "button": "Unlink",

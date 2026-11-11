@@ -15,6 +15,7 @@ import {PasswordConfirmDialog} from "./PasswordConfirmDialog.tsx";
 // The server reports a missing password like a wrong one.
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     400: "passwordConfirm.wrong",
+    403: "link.gitHubEmailNotVerified",
     404: "link.notConfigured",
     409: "link.conflict",
 };
