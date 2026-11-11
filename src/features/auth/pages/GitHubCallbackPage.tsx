@@ -4,11 +4,11 @@ import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import {useNavigate, useSearchParams} from "react-router";
 import {errorMessage, type StatusMessages, toApiError} from "@/api/errors.tsx";
+import {takeGitHubAuthorization} from "@/components/github/gitHubAuthorization.tsx";
 import {useSession} from "@/session/useSession.tsx";
 import {type AuthMessage, authFailureState} from "../authNotice.tsx";
 import {AuthCard} from "../components/AuthCard.tsx";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
-import {gitHubRedirectUri, takeGitHubCodeVerifier} from "../gitHubAuthorization.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     401: "messages.gitHubInvalid",
@@ -21,7 +21,8 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
 // Every way out replaces this page, so going back doesn't send the used code again.
 export function GitHubCallbackPage() {
     const [searchParams] = useSearchParams();
-    // A code works once and the stored verifier is removed on reading, so the effect running again mustn't do this again.
+    // A code works once and the started authorization is removed on reading, so the effect running again mustn't do
+    // this again.
     const isHandledRef = useRef(false);
     const navigate = useNavigate();
     const {signInWithGitHub} = useSession();
@@ -35,16 +36,16 @@ export function GitHubCallbackPage() {
             navigate("/auth", {replace: true, state: authFailureState(message)});
         }
 
-        const codeVerifier = takeGitHubCodeVerifier(searchParams.get("state"));
+        const authorization = takeGitHubAuthorization(searchParams.get("state"));
         const code = searchParams.get("code");
-        if (!codeVerifier) {
+        if (!authorization) {
             fail("messages.gitHubInvalid");
         } else if (searchParams.get("error") === "access_denied") {
             fail("messages.gitHubDenied");
         } else if (!code) {
             fail("messages.gitHubInvalid");
         } else {
-            signInWithGitHub({code, codeVerifier, redirectUri: gitHubRedirectUri()})
+            signInWithGitHub({code, ...authorization})
                 .then(() => navigate("/", {replace: true}))
                 .catch(caught => fail(errorMessage(toApiError(caught), STATUS_MESSAGES)));
         }
