@@ -35,9 +35,10 @@ export function UnlinkProvider({provider, name, hasPassword}: UnlinkProviderProp
         (unlinkIdentityDto: UnlinkIdentityDto) => unlinkIdentity(provider, unlinkIdentityDto),
         {
             statusMessages: STATUS_MESSAGES,
-            // Awaited, so the dialog stays busy until the user is fetched again; closed even if that fetch fails.
+            // Only the user, not the stats under its key. Awaited, so the dialog stays busy until the user is fetched
+            // again; closed even if that fetch fails.
             onSuccess: async () => {
-                await queryClient.invalidateQueries({queryKey: userKeys.all});
+                await queryClient.invalidateQueries({queryKey: userKeys.me(), exact: true});
                 setOpen(false);
             },
         },

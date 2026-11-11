@@ -6,6 +6,7 @@ import {Link} from "react-router";
 import {Panel} from "@/components/layout/Panel.tsx";
 import {useCurrentUser} from "@/session/useCurrentUser.tsx";
 import {useSignOut} from "@/session/useSignOut.tsx";
+import {ExamStats} from "../components/ExamStats.tsx";
 import {PendingEmailBanner} from "../components/PendingEmailBanner.tsx";
 import {SignInMethods} from "../components/SignInMethods.tsx";
 import {useProfilePageState} from "../hooks/useProfilePageState.tsx";
@@ -62,6 +63,7 @@ export function ProfilePage() {
                 </Box>
             </Panel>
             <SignInMethods user={user} gitHubLink={gitHubLink} onGitHubLinkDone={dropGitHubLink}/>
+            <ExamStats/>
             <Panel p={3} spacing={2}>
                 <Typography variant="h6" component="h2" fontWeight={700}>{t("profile.actions")}</Typography>
                 <Stack direction="row" flexWrap="wrap" gap={2}>

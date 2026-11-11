@@ -1,8 +1,9 @@
-import {act, screen, waitFor} from "@testing-library/react";
+import {act, screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {Route, Routes} from "react-router";
 import {saveTokens} from "@/api/tokens.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
+import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import type {ProfilePageState} from "@/features/profile/gitHubLink.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
@@ -12,11 +13,14 @@ import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
 
+const noExams: UserStatsDto = {examsTaken: 0, examsPassed: 0, averageScore: null, bestScore: null, categories: []};
+
 // Signs in as `signedInUser` and opens the page behind `RequireAuth`, as the app does, with the navigation `state`.
 // Returns the query client.
 async function renderProfile(signedInUser: UserDto = user, state?: ProfilePageState) {
     saveTokens(tokens);
     mockRequest("get", "/users/me", {body: signedInUser});
+    mockRequest("get", "/users/me/stats", {body: noExams});
     const {queryClient} = renderWithProviders(
         <Routes>
             <Route element={<RequireAuth/>}>
@@ -125,6 +129,7 @@ describe("ProfilePage", () => {
         vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
         saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
+        mockRequest("get", "/users/me/stats", {body: noExams});
         renderWithProviders(
             <Routes>
                 <Route element={<RequireAuth/>}>
@@ -137,6 +142,13 @@ describe("ProfilePage", () => {
 
         await waitFor(() => expect(currentLocation().state).toBeNull());
         expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    it("shows the exam statistics", async () => {
+        await renderProfile();
+
+        const stats = screen.getByRole("region", {name: "Exam statistics"});
+        expect(await within(stats).findByRole("link", {name: "Start an exam"})).toBeInTheDocument();
     });
 
     it("shows no email change banner without a pending change", async () => {

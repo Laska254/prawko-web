@@ -33,7 +33,7 @@ describe("LinkGoogle", () => {
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(requests).toEqual([{search: "", body: {idToken: ID_TOKEN, currentPassword: "secret1"}}]);
-        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users"]});
+        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true});
     });
 
     it("links without a password when the user has none", async () => {

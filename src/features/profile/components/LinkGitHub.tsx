@@ -46,9 +46,10 @@ export function LinkGitHub({clientId, name, hasPassword, gitHubLink, onDone}: Li
     const {t} = useTranslation(["profile", "errors"]);
     const {submit, isSending, failure} = useFormSubmission(linkGitHub, {
         statusMessages: STATUS_MESSAGES,
-        // Awaited, so the dialog stays busy until the user is fetched again; closed even if that fetch fails.
+        // Only the user, not the stats under its key. Awaited, so the dialog stays busy until the user is fetched
+        // again; closed even if that fetch fails.
         onSuccess: async () => {
-            await queryClient.invalidateQueries({queryKey: userKeys.all});
+            await queryClient.invalidateQueries({queryKey: userKeys.me(), exact: true});
             onDone();
         },
         onError: error => {

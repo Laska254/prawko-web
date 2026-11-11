@@ -27,6 +27,7 @@ function mockUser(getStatus = 200) {
 describe("queryKeys", () => {
     it.each([
         [userKeys.me(), ["users", "me"]],
+        [userKeys.stats(), ["users", "me", "stats"]],
         [userKeys.list(2), ["users", "list", 2]],
         [userKeys.detail(1), ["users", "detail", 1]],
         [examKeys.list(1, 2), ["exams", "list", 1, 2]],
