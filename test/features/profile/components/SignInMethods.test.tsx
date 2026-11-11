@@ -30,4 +30,22 @@ describe("SignInMethods", () => {
             ["GitHub", "linked"],
         ]);
     });
+
+    it("offers to unlink only the linked providers while another way to sign in is left", () => {
+        renderWithProviders(<SignInMethods user={{...user, providers: ["GOOGLE"]}}/>);
+
+        expect(screen.getByRole("button", {name: "Unlink Google"})).toBeInTheDocument();
+        expect(screen.queryByRole("button", {name: "Unlink GitHub"})).not.toBeInTheDocument();
+    });
+
+    it("tells why the only way to sign in can't be unlinked", () => {
+        renderWithProviders(<SignInMethods user={{...user, hasPassword: false, providers: ["GITHUB"]}}/>);
+
+        expect(methods()).toEqual([
+            ["Password", "not set"],
+            ["Google", "not linked"],
+            ["GitHub", "linked", "Your only way to sign in"],
+        ]);
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    });
 });

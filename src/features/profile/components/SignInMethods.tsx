@@ -1,10 +1,12 @@
 import type {ReactNode} from "react";
-import {Stack, Typography} from "@mui/material";
+import {Box, Stack, Typography} from "@mui/material";
 import {CheckCircle, GitHub, Google, Password, RadioButtonUnchecked} from "@mui/icons-material";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
+import type {IdentityProvider} from "@/api/dto/IdentityProvider.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {Panel} from "@/components/layout/Panel.tsx";
+import {UnlinkProvider} from "./UnlinkProvider.tsx";
 
 interface SignInMethodsProps {
     readonly user: UserDto;
@@ -17,6 +19,8 @@ interface SignInMethod {
     // The status shown when the method is set, and when it isn't.
     readonly setLabel: ParseKeys<"profile">;
     readonly unsetLabel: ParseKeys<"profile">;
+    // `null` for the password.
+    readonly provider: IdentityProvider | null;
 }
 
 interface MethodStatusProps {
@@ -43,6 +47,26 @@ function MethodStatus({method}: MethodStatusProps) {
     );
 }
 
+interface ProviderActionProps {
+    readonly user: UserDto;
+    readonly provider: IdentityProvider;
+    readonly name: string;
+}
+
+// The server keeps at least one way to sign in, so the last one can't be unlinked. Linking comes with each provider.
+function ProviderAction({user, provider, name}: ProviderActionProps) {
+    const {t} = useTranslation("profile");
+    const methodCount = user.providers.length + Number(user.hasPassword);
+
+    if (!user.providers.includes(provider)) {
+        return null;
+    }
+    if (methodCount === 1) {
+        return <Typography variant="body2" color="text.secondary">{t("signInMethods.onlyMethod")}</Typography>;
+    }
+    return <UnlinkProvider provider={provider} name={name} hasPassword={user.hasPassword}/>;
+}
+
 // The ways the user can sign in: their password and each provider account linked to them.
 export function SignInMethods({user}: SignInMethodsProps) {
     const {t} = useTranslation("profile");
@@ -53,6 +77,7 @@ export function SignInMethods({user}: SignInMethodsProps) {
             isSet: user.hasPassword,
             setLabel: "signInMethods.passwordSet",
             unsetLabel: "signInMethods.passwordNotSet",
+            provider: null,
         },
         {
             name: "signInMethods.google",
@@ -60,6 +85,7 @@ export function SignInMethods({user}: SignInMethodsProps) {
             isSet: user.providers.includes("GOOGLE"),
             setLabel: "signInMethods.linked",
             unsetLabel: "signInMethods.notLinked",
+            provider: "GOOGLE",
         },
         {
             name: "signInMethods.gitHub",
@@ -67,6 +93,7 @@ export function SignInMethods({user}: SignInMethodsProps) {
             isSet: user.providers.includes("GITHUB"),
             setLabel: "signInMethods.linked",
             unsetLabel: "signInMethods.notLinked",
+            provider: "GITHUB",
         },
     ];
 
@@ -80,6 +107,11 @@ export function SignInMethods({user}: SignInMethodsProps) {
                         {method.icon}
                         <Typography fontWeight={600}>{t(method.name)}</Typography>
                         <MethodStatus method={method}/>
+                        {method.provider && (
+                            <Box ml="auto">
+                                <ProviderAction user={user} provider={method.provider} name={t(method.name)}/>
+                            </Box>
+                        )}
                     </Stack>
                 ))}
             </Stack>

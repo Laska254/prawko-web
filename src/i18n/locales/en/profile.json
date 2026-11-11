@@ -26,7 +26,20 @@
     "google": "Google",
     "gitHub": "GitHub",
     "linked": "linked",
-    "notLinked": "not linked"
+    "notLinked": "not linked",
+    "onlyMethod": "Your only way to sign in"
+  },
+  "unlink": {
+    "button": "Unlink",
+    "buttonLabel": "Unlink {{provider}}",
+    "title": "Unlink {{provider}}?",
+    "text": "You won't be able to sign in with this {{provider}} account anymore.",
+    "textWithPassword": "You won't be able to sign in with this {{provider}} account anymore. Enter your password to confirm.",
+    "password": "Current password",
+    "confirm": "Unlink",
+    "wrongPassword": "The password is incorrect.",
+    "notLinked": "{{provider}} is no longer linked to your account.",
+    "lastMethod": "{{provider}} is your only way to sign in, so it can't be unlinked."
   },
   "settings": {
     "title": "Settings",

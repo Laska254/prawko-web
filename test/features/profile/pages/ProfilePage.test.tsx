@@ -64,6 +64,20 @@ describe("ProfilePage", () => {
         expect(screen.getByText("linked")).toBeInTheDocument();
     });
 
+    it("shows a provider unlinked once the user is fetched again", async () => {
+        const userEvents = userEvent.setup();
+        await renderProfile({...user, providers: ["GOOGLE"]});
+        mockRequest("delete", "/users/me/identities/google", {status: 204});
+        mockRequest("get", "/users/me", {body: user});
+
+        await userEvents.click(screen.getByRole("button", {name: "Unlink Google"}));
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret{Enter}");
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.queryByText("linked")).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", {name: "Unlink Google"})).not.toBeInTheDocument();
+    });
+
     it("shows no email change banner without a pending change", async () => {
         await renderProfile();
 

@@ -10,6 +10,7 @@ import {
     getUser,
     getUsers,
     register,
+    unlinkIdentity,
     updateUser,
 } from "@/api/users.tsx";
 
@@ -63,6 +64,16 @@ describe("users", () => {
 
         await expect(deleteAccount({password: "secret1"})).resolves.toBeUndefined();
         expect(requests).toEqual([{search: "", body: {password: "secret1"}}]);
+    });
+
+    it.each([
+        ["GOOGLE", "/users/me/identities/google"],
+        ["GITHUB", "/users/me/identities/github"],
+    ] as const)("unlinks %s with the current password", async (provider, path) => {
+        const requests = mockRequest("delete", path, {status: 204});
+
+        await expect(unlinkIdentity(provider, {currentPassword: "secret1"})).resolves.toBeUndefined();
+        expect(requests).toEqual([{search: "", body: {currentPassword: "secret1"}}]);
     });
 
     it("gets a page of users", async () => {

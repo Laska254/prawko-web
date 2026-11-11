@@ -26,7 +26,20 @@
     "google": "Google",
     "gitHub": "GitHub",
     "linked": "połączone",
-    "notLinked": "niepołączone"
+    "notLinked": "niepołączone",
+    "onlyMethod": "Jedyny sposób logowania"
+  },
+  "unlink": {
+    "button": "Odłącz",
+    "buttonLabel": "Odłącz {{provider}}",
+    "title": "Odłączyć {{provider}}?",
+    "text": "Nie będzie już można logować się tym kontem {{provider}}.",
+    "textWithPassword": "Nie będzie już można logować się tym kontem {{provider}}. Wpisz hasło, aby potwierdzić.",
+    "password": "Obecne hasło",
+    "confirm": "Odłącz",
+    "wrongPassword": "Hasło jest nieprawidłowe.",
+    "notLinked": "Konto {{provider}} nie jest już połączone z Twoim kontem.",
+    "lastMethod": "{{provider}} to Twój jedyny sposób logowania, więc nie można go odłączyć."
   },
   "settings": {
     "title": "Ustawienia",
