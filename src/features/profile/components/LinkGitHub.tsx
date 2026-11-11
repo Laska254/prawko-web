@@ -1,10 +1,10 @@
 import {useState} from "react";
-import {Box} from "@mui/material";
+import {Alert, Stack} from "@mui/material";
 import {useQueryClient} from "@tanstack/react-query";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import type {GitHubSignInDto} from "@/api/dto/GitHubSignInDto.tsx";
-import type {StatusMessages} from "@/api/errors.tsx";
+import type {ApiError, StatusMessages} from "@/api/errors.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {linkGitHub} from "@/api/users.tsx";
@@ -21,6 +21,12 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
 
 // As wide as Google's button above it.
 const BUTTON_WIDTH = 240;
+
+// The server checks the password before it exchanges GitHub's code, which works once, so only a 400 leaves the code
+// unused. Sent again, a used code is answered with a 401, which signs the user out.
+function isCodeUnused(error: ApiError): boolean {
+    return (error.kind === "http" || error.kind === "validation") && error.status === 400;
+}
 
 interface LinkGitHubProps {
     readonly clientId: string;
@@ -47,13 +53,19 @@ export function LinkGitHub({clientId, name, hasPassword, returned}: LinkGitHubPr
             setGitHubLink(null);
         },
     });
+    // A failure that used GitHub's code up closes the dialog and shows by the button, which brings a new code.
+    let spentCodeFailure: string | null = null;
+    if (failure && !isCodeUnused(failure.error)) {
+        spentCodeFailure = t(failure.message, {provider: name});
+    }
 
     return (
         <>
-            <Box width={BUTTON_WIDTH}>
+            <Stack spacing={1} width={BUTTON_WIDTH}>
+                {spentCodeFailure && <Alert severity="error">{spentCodeFailure}</Alert>}
                 <GitHubButton clientId={clientId} redirectPath={GITHUB_LINK_CALLBACK_PATH}/>
-            </Box>
-            <PasswordConfirmDialog open={gitHubLink !== null} title={t("link.title", {provider: name})}
+            </Stack>
+            <PasswordConfirmDialog open={gitHubLink !== null && spentCodeFailure === null} title={t("link.title", {provider: name})}
                                    text={t("link.text", {provider: name})} confirmLabel={t("link.confirm")}
                                    hasPassword={hasPassword} loading={isSending}
                                    failure={failure && t(failure.message, {provider: name})}

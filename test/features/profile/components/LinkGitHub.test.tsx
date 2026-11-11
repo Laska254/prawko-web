@@ -5,7 +5,7 @@ import {takeGitHubAuthorization} from "@/components/github/gitHubAuthorization.t
 import {LinkGitHub} from "@/features/profile/components/LinkGitHub.tsx";
 import {gitHubSignInDto, problem} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
-import {mockRequest} from "@test/support/server.tsx";
+import {mockNetworkError, mockRequest} from "@test/support/server.tsx";
 
 const PATH = "/users/me/identities/github";
 
@@ -75,17 +75,56 @@ describe("LinkGitHub", () => {
     });
 
     it.each([
-        [400, "The password is incorrect."],
-        [404, "Linking GitHub isn't available right now."],
-        [409, "This GitHub account is linked to another user, or you already have one linked."],
-    ])("keeps the dialog open with the error of a %i", async (status, message) => {
-        mockRequest("post", PATH, {status, body: problem(status)});
+        [problem(400)],
+        [problem(400, {currentPassword: "must not be blank"})],
+    ])("keeps the dialog open with the error of a 400 (%o)", async body => {
+        mockRequest("post", PATH, {status: 400, body});
         renderLinkGitHub(gitHubSignInDto);
 
         await userEvent.setup().type(screen.getByLabelText(/Current password/), "wrong{Enter}");
 
-        expect(await screen.findByRole("alert")).toHaveTextContent(message);
+        expect(await screen.findByRole("alert")).toHaveTextContent("The password is incorrect.");
         expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    it.each([
+        [404, problem(404), "Linking GitHub isn't available right now."],
+        [409, problem(409), "This GitHub account is linked to another user, or you already have one linked."],
+        [500, undefined, "Something went wrong. Please try again later."],
+    ])("closes the dialog and shows the error of a %i by the button, as GitHub's code is used up", async (status, body,
+                                                                                                         message) => {
+        mockRequest("post", PATH, {status, body});
+        renderLinkGitHub(gitHubSignInDto);
+
+        await userEvent.setup().type(screen.getByLabelText(/Current password/), "wrong{Enter}");
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.getByRole("alert")).toHaveTextContent(message);
+        expect(screen.getByRole("button", {name: "Continue with GitHub"})).toBeInTheDocument();
+    });
+
+    // The request may have reached the server, so the code may be used up too.
+    it("closes the dialog after a network error", async () => {
+        mockNetworkError(PATH);
+        renderLinkGitHub(gitHubSignInDto);
+
+        await userEvent.setup().type(screen.getByLabelText(/Current password/), "secret1{Enter}");
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.getByRole("alert")).toHaveTextContent("Can't reach the server.");
+    });
+
+    it("shows no error by the button after a wrong password is cancelled", async () => {
+        mockRequest("post", PATH, {status: 400, body: problem(400)});
+        const userEvents = userEvent.setup();
+        renderLinkGitHub(gitHubSignInDto);
+        await userEvents.type(screen.getByLabelText(/Current password/), "wrong{Enter}");
+        await screen.findByRole("alert");
+
+        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
     it("tries the same code again with another password", async () => {
