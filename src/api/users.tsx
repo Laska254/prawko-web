@@ -2,6 +2,7 @@ import {api, createdId} from "./client.tsx";
 import type {ChangePasswordDto} from "./dto/ChangePasswordDto.tsx";
 import type {DeleteAccountDto} from "./dto/DeleteAccountDto.tsx";
 import type {IdentityProvider} from "./dto/IdentityProvider.tsx";
+import type {LinkGoogleDto} from "./dto/LinkGoogleDto.tsx";
 import type {PagedModel} from "./dto/PagedModel.tsx";
 import type {RegisterDto} from "./dto/RegisterDto.tsx";
 import type {UnlinkIdentityDto} from "./dto/UnlinkIdentityDto.tsx";
@@ -33,6 +34,11 @@ export async function changePassword(changePasswordDto: ChangePasswordDto): Prom
 
 export async function deleteAccount(deleteAccountDto: DeleteAccountDto): Promise<void> {
     await api.delete("/users/me", {data: deleteAccountDto});
+}
+
+// The Google account may have another email than the user.
+export async function linkGoogle(linkGoogleDto: LinkGoogleDto): Promise<void> {
+    await api.post("/users/me/identities/google", linkGoogleDto);
 }
 
 // The provider's path is its name in lower case, e.g. `/users/me/identities/google`.

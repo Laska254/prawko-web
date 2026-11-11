@@ -6,6 +6,7 @@ import {useTranslation} from "react-i18next";
 import type {IdentityProvider} from "@/api/dto/IdentityProvider.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {Panel} from "@/components/layout/Panel.tsx";
+import {LinkGoogle} from "./LinkGoogle.tsx";
 import {UnlinkProvider} from "./UnlinkProvider.tsx";
 
 interface SignInMethodsProps {
@@ -53,12 +54,17 @@ interface ProviderActionProps {
     readonly name: string;
 }
 
-// The server keeps at least one way to sign in, so the last one can't be unlinked. Linking comes with each provider.
+// The server keeps at least one way to sign in, so the last one can't be unlinked. A provider is linked only with its
+// client ID; GitHub's comes next.
 function ProviderAction({user, provider, name}: ProviderActionProps) {
     const {t} = useTranslation("profile");
     const methodCount = user.providers.length + Number(user.hasPassword);
+    const googleClientId: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
     if (!user.providers.includes(provider)) {
+        if (provider === "GOOGLE" && googleClientId) {
+            return <LinkGoogle clientId={googleClientId} name={name} hasPassword={user.hasPassword}/>;
+        }
         return null;
     }
     if (methodCount === 1) {

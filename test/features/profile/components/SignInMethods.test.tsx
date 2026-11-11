@@ -1,6 +1,7 @@
 import {screen, within} from "@testing-library/react";
 import {SignInMethods} from "@/features/profile/components/SignInMethods.tsx";
 import {user} from "@test/support/data.tsx";
+import {googleScripts, loadGoogleScript} from "@test/support/googleScript.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 
 // Each method's name and status.
@@ -10,6 +11,8 @@ function methods() {
 }
 
 describe("SignInMethods", () => {
+    afterEach(() => vi.unstubAllEnvs());
+
     it("shows the password set and no provider linked", () => {
         renderWithProviders(<SignInMethods user={user}/>);
 
@@ -47,5 +50,20 @@ describe("SignInMethods", () => {
             ["GitHub", "linked", "Your only way to sign in"],
         ]);
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    });
+
+    it("offers Google's button to link Google with its client ID", async () => {
+        vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
+        renderWithProviders(<SignInMethods user={user}/>);
+
+        loadGoogleScript();
+
+        expect(await screen.findByRole("button", {name: "Continue with Google"})).toBeInTheDocument();
+    });
+
+    it("offers no way to link Google without its client ID", () => {
+        renderWithProviders(<SignInMethods user={user}/>);
+
+        expect(googleScripts()).toHaveLength(0);
     });
 });

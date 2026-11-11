@@ -29,17 +29,26 @@
     "notLinked": "niepołączone",
     "onlyMethod": "Jedyny sposób logowania"
   },
+  "link": {
+    "title": "Połączyć {{provider}}?",
+    "text": "Będzie można też logować się tym kontem {{provider}}.",
+    "confirm": "Połącz",
+    "notConfigured": "Łączenie z {{provider}} jest teraz niedostępne.",
+    "conflict": "To konto {{provider}} jest połączone z innym użytkownikiem albo masz już połączone takie konto."
+  },
   "unlink": {
     "button": "Odłącz",
     "buttonLabel": "Odłącz {{provider}}",
     "title": "Odłączyć {{provider}}?",
     "text": "Nie będzie już można logować się tym kontem {{provider}}.",
-    "textWithPassword": "Nie będzie już można logować się tym kontem {{provider}}. Wpisz hasło, aby potwierdzić.",
-    "password": "Obecne hasło",
     "confirm": "Odłącz",
-    "wrongPassword": "Hasło jest nieprawidłowe.",
     "notLinked": "Konto {{provider}} nie jest już połączone z Twoim kontem.",
     "lastMethod": "{{provider}} to Twój jedyny sposób logowania, więc nie można go odłączyć."
+  },
+  "passwordConfirm": {
+    "label": "Obecne hasło",
+    "prompt": "Wpisz hasło, aby potwierdzić.",
+    "wrong": "Hasło jest nieprawidłowe."
   },
   "settings": {
     "title": "Ustawienia",

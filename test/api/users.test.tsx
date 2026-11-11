@@ -9,6 +9,7 @@ import {
     getCurrentUserStats,
     getUser,
     getUsers,
+    linkGoogle,
     register,
     unlinkIdentity,
     updateUser,
@@ -64,6 +65,13 @@ describe("users", () => {
 
         await expect(deleteAccount({password: "secret1"})).resolves.toBeUndefined();
         expect(requests).toEqual([{search: "", body: {password: "secret1"}}]);
+    });
+
+    it("links a Google account with the current password", async () => {
+        const requests = mockRequest("post", "/users/me/identities/google", {status: 204});
+
+        await expect(linkGoogle({idToken: "google-id-token", currentPassword: "secret1"})).resolves.toBeUndefined();
+        expect(requests).toEqual([{search: "", body: {idToken: "google-id-token", currentPassword: "secret1"}}]);
     });
 
     it.each([
