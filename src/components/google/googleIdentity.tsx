@@ -6,6 +6,9 @@ const SCRIPT_URL = "https://accounts.google.com/gsi/client";
 // The height Google's button renders at.
 export const GOOGLE_BUTTON_HEIGHT = 40;
 
+// Google's narrowest button that still fits its label; buttons next to it share the width.
+export const GOOGLE_BUTTON_MIN_WIDTH = 240;
+
 export interface GoogleButtonOptions {
     readonly theme: "outline" | "filled_black";
     readonly text: "continue_with";

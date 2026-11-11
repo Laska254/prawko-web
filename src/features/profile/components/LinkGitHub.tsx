@@ -9,6 +9,7 @@ import {userKeys} from "@/api/queryKeys.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {linkGitHub} from "@/api/users.tsx";
 import {GitHubButton} from "@/components/github/GitHubButton.tsx";
+import {GOOGLE_BUTTON_MIN_WIDTH} from "@/components/google/googleIdentity.tsx";
 import {GITHUB_LINK_CALLBACK_PATH} from "../gitHubLink.tsx";
 import {PasswordConfirmDialog} from "./PasswordConfirmDialog.tsx";
 
@@ -19,9 +20,6 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     404: "link.notConfigured",
     409: "link.conflict",
 };
-
-// As wide as Google's button above it.
-const BUTTON_WIDTH = 240;
 
 // The server checks the password before it exchanges GitHub's code, which works once, so only a 400 leaves the code
 // unused. Sent again, a used code is answered with a 401, which signs the user out.
@@ -62,7 +60,8 @@ export function LinkGitHub({clientId, name, hasPassword, returned}: LinkGitHubPr
 
     return (
         <>
-            <Stack spacing={1} width={BUTTON_WIDTH}>
+            {/* As wide as Google's button above it. */}
+            <Stack spacing={1} width={GOOGLE_BUTTON_MIN_WIDTH}>
                 {spentCodeFailure && <Alert severity="error">{spentCodeFailure}</Alert>}
                 <GitHubButton clientId={clientId} redirectPath={GITHUB_LINK_CALLBACK_PATH}/>
             </Stack>

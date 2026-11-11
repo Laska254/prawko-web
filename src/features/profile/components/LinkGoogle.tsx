@@ -8,6 +8,7 @@ import {userKeys} from "@/api/queryKeys.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {linkGoogle} from "@/api/users.tsx";
 import {GoogleButton} from "@/components/google/GoogleButton.tsx";
+import {GOOGLE_BUTTON_MIN_WIDTH} from "@/components/google/googleIdentity.tsx";
 import {PasswordConfirmDialog} from "./PasswordConfirmDialog.tsx";
 
 // The server reports a missing password like a wrong one.
@@ -16,9 +17,6 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     404: "link.notConfigured",
     409: "link.conflict",
 };
-
-// Google's narrowest button that still fits its label.
-const BUTTON_WIDTH = 240;
 
 interface LinkGoogleProps {
     readonly clientId: string;
@@ -57,7 +55,7 @@ export function LinkGoogle({clientId, name, hasPassword}: LinkGoogleProps) {
 
     return (
         <>
-            <Box width={BUTTON_WIDTH}>
+            <Box width={GOOGLE_BUTTON_MIN_WIDTH}>
                 <GoogleButton clientId={clientId} onCredential={pick} setUnavailable={setUnavailable}
                               disabled={isSending}/>
             </Box>
