@@ -27,7 +27,7 @@
     "gitHub": "GitHub",
     "linked": "połączone",
     "notLinked": "niepołączone",
-    "onlyMethod": "Jedyny sposób logowania"
+    "onlyMethod": "jedyny sposób logowania"
   },
   "link": {
     "title": "Połączyć {{provider}}?",

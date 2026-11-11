@@ -56,7 +56,7 @@ describe("SignInMethods", () => {
         expect(methods()).toEqual([
             ["Password", "not set"],
             ["Google", "not linked"],
-            ["GitHub", "linked", "Your only way to sign in"],
+            ["GitHub", "linked", "your only way to sign in"],
         ]);
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });

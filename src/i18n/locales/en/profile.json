@@ -27,7 +27,7 @@
     "gitHub": "GitHub",
     "linked": "linked",
     "notLinked": "not linked",
-    "onlyMethod": "Your only way to sign in"
+    "onlyMethod": "your only way to sign in"
   },
   "link": {
     "title": "Link {{provider}}?",

@@ -33,10 +33,11 @@ interface SignInMethod {
 
 interface MethodStatusProps {
     readonly method: SignInMethod;
+    readonly isOnlyMethod: boolean;
 }
 
 // The icon only repeats what the text says.
-function MethodStatus({method}: MethodStatusProps) {
+function MethodStatus({method, isOnlyMethod}: MethodStatusProps) {
     const {t} = useTranslation("profile");
 
     if (method.isSet) {
@@ -44,6 +45,12 @@ function MethodStatus({method}: MethodStatusProps) {
             <Stack direction="row" alignItems="center" spacing={0.5}>
                 <CheckCircle color="success" fontSize="small" aria-hidden/>
                 <Typography variant="body2" color="success.main" fontWeight={600}>{t(method.setLabel)}</Typography>
+                {isOnlyMethod && (
+                    <>
+                        <Typography component="span" variant="body2" color="text.secondary" aria-hidden>·</Typography>
+                        <Typography variant="body2" color="text.secondary">{t("signInMethods.onlyMethod")}</Typography>
+                    </>
+                )}
             </Stack>
         );
     }
@@ -59,15 +66,14 @@ interface ProviderActionProps {
     readonly user: UserDto;
     readonly provider: IdentityProvider;
     readonly name: string;
+    readonly isOnlyMethod: boolean;
     readonly gitHubLink: GitHubSignInDto | undefined;
     readonly onGitHubLinkDone: () => void;
 }
 
-// The server keeps at least one way to sign in, so the last one can't be unlinked. A provider is linked only with its
-// client ID, and GitHub only where the browser can start its authorization.
-function ProviderAction({user, provider, name, gitHubLink, onGitHubLinkDone}: ProviderActionProps) {
-    const {t} = useTranslation("profile");
-    const methodCount = user.providers.length + Number(user.hasPassword);
+// The only way to sign in can't be unlinked; its status says why. A provider is linked only with its client ID, and
+// GitHub only where the browser can start its authorization.
+function ProviderAction({user, provider, name, isOnlyMethod, gitHubLink, onGitHubLinkDone}: ProviderActionProps) {
     const googleClientId: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const gitHubClientId: string | undefined = import.meta.env.VITE_GITHUB_CLIENT_ID;
 
@@ -83,8 +89,8 @@ function ProviderAction({user, provider, name, gitHubLink, onGitHubLinkDone}: Pr
         }
         return null;
     }
-    if (methodCount === 1) {
-        return <Typography variant="body2" color="text.secondary">{t("signInMethods.onlyMethod")}</Typography>;
+    if (isOnlyMethod) {
+        return null;
     }
     return <UnlinkProvider provider={provider} name={name} hasPassword={user.hasPassword}/>;
 }
@@ -92,6 +98,7 @@ function ProviderAction({user, provider, name, gitHubLink, onGitHubLinkDone}: Pr
 // The ways the user can sign in: their password and each provider account linked to them.
 export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethodsProps) {
     const {t} = useTranslation("profile");
+    const methodCount = user.providers.length + Number(user.hasPassword);
     const methods: readonly SignInMethod[] = [
         {
             name: "signInMethods.password",
@@ -123,20 +130,26 @@ export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethod
         <Panel p={3} spacing={2}>
             <Typography variant="h6" component="h2" fontWeight={700}>{t("signInMethods.title")}</Typography>
             <Stack component="ul" spacing={1.5} m={0} p={0} sx={{listStyle: "none"}}>
-                {methods.map(method => (
-                    <Stack key={method.name} component="li" direction="row" flexWrap="wrap" alignItems="center"
-                           columnGap={1}>
-                        {method.icon}
-                        <Typography fontWeight={600}>{t(method.name)}</Typography>
-                        <MethodStatus method={method}/>
-                        {method.provider && (
-                            <Box ml="auto">
-                                <ProviderAction user={user} provider={method.provider} name={t(method.name)}
-                                                gitHubLink={gitHubLink} onGitHubLinkDone={onGitHubLinkDone}/>
-                            </Box>
-                        )}
-                    </Stack>
-                ))}
+                {methods.map(method => {
+                    // Said only of a provider, as it explains the missing Unlink button the password never has.
+                    const isOnlyMethod = method.provider !== null && method.isSet && methodCount === 1;
+
+                    return (
+                        <Stack key={method.name} component="li" direction="row" flexWrap="wrap" alignItems="center"
+                               columnGap={1}>
+                            {method.icon}
+                            <Typography fontWeight={600}>{t(method.name)}</Typography>
+                            <MethodStatus method={method} isOnlyMethod={isOnlyMethod}/>
+                            {method.provider && (
+                                <Box ml="auto">
+                                    <ProviderAction user={user} provider={method.provider} name={t(method.name)}
+                                                    isOnlyMethod={isOnlyMethod} gitHubLink={gitHubLink}
+                                                    onGitHubLinkDone={onGitHubLinkDone}/>
+                                </Box>
+                            )}
+                        </Stack>
+                    );
+                })}
             </Stack>
         </Panel>
     );
