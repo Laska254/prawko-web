@@ -33,11 +33,11 @@ interface SignInMethod {
 
 interface MethodStatusProps {
     readonly method: SignInMethod;
-    readonly isOnlyMethod: boolean;
+    readonly isUnlinkBlocked: boolean;
 }
 
 // The icon only repeats what the text says.
-function MethodStatus({method, isOnlyMethod}: MethodStatusProps) {
+function MethodStatus({method, isUnlinkBlocked}: MethodStatusProps) {
     const {t} = useTranslation("profile");
 
     if (method.isSet) {
@@ -45,7 +45,7 @@ function MethodStatus({method, isOnlyMethod}: MethodStatusProps) {
             <Stack direction="row" alignItems="center" spacing={0.5}>
                 <CheckCircle color="success" fontSize="small" aria-hidden/>
                 <Typography variant="body2" color="success.main" fontWeight={600}>{t(method.setLabel)}</Typography>
-                {isOnlyMethod && (
+                {isUnlinkBlocked && (
                     <>
                         <Typography component="span" variant="body2" color="text.secondary" aria-hidden>·</Typography>
                         <Typography variant="body2" color="text.secondary">{t("signInMethods.onlyMethod")}</Typography>
@@ -66,14 +66,14 @@ interface ProviderActionProps {
     readonly user: UserDto;
     readonly provider: IdentityProvider;
     readonly name: string;
-    readonly isOnlyMethod: boolean;
+    readonly isUnlinkBlocked: boolean;
     readonly gitHubLink: GitHubSignInDto | undefined;
     readonly onGitHubLinkDone: () => void;
 }
 
 // The only way to sign in can't be unlinked; its status says why. A provider is linked only with its client ID, and
 // GitHub only where the browser can start its authorization.
-function ProviderAction({user, provider, name, isOnlyMethod, gitHubLink, onGitHubLinkDone}: ProviderActionProps) {
+function ProviderAction({user, provider, name, isUnlinkBlocked, gitHubLink, onGitHubLinkDone}: ProviderActionProps) {
     const googleClientId: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const gitHubClientId: string | undefined = import.meta.env.VITE_GITHUB_CLIENT_ID;
 
@@ -89,7 +89,7 @@ function ProviderAction({user, provider, name, isOnlyMethod, gitHubLink, onGitHu
         }
         return null;
     }
-    if (isOnlyMethod) {
+    if (isUnlinkBlocked) {
         return null;
     }
     return <UnlinkProvider provider={provider} name={name} hasPassword={user.hasPassword}/>;
@@ -131,19 +131,19 @@ export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethod
             <Typography variant="h6" component="h2" fontWeight={700}>{t("signInMethods.title")}</Typography>
             <Stack component="ul" spacing={1.5} m={0} p={0} sx={{listStyle: "none"}}>
                 {methods.map(method => {
-                    // Said only of a provider, as it explains the missing Unlink button the password never has.
-                    const isOnlyMethod = method.provider !== null && method.isSet && methodCount === 1;
+                    // The only way to sign in, when it's a provider: the password has no Unlink button to block.
+                    const isUnlinkBlocked = method.provider !== null && method.isSet && methodCount === 1;
 
                     return (
                         <Stack key={method.name} component="li" direction="row" flexWrap="wrap" alignItems="center"
                                columnGap={1}>
                             {method.icon}
                             <Typography fontWeight={600}>{t(method.name)}</Typography>
-                            <MethodStatus method={method} isOnlyMethod={isOnlyMethod}/>
+                            <MethodStatus method={method} isUnlinkBlocked={isUnlinkBlocked}/>
                             {method.provider && (
                                 <Box ml="auto">
                                     <ProviderAction user={user} provider={method.provider} name={t(method.name)}
-                                                    isOnlyMethod={isOnlyMethod} gitHubLink={gitHubLink}
+                                                    isUnlinkBlocked={isUnlinkBlocked} gitHubLink={gitHubLink}
                                                     onGitHubLinkDone={onGitHubLinkDone}/>
                                 </Box>
                             )}
