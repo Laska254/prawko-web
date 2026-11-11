@@ -38,7 +38,7 @@ export function isGitHubAuthorizationSupported(): boolean {
 }
 
 // Leaves the app for GitHub's consent page, which sends the user back to `redirectPath` of this origin. GitHub accepts
-// the callback URL of the app's settings, or a path below it.
+// only a callback URL of the app's settings, matched exactly.
 export async function startGitHubAuthorization(clientId: string, redirectPath: string): Promise<void> {
     const state = randomString(STATE_BYTES);
     const codeVerifier = randomString(CODE_VERIFIER_BYTES);

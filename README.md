@@ -192,10 +192,11 @@ A Content Security Policy has to allow Google's script: `https://accounts.google
 Optional: without `VITE_GITHUB_CLIENT_ID` the button isn't shown. It also needs HTTPS or `localhost`, as browsers can't
 create the PKCE challenge anywhere else.
 
-1. In [GitHub's developer settings](https://github.com/settings/developers), create an OAuth app for each environment,
-   as an app has only one callback URL. Set its *Authorization callback URL* to the application URL followed by
-   `/auth/github/callback`; for development that's `http://localhost:5173/auth/github/callback`. Linking GitHub on the
-   profile returns to `/auth/github/callback/link`, which GitHub accepts as a path below it.
+1. In [GitHub's developer settings](https://github.com/settings/developers), create an OAuth app for each environment
+   and give it two callback URLs: the application URL followed by `/auth/github/callback` for signing in, and by
+   `/auth/github/callback/link` for linking GitHub on the profile. For development those are
+   `http://localhost:5173/auth/github/callback` and `http://localhost:5173/auth/github/callback/link`. GitHub matches
+   each exactly, so leave wildcard matching off.
 2. Set its client ID as `VITE_GITHUB_CLIENT_ID`, in `.env.development.local` (not committed) or the environment of a
    production build.
 3. Generate a client secret and give the server both, as it exchanges the code for GitHub's access token; without them
