@@ -54,13 +54,15 @@
   },
   "stats": {
     "title": "Statystyki egzaminów",
-    "examsTaken": "Ukończone egzaminy",
-    "examsPassed": "Zdane",
     "passRate": "Zdawalność",
+    "passedOf": "zdane {{passed}} z {{taken}}",
     "averageScore": "Średni wynik",
     "bestScore": "Najlepszy wynik",
     "byCategory": "Według kategorii",
-    "category": "Kategoria",
+    "category": "Kategoria {{category}}",
+    "categoryCounts": "Ukończone: {{taken}} · zdane: {{passed}}",
+    "best": "najlepszy {{score}}",
+    "passMark": "Próg zaliczenia: {{passMark}} z {{max}} punktów",
     "empty": "Nie masz jeszcze ukończonych egzaminów. Tutaj pojawią się Twoje wyniki.",
     "startExam": "Rozpocznij egzamin"
   },

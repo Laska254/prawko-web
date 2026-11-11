@@ -29,36 +29,52 @@ function panel() {
     return screen.getByRole("region", {name: "Exam statistics"});
 }
 
-// The value next to each label of the totals' description list.
-function totals() {
+// The value next to each label of the scores' description list.
+function scores() {
     return within(panel()).getAllByRole("term").map(term => [term.textContent, term.nextElementSibling?.textContent]);
 }
 
-// The text of each cell, row by row, header row first.
-function categoryRows() {
-    return within(screen.getByRole("table", {name: "By category"})).getAllByRole("row")
-        .map(row => [...row.children].map(cell => cell.textContent));
+// A meter's label, value, maximum and spoken value, e.g. ["Pass rate", "1", "3", "33%"].
+function meter(element: HTMLElement) {
+    return [element.getAttribute("aria-label"), ...["now", "max", "text"].map(name => element.getAttribute(`aria-value${name}`))];
+}
+
+// Each category card's title, counts, figures and meters.
+function categoryCards() {
+    return within(screen.getByRole("list", {name: "By category"})).getAllByRole("listitem").map(card => ({
+        title: within(card).getByRole("heading").textContent,
+        texts: [...card.querySelectorAll("p")].map(text => text.textContent),
+        meters: within(card).getAllByRole("meter").map(meter),
+    }));
 }
 
 describe("ExamStats", () => {
-    it("shows the totals and a row per category", async () => {
+    it("shows the pass rate, the scores and a card per category", async () => {
         const requests = mockRequest("get", "/users/me/stats", {body: stats});
         renderStats();
 
-        await screen.findByRole("table", {name: "By category"});
+        await screen.findByRole("list", {name: "By category"});
 
-        expect(totals()).toEqual([
-            ["Finished exams", "3"],
-            ["Passed", "1"],
-            ["Pass rate", "33%"],
+        expect(within(panel()).getByText("33%")).toBeInTheDocument();
+        expect(within(panel()).getByText("Pass rate · 1 of 3 passed")).toBeInTheDocument();
+        expect(within(panel()).getAllByRole("meter").map(meter)[0]).toEqual(["Pass rate", "1", "3", "33%"]);
+        expect(scores()).toEqual([
             ["Average score", "64.3"],
-            ["Best score", "72"],
+            ["Best score", "72 / 74"],
         ]);
-        expect(categoryRows()).toEqual([
-            ["Category", "Finished exams", "Passed", "Pass rate", "Average score", "Best score"],
-            ["A", "1", "0", "0%", "51", "51"],
-            ["B", "2", "1", "50%", "71", "72"],
+        expect(categoryCards()).toEqual([
+            {
+                title: "Category A",
+                texts: ["Finished: 1 · passed: 0", "Pass rate", "0%", "Average score", "51 · best 51"],
+                meters: [["Pass rate", "0", "1", "0%"], ["Average score", "51", "74", "51"]],
+            },
+            {
+                title: "Category B",
+                texts: ["Finished: 2 · passed: 1", "Pass rate", "50%", "Average score", "71 · best 72"],
+                meters: [["Pass rate", "1", "2", "50%"], ["Average score", "71", "74", "71"]],
+            },
         ]);
+        expect(within(panel()).getByText("Pass mark: 68 of 74 points")).toBeInTheDocument();
         expect(requests).toHaveLength(1);
     });
 
@@ -70,7 +86,7 @@ describe("ExamStats", () => {
 
         respond();
 
-        expect(await screen.findByRole("table", {name: "By category"})).toBeInTheDocument();
+        expect(await screen.findByRole("list", {name: "By category"})).toBeInTheDocument();
         expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     });
 
@@ -81,7 +97,7 @@ describe("ExamStats", () => {
 
         expect(await screen.findByText("You haven't finished any exams yet. Your results will show up here."))
             .toBeInTheDocument();
-        expect(screen.queryByRole("table")).not.toBeInTheDocument();
+        expect(screen.queryByRole("list")).not.toBeInTheDocument();
 
         await userEvents.click(screen.getByRole("link", {name: "Start an exam"}));
 
@@ -104,6 +120,6 @@ describe("ExamStats", () => {
 
         respond();
 
-        expect(await screen.findByRole("table", {name: "By category"})).toBeInTheDocument();
+        expect(await screen.findByRole("list", {name: "By category"})).toBeInTheDocument();
     });
 });
