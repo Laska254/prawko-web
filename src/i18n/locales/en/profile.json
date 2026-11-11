@@ -52,6 +52,18 @@
     "prompt": "Enter your password to confirm.",
     "wrong": "The password is incorrect."
   },
+  "stats": {
+    "title": "Exam statistics",
+    "examsTaken": "Finished exams",
+    "examsPassed": "Passed",
+    "passRate": "Pass rate",
+    "averageScore": "Average score",
+    "bestScore": "Best score",
+    "byCategory": "By category",
+    "category": "Category",
+    "empty": "You haven't finished any exams yet. Your results will show up here.",
+    "startExam": "Start an exam"
+  },
   "settings": {
     "title": "Settings",
     "empty": "Language, theme and exam preferences will show up here."

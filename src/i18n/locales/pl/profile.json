@@ -52,6 +52,18 @@
     "prompt": "Wpisz hasło, aby potwierdzić.",
     "wrong": "Hasło jest nieprawidłowe."
   },
+  "stats": {
+    "title": "Statystyki egzaminów",
+    "examsTaken": "Ukończone egzaminy",
+    "examsPassed": "Zdane",
+    "passRate": "Zdawalność",
+    "averageScore": "Średni wynik",
+    "bestScore": "Najlepszy wynik",
+    "byCategory": "Według kategorii",
+    "category": "Kategoria",
+    "empty": "Nie masz jeszcze ukończonych egzaminów. Tutaj pojawią się Twoje wyniki.",
+    "startExam": "Rozpocznij egzamin"
+  },
   "settings": {
     "title": "Ustawienia",
     "empty": "Tutaj pojawią się ustawienia języka, motywu i egzaminu."

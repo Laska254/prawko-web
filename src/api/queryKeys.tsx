@@ -4,6 +4,7 @@
 export const userKeys = {
     all: ["users"] as const,
     me: () => [...userKeys.all, "me"] as const,
+    stats: () => [...userKeys.me(), "stats"] as const,
     list: (page: number) => [...userKeys.all, "list", page] as const,
     detail: (id: number) => [...userKeys.all, "detail", id] as const,
 };
