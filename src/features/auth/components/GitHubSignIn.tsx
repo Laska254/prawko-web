@@ -1,8 +1,8 @@
 import {GitHub} from "@mui/icons-material";
 import {Button} from "@mui/material";
 import {useTranslation} from "react-i18next";
+import {GOOGLE_BUTTON_HEIGHT} from "@/components/google/googleIdentity.tsx";
 import {startGitHubSignIn} from "../gitHubAuthorization.tsx";
-import {GOOGLE_BUTTON_HEIGHT} from "../googleIdentity.tsx";
 
 interface GitHubSignInProps {
     clientId: string;
