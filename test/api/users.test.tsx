@@ -1,5 +1,5 @@
 import {apiUrl, mockRequest} from "@test/support/server.tsx";
-import {registerDto, user} from "@test/support/data.tsx";
+import {gitHubSignInDto, registerDto, user} from "@test/support/data.tsx";
 import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import {
     changePassword,
@@ -9,6 +9,7 @@ import {
     getCurrentUserStats,
     getUser,
     getUsers,
+    linkGitHub,
     linkGoogle,
     register,
     unlinkIdentity,
@@ -65,6 +66,13 @@ describe("users", () => {
 
         await expect(deleteAccount({password: "secret1"})).resolves.toBeUndefined();
         expect(requests).toEqual([{search: "", body: {password: "secret1"}}]);
+    });
+
+    it("links a GitHub account with the current password", async () => {
+        const requests = mockRequest("post", "/users/me/identities/github", {status: 204});
+
+        await expect(linkGitHub({...gitHubSignInDto, currentPassword: "secret1"})).resolves.toBeUndefined();
+        expect(requests).toEqual([{search: "", body: {...gitHubSignInDto, currentPassword: "secret1"}}]);
     });
 
     it("links a Google account with the current password", async () => {

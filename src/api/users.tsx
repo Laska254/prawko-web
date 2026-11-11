@@ -2,6 +2,7 @@ import {api, createdId} from "./client.tsx";
 import type {ChangePasswordDto} from "./dto/ChangePasswordDto.tsx";
 import type {DeleteAccountDto} from "./dto/DeleteAccountDto.tsx";
 import type {IdentityProvider} from "./dto/IdentityProvider.tsx";
+import type {LinkGitHubDto} from "./dto/LinkGitHubDto.tsx";
 import type {LinkGoogleDto} from "./dto/LinkGoogleDto.tsx";
 import type {PagedModel} from "./dto/PagedModel.tsx";
 import type {RegisterDto} from "./dto/RegisterDto.tsx";
@@ -39,6 +40,11 @@ export async function deleteAccount(deleteAccountDto: DeleteAccountDto): Promise
 // The Google account may have another email than the user.
 export async function linkGoogle(linkGoogleDto: LinkGoogleDto): Promise<void> {
     await api.post("/users/me/identities/google", linkGoogleDto);
+}
+
+// The server checks the password before it uses the code, which works once, so a wrong one can be retried.
+export async function linkGitHub(linkGitHubDto: LinkGitHubDto): Promise<void> {
+    await api.post("/users/me/identities/github", linkGitHubDto);
 }
 
 // The provider's path is its name in lower case, e.g. `/users/me/identities/google`.

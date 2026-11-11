@@ -11,7 +11,10 @@ function methods() {
 }
 
 describe("SignInMethods", () => {
-    afterEach(() => vi.unstubAllEnvs());
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+    });
 
     it("shows the password set and no provider linked", () => {
         renderWithProviders(<SignInMethods user={user}/>);
@@ -65,5 +68,26 @@ describe("SignInMethods", () => {
         renderWithProviders(<SignInMethods user={user}/>);
 
         expect(googleScripts()).toHaveLength(0);
+    });
+
+    it("offers GitHub's button to link GitHub with its client ID", () => {
+        vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
+        renderWithProviders(<SignInMethods user={user}/>);
+
+        expect(screen.getByRole("button", {name: "Continue with GitHub"})).toBeInTheDocument();
+    });
+
+    it("offers no way to link GitHub without its client ID", () => {
+        renderWithProviders(<SignInMethods user={user}/>);
+
+        expect(screen.queryByRole("button", {name: "Continue with GitHub"})).not.toBeInTheDocument();
+    });
+
+    it("offers no way to link GitHub where the browser can't start its authorization", () => {
+        vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
+        vi.spyOn(crypto, "subtle", "get").mockReturnValue(undefined as unknown as SubtleCrypto);
+        renderWithProviders(<SignInMethods user={user}/>);
+
+        expect(screen.queryByRole("button", {name: "Continue with GitHub"})).not.toBeInTheDocument();
     });
 });

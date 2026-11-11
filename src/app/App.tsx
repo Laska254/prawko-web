@@ -13,6 +13,8 @@ const ExamPage = lazyPage(() => import("@/features/exam/pages/ExamPage.tsx"), "E
 const HistoryPage = lazyPage(() => import("@/features/exam/pages/HistoryPage.tsx"), "HistoryPage");
 const ProfilePage = lazyPage(() => import("@/features/profile/pages/ProfilePage.tsx"), "ProfilePage");
 const SettingsPage = lazyPage(() => import("@/features/profile/pages/SettingsPage.tsx"), "SettingsPage");
+const LinkGitHubCallbackPage = lazyPage(() => import("@/features/profile/pages/LinkGitHubCallbackPage.tsx"),
+    "LinkGitHubCallbackPage");
 // Guests
 const AuthPage = lazyPage(() => import("@/features/auth/pages/AuthPage.tsx"), "AuthPage");
 const GitHubCallbackPage = lazyPage(() => import("@/features/auth/pages/GitHubCallbackPage.tsx"), "GitHubCallbackPage");
@@ -39,6 +41,7 @@ export function App() {
                                 <Route path="/history" element={<HistoryPage/>}/>
                                 <Route path="/profile" element={<ProfilePage/>}/>
                                 <Route path="/settings" element={<SettingsPage/>}/>
+                                <Route path="/auth/github/callback/link" element={<LinkGitHubCallbackPage/>}/>
                             </Route>
                         </Route>
                         {/* Guests: signed-in users go home. */}

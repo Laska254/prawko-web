@@ -1,4 +1,4 @@
-import {Box, Button, Stack, Typography} from "@mui/material";
+import {Alert, Box, Button, Stack, Typography} from "@mui/material";
 import {Logout, Settings} from "@mui/icons-material";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
@@ -8,6 +8,7 @@ import {useCurrentUser} from "@/session/useCurrentUser.tsx";
 import {useSignOut} from "@/session/useSignOut.tsx";
 import {PendingEmailBanner} from "../components/PendingEmailBanner.tsx";
 import {SignInMethods} from "../components/SignInMethods.tsx";
+import {useProfilePageState} from "../hooks/useProfilePageState.tsx";
 import {useRefetchUserOnFocus} from "../hooks/useRefetchUserOnFocus.tsx";
 
 interface AccountField {
@@ -35,6 +36,8 @@ export function ProfilePage() {
     // The pending email change follows the links opened in another tab, window or device.
     useRefetchUserOnFocus();
     const {signOut, isSigningOut} = useSignOut();
+    // Set when the user comes back from GitHub's page after asking to link it.
+    const {gitHubLink, failure} = useProfilePageState();
     const fields: readonly AccountField[] = [
         {label: "profile.firstName", value: user.firstName},
         {label: "profile.lastName", value: user.lastName},
@@ -45,6 +48,7 @@ export function ProfilePage() {
     return (
         <Stack spacing={3}>
             <Typography variant="h4" component="h1" fontWeight={700}>{t("profile.title")}</Typography>
+            {failure && <Alert severity="error">{t(failure)}</Alert>}
             <PendingEmailBanner user={user}/>
             <Panel p={3} spacing={2}>
                 <Typography variant="h6" component="h2" fontWeight={700}>{t("profile.account")}</Typography>
@@ -57,7 +61,7 @@ export function ProfilePage() {
                     ))}
                 </Box>
             </Panel>
-            <SignInMethods user={user}/>
+            <SignInMethods user={user} gitHubLink={gitHubLink}/>
             <Panel p={3} spacing={2}>
                 <Typography variant="h6" component="h2" fontWeight={700}>{t("profile.actions")}</Typography>
                 <Stack direction="row" flexWrap="wrap" gap={2}>
