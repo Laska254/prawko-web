@@ -1,21 +1,21 @@
-import {screen, waitFor} from "@testing-library/react";
+import {act, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {Route, Routes} from "react-router";
 import {saveTokens} from "@/api/tokens.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
-import {tokens, user} from "@test/support/data.tsx";
+import {changingEmailUser, tokens, user} from "@test/support/data.tsx";
 import {holdRefreshLock} from "@test/support/refreshLock.tsx";
 import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
 
-// Signs in as `signedInUser` and opens the page behind `RequireAuth`, as the app does.
+// Signs in as `signedInUser` and opens the page behind `RequireAuth`, as the app does. Returns the query client.
 async function renderProfile(signedInUser: UserDto = user) {
     saveTokens(tokens);
     mockRequest("get", "/users/me", {body: signedInUser});
-    renderWithProviders(
+    const {queryClient} = renderWithProviders(
         <Routes>
             <Route element={<RequireAuth/>}>
                 <Route path="/profile" element={<ProfilePage/>}/>
@@ -25,6 +25,7 @@ async function renderProfile(signedInUser: UserDto = user) {
         {route: "/profile"}
     );
     await screen.findByRole("heading", {name: "Profile"});
+    return queryClient;
 }
 
 // The value next to each label of the account's description list.
@@ -54,6 +55,38 @@ describe("ProfilePage", () => {
             ["Username", "jan"],
             ["Email", "jan@example.com"],
         ]);
+    });
+
+    it("shows no email change banner without a pending change", async () => {
+        await renderProfile();
+
+        expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
+
+    it("follows the email change as its links are opened in another tab or window", async () => {
+        await renderProfile(changingEmailUser);
+        expect(screen.getByRole("status")).toHaveTextContent("Email change in progress");
+
+        mockRequest("get", "/users/me", {body: {...changingEmailUser, awaitingNewEmailConfirmation: false}});
+        act(() => window.dispatchEvent(new Event("visibilitychange")));
+
+        expect(await screen.findByText("opened")).toBeInTheDocument();
+
+        mockRequest("get", "/users/me", {body: {...user, email: "jan.nowy@example.com"}});
+        act(() => window.dispatchEvent(new Event("focus")));
+
+        await waitFor(() => expect(screen.queryByRole("status")).not.toBeInTheDocument());
+        expect(accountFields()).toContainEqual(["Email", "jan.nowy@example.com"]);
+    });
+
+    it("stops fetching the user on focus once the page is left", async () => {
+        const userEvents = userEvent.setup();
+        const queryClient = await renderProfile(changingEmailUser);
+        await userEvents.click(screen.getByRole("link", {name: "Settings"}));
+
+        act(() => window.dispatchEvent(new Event("focus")));
+
+        expect(queryClient.isFetching()).toBe(0);
     });
 
     it("opens the settings", async () => {

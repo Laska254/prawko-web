@@ -11,6 +11,13 @@
     "settings": "Settings",
     "signOut": "Sign out"
   },
+  "pendingEmail": {
+    "title": "Email change in progress",
+    "text": "Your email changes to <email/> once both links below are opened.",
+    "linkSentTo": "Link sent to <email/>:",
+    "opened": "opened",
+    "notOpened": "not opened yet"
+  },
   "settings": {
     "title": "Settings",
     "empty": "Language, theme and exam preferences will show up here."

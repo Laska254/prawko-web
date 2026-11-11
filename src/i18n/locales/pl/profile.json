@@ -11,6 +11,13 @@
     "settings": "Ustawienia",
     "signOut": "Wyloguj się"
   },
+  "pendingEmail": {
+    "title": "Trwa zmiana adresu e-mail",
+    "text": "Twój adres e-mail zmieni się na <email/>, gdy otworzysz oba poniższe linki.",
+    "linkSentTo": "Link wysłany na <email/>:",
+    "opened": "otwarty",
+    "notOpened": "jeszcze nieotwarty"
+  },
   "settings": {
     "title": "Ustawienia",
     "empty": "Tutaj pojawią się ustawienia języka, motywu i egzaminu."

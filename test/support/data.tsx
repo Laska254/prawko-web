@@ -44,6 +44,14 @@ export const user: UserDto = {
     providers: [],
 };
 
+// `user` changing their email, neither link opened yet.
+export const changingEmailUser: UserDto = {
+    ...user,
+    pendingEmail: "jan.nowy@example.com",
+    awaitingNewEmailConfirmation: true,
+    awaitingCurrentEmailConfirmation: true,
+};
+
 // A ProblemDetail of `status`; `details` are the errors per field of a `400`/`409`.
 export function problem(status: number, details?: Readonly<Record<string, string>>): ProblemDetail {
     return {type: "about:blank", title: "Title", status, detail: "Detail.", details};

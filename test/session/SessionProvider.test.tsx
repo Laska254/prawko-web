@@ -48,6 +48,22 @@ describe("SessionProvider", () => {
         expect(status()).toBe("signedIn");
     });
 
+    it("stays signed in with the loaded user when fetching it again fails", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const {queryClient} = renderSession();
+        expect(await screen.findByText("Jan")).toBeInTheDocument();
+
+        mockRequest("get", "/users/me", {status: 500});
+        await act(() => queryClient.refetchQueries({queryKey: userKeys.me()}));
+        // TanStack Query tells the session about the failure on the next macrotask.
+        await act(() => new Promise(resolve => setTimeout(resolve)));
+
+        expect(queryClient.getQueryState(userKeys.me())?.status).toBe("error");
+        expect(status()).toBe("signedIn");
+        expect(screen.getByText("Jan")).toBeInTheDocument();
+    });
+
     it("signs in and loads the user once", async () => {
         const signIns = mockPost("/auth", 200, tokens);
         const requests = mockRequest("get", "/users/me", {body: user});
