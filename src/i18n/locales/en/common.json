@@ -9,6 +9,9 @@
     "show": "Show password",
     "hide": "Hide password"
   },
+  "gitHub": {
+    "continue": "Continue with GitHub"
+  },
   "themeMode": {
     "light": "Theme: light",
     "dark": "Theme: dark",

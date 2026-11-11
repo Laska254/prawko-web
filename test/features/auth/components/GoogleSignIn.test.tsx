@@ -1,12 +1,10 @@
-import {screen, waitFor} from "@testing-library/react";
-import i18n from "i18next";
+import {screen} from "@testing-library/react";
 import {getRefreshToken} from "@/api/tokens.tsx";
 import {GoogleSignIn} from "@/features/auth/components/GoogleSignIn.tsx";
 import {googleSignInDto, tokens, user} from "@test/support/data.tsx";
-import {failGoogleScript, googleScripts, loadGoogleScript} from "@test/support/googleScript.tsx";
+import {loadGoogleScript} from "@test/support/googleScript.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
 import {mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
-import {cssRules} from "@test/support/styles.tsx";
 
 const CLIENT_ID = "client-id";
 const {idToken} = googleSignInDto;
@@ -30,77 +28,7 @@ async function renderLoaded() {
 
 describe("GoogleSignIn", () => {
     afterEach(() => {
-        vi.restoreAllMocks();
         setUnavailable.mockClear();
-    });
-
-    it("loads Google's script once and initializes it once with the client ID", async () => {
-        const {configs} = await renderLoaded();
-
-        expect(googleScripts()).toHaveLength(1);
-        expect(configs.map(config => config.client_id)).toEqual([CLIENT_ID]);
-    });
-
-    it("renders one button as wide as the form, in the app's language and light theme", async () => {
-        vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(358);
-
-        const {buttons} = await renderLoaded();
-
-        expect(screen.getAllByRole("button")).toHaveLength(1);
-        expect(buttons.at(-1)).toEqual({theme: "outline", text: "continue_with", width: 358, locale: "en"});
-        expect(setUnavailable).not.toHaveBeenCalled();
-    });
-
-    it("renders the dark button in dark mode", async () => {
-        localStorage.setItem("mui-mode", "dark");
-
-        const {buttons} = await renderLoaded();
-
-        expect(buttons.at(-1)?.theme).toBe("filled_black");
-    });
-
-    it("keeps the button's iframe light, so a dark page doesn't paint a white backdrop behind it", async () => {
-        localStorage.setItem("mui-mode", "dark");
-        await renderLoaded();
-
-        const button = await findButton();
-
-        expect(cssRules(button.parentElement!)).toContain("color-scheme: light");
-    });
-
-    it("renders the button again when the language changes, without initializing again", async () => {
-        const {buttons, configs} = await renderLoaded();
-
-        await i18n.changeLanguage("pl");
-
-        await waitFor(() => expect(buttons.at(-1)?.locale).toBe("pl"));
-        expect(screen.getAllByRole("button")).toHaveLength(1);
-        expect(configs).toHaveLength(1);
-    });
-
-    it("doesn't render a button after leaving the page while the script loads", async () => {
-        const {unmount} = renderGoogleSignIn();
-        unmount();
-
-        const {buttons} = loadGoogleScript();
-
-        await Promise.resolve();
-        expect(buttons).toEqual([]);
-    });
-
-    it("reuses the loaded script when the page is opened again", async () => {
-        const {unmount} = renderGoogleSignIn();
-        const {configs, buttons} = loadGoogleScript();
-        await findButton();
-        const rendered = buttons.length;
-        unmount();
-
-        renderGoogleSignIn();
-
-        await findButton();
-        expect(buttons.length).toBeGreaterThan(rendered);
-        expect(googleScripts()).toHaveLength(1);
-        expect(configs).toHaveLength(1);
     });
 
     it("signs in with the ID token and goes home", async () => {
@@ -114,18 +42,6 @@ describe("GoogleSignIn", () => {
         expect(currentLocation().pathname).toBe("/");
         expect(requests).toEqual([googleSignInDto]);
         expect(getRefreshToken()).toBe(tokens.refreshToken);
-    });
-
-    it("ignores a credential once the page was left", async () => {
-        const requests = mockPost("/auth/google", 200, tokens);
-        const {unmount} = renderGoogleSignIn();
-        const {sendCredential} = loadGoogleScript();
-        await findButton();
-        unmount();
-
-        await sendCredential(idToken);
-
-        expect(requests).toEqual([]);
     });
 
     it("blocks the button and shows progress while sending", async () => {
@@ -160,25 +76,5 @@ describe("GoogleSignIn", () => {
         expect(await screen.findByRole("alert")).toHaveTextContent(message);
         expect(screen.queryByTestId("location")).not.toBeInTheDocument();
         expect(getRefreshToken()).toBeNull();
-    });
-
-    it("tells the parent when the script can't be loaded", async () => {
-        renderGoogleSignIn();
-
-        failGoogleScript();
-
-        await waitFor(() => expect(setUnavailable).toHaveBeenCalledWith(true));
-        expect(googleScripts()).toHaveLength(0);
-    });
-
-    it("tries the script again when the page is opened again", async () => {
-        const {unmount} = renderGoogleSignIn();
-        failGoogleScript();
-        await waitFor(() => expect(setUnavailable).toHaveBeenCalledWith(true));
-        unmount();
-
-        await renderLoaded();
-
-        expect(googleScripts()).toHaveLength(1);
     });
 });

@@ -18,6 +18,40 @@
     "opened": "otwarty",
     "notOpened": "jeszcze nieotwarty"
   },
+  "signInMethods": {
+    "title": "Metody logowania",
+    "password": "Hasło",
+    "passwordSet": "ustawione",
+    "passwordNotSet": "nieustawione",
+    "google": "Google",
+    "gitHub": "GitHub",
+    "linked": "połączone",
+    "notLinked": "niepołączone",
+    "onlyMethod": "jedyny sposób logowania"
+  },
+  "link": {
+    "title": "Połączyć {{provider}}?",
+    "text": "Będzie można też logować się tym kontem {{provider}}.",
+    "confirm": "Połącz",
+    "notConfigured": "Łączenie z {{provider}} jest teraz niedostępne.",
+    "conflict": "To konto {{provider}} jest połączone z innym użytkownikiem albo masz już połączone takie konto.",
+    "gitHubInvalid": "Nie udało się połączyć konta GitHub. Spróbuj ponownie.",
+    "gitHubEmailNotVerified": "GitHub nie potwierdził głównego adresu e-mail tego konta."
+  },
+  "unlink": {
+    "button": "Odłącz",
+    "buttonLabel": "Odłącz {{provider}}",
+    "title": "Odłączyć {{provider}}?",
+    "text": "Nie będzie już można logować się tym kontem {{provider}}.",
+    "confirm": "Odłącz",
+    "notLinked": "Konto {{provider}} nie jest już połączone z Twoim kontem.",
+    "lastMethod": "{{provider}} to Twój jedyny sposób logowania, więc nie można go odłączyć."
+  },
+  "passwordConfirm": {
+    "label": "Obecne hasło",
+    "prompt": "Wpisz hasło, aby potwierdzić.",
+    "wrong": "Hasło jest nieprawidłowe."
+  },
   "settings": {
     "title": "Ustawienia",
     "empty": "Tutaj pojawią się ustawienia języka, motywu i egzaminu."

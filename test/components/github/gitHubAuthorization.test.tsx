@@ -1,4 +1,4 @@
-import {gitHubRedirectUri, isGitHubSignInSupported, takeGitHubCodeVerifier} from "@/features/auth/gitHubAuthorization.tsx";
+import {isGitHubAuthorizationSupported, takeGitHubAuthorization} from "@/components/github/gitHubAuthorization.tsx";
 import {startSignIn} from "@test/support/gitHubSignIn.tsx";
 
 // The example of RFC 7636, appendix B.
@@ -31,7 +31,7 @@ describe("gitHubAuthorization", () => {
         const {searchParams} = await startSignIn();
 
         expect(searchParams.get("code_challenge")).toBe(CHALLENGE);
-        expect(takeGitHubCodeVerifier(searchParams.get("state"))).toBe(VERIFIER);
+        expect(takeGitHubAuthorization(searchParams.get("state"))?.codeVerifier).toBe(VERIFIER);
     });
 
     it("uses a different state and verifier for each sign in", async () => {
@@ -43,42 +43,49 @@ describe("gitHubAuthorization", () => {
     });
 
     it("is supported with crypto.subtle", () => {
-        expect(isGitHubSignInSupported()).toBe(true);
+        expect(isGitHubAuthorizationSupported()).toBe(true);
     });
 
     it("isn't supported without crypto.subtle, as outside a secure context", () => {
         vi.spyOn(crypto, "subtle", "get").mockReturnValue(undefined as unknown as SubtleCrypto);
 
-        expect(isGitHubSignInSupported()).toBe(false);
+        expect(isGitHubAuthorizationSupported()).toBe(false);
     });
 
-    it("gives the verifier for the started sign in's state, only once", async () => {
+    it("gives the started sign in for its state, only once", async () => {
         const {searchParams} = await startSignIn();
         const state = searchParams.get("state");
 
-        expect(takeGitHubCodeVerifier(state)).toMatch(/^[\w-]{43}$/);
-        expect(takeGitHubCodeVerifier(state)).toBeNull();
+        expect(takeGitHubAuthorization(state)).toEqual({
+            codeVerifier: expect.stringMatching(/^[\w-]{43}$/),
+            redirectUri: "http://localhost:3000/auth/github/callback",
+        });
+        expect(takeGitHubAuthorization(state)).toBeNull();
     });
 
-    it("gives no verifier for another state, and ends the started sign in", async () => {
+    it("gives nothing for another state, and ends the started sign in", async () => {
         const {searchParams} = await startSignIn();
 
-        expect(takeGitHubCodeVerifier("forged")).toBeNull();
-        expect(takeGitHubCodeVerifier(searchParams.get("state"))).toBeNull();
+        expect(takeGitHubAuthorization("forged")).toBeNull();
+        expect(takeGitHubAuthorization(searchParams.get("state"))).toBeNull();
     });
 
-    it("gives no verifier for a link without a state, and ends the started sign in", async () => {
+    it("gives nothing for a link without a state, and ends the started sign in", async () => {
         const {searchParams} = await startSignIn();
 
-        expect(takeGitHubCodeVerifier(null)).toBeNull();
-        expect(takeGitHubCodeVerifier(searchParams.get("state"))).toBeNull();
+        expect(takeGitHubAuthorization(null)).toBeNull();
+        expect(takeGitHubAuthorization(searchParams.get("state"))).toBeNull();
     });
 
-    it("gives no verifier when there's no state and no sign in was started", () => {
-        expect(takeGitHubCodeVerifier(null)).toBeNull();
+    it("gives nothing when there's no state and no sign in was started", () => {
+        expect(takeGitHubAuthorization(null)).toBeNull();
     });
 
-    it("redirects back to the callback page of this origin", () => {
-        expect(gitHubRedirectUri()).toBe(`${window.location.origin}/auth/github/callback`);
+    it("redirects back to the given page of this origin, and gives that redirect URI back", async () => {
+        const {searchParams} = await startSignIn("client-id", "/auth/github/callback/link");
+
+        expect(searchParams.get("redirect_uri")).toBe(`${window.location.origin}/auth/github/callback/link`);
+        expect(takeGitHubAuthorization(searchParams.get("state"))?.redirectUri)
+            .toBe(`${window.location.origin}/auth/github/callback/link`);
     });
 });

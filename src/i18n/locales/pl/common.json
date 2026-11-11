@@ -9,6 +9,9 @@
     "show": "Pokaż hasło",
     "hide": "Ukryj hasło"
   },
+  "gitHub": {
+    "continue": "Kontynuuj przy użyciu konta GitHub"
+  },
   "themeMode": {
     "light": "Motyw: jasny",
     "dark": "Motyw: ciemny",

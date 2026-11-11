@@ -104,10 +104,11 @@ Biome problems then show in the editor, with quick fixes under Alt+Enter.
 src/
   app/          entry (main), route tree (App), theme, layout/ (signed-in app bar and navigation),
                 pages/ (pages outside any feature: 404)
-  api/          axios setup and requests, error model, query client and keys, tokens, dto/
+  api/          axios setup and requests, error model, form submission, query client and keys, tokens, dto/
   session/      signed-in session: context, current user
   i18n/         translations setup, locales/<language>/<namespace>.json
-  components/   shared UI with no feature or server knowledge, grouped by role (form/, feedback/, layout/)
+  components/   shared UI with no feature or server knowledge, grouped by role (form/, feedback/, layout/,
+                google/ and github/ for the providers' buttons)
   utils/        generic helpers (planned)
   features/
     <feature>/  auth, home, exam, profile, admin
@@ -141,7 +142,7 @@ Folders are created when their first file is added.
 * New code starts in the feature that uses it. It moves down to `components/` (or `api/`, `session/`, `utils/`) once
   a second feature needs it, or when it is planned as a shared design-system part.
 * `api/` mirrors the server: one file per resource, all DTOs in `api/dto/`. Hooks that adapt requests to screens live
-  in the feature.
+  in the feature; only `useFormSubmission`, which sends the forms of every feature, lives in `api/`.
 * Server data goes through TanStack Query: feature hooks read with `useQuery` and change with `useMutation`, using
   the keys from `api/queryKeys.tsx`, and a mutation invalidates the keys of the resource it changed.
 * UI text goes in `i18n/locales/<language>/<namespace>.json`, in English (`en`) and Polish (`pl`) with the same keys
@@ -191,9 +192,11 @@ A Content Security Policy has to allow Google's script: `https://accounts.google
 Optional: without `VITE_GITHUB_CLIENT_ID` the button isn't shown. It also needs HTTPS or `localhost`, as browsers can't
 create the PKCE challenge anywhere else.
 
-1. In [GitHub's developer settings](https://github.com/settings/developers), create an OAuth app for each environment,
-   as an app has only one callback URL. Set its *Authorization callback URL* to the application URL followed by
-   `/auth/github/callback`; for development that's `http://localhost:5173/auth/github/callback`.
+1. In [GitHub's developer settings](https://github.com/settings/developers), create an OAuth app for each environment
+   and give it two callback URLs: the application URL followed by `/auth/github/callback` for signing in, and by
+   `/auth/github/callback/link` for linking GitHub on the profile. For development those are
+   `http://localhost:5173/auth/github/callback` and `http://localhost:5173/auth/github/callback/link`. GitHub matches
+   each exactly, so leave wildcard matching off.
 2. Set its client ID as `VITE_GITHUB_CLIENT_ID`, in `.env.development.local` (not committed) or the environment of a
    production build.
 3. Generate a client secret and give the server both, as it exchanges the code for GitHub's access token; without them
@@ -207,9 +210,11 @@ create the PKCE challenge anywhere else.
 * `/` home page
 * `/exam` exam (placeholder)
 * `/history` past exams (placeholder)
-* `/profile` account data, pending email change, settings link and sign out
+* `/profile` account data, pending email change, sign-in methods (link and unlink Google and GitHub), settings link and
+  sign out
 * `/settings` preferences (placeholder)
 * `/auth/github/callback` finishes signing in with GitHub
+* `/auth/github/callback/link` hands GitHub's code to the profile to link the account (signed in)
 * `/auth/verify` verify email
 * `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
@@ -232,6 +237,8 @@ create the PKCE challenge anywhere else.
     + `POST` register new user
     + `GET /me` get the signed-in user
     + `GET /me/stats` get the signed-in user's exam statistics
+    + `POST /me/identities/google`, `POST /me/identities/github` link a provider account
+    + `DELETE /me/identities/{provider}` unlink a provider account
     + `PATCH /{id}` update a user
     + `PATCH /me/password` change password
     + `DELETE /me` delete own account

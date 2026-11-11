@@ -1,5 +1,5 @@
 import {act, fireEvent} from "@testing-library/react";
-import type {GoogleButtonOptions, GoogleIdentityConfig} from "@/features/auth/googleIdentity.tsx";
+import type {GoogleButtonOptions, GoogleIdentityConfig} from "@/components/google/googleIdentity.tsx";
 
 export function googleScripts(): NodeListOf<HTMLScriptElement> {
     return document.querySelectorAll<HTMLScriptElement>('script[src="https://accounts.google.com/gsi/client"]');

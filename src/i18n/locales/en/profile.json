@@ -18,6 +18,40 @@
     "opened": "opened",
     "notOpened": "not opened yet"
   },
+  "signInMethods": {
+    "title": "Sign-in methods",
+    "password": "Password",
+    "passwordSet": "set",
+    "passwordNotSet": "not set",
+    "google": "Google",
+    "gitHub": "GitHub",
+    "linked": "linked",
+    "notLinked": "not linked",
+    "onlyMethod": "your only way to sign in"
+  },
+  "link": {
+    "title": "Link {{provider}}?",
+    "text": "You'll be able to sign in with this {{provider}} account too.",
+    "confirm": "Link",
+    "notConfigured": "Linking {{provider}} isn't available right now.",
+    "conflict": "This {{provider}} account is linked to another user, or you already have one linked.",
+    "gitHubInvalid": "Linking GitHub failed. Please try again.",
+    "gitHubEmailNotVerified": "GitHub hasn't verified the primary email address of this account."
+  },
+  "unlink": {
+    "button": "Unlink",
+    "buttonLabel": "Unlink {{provider}}",
+    "title": "Unlink {{provider}}?",
+    "text": "You won't be able to sign in with this {{provider}} account anymore.",
+    "confirm": "Unlink",
+    "notLinked": "{{provider}} is no longer linked to your account.",
+    "lastMethod": "{{provider}} is your only way to sign in, so it can't be unlinked."
+  },
+  "passwordConfirm": {
+    "label": "Current password",
+    "prompt": "Enter your password to confirm.",
+    "wrong": "The password is incorrect."
+  },
   "settings": {
     "title": "Settings",
     "empty": "Language, theme and exam preferences will show up here."

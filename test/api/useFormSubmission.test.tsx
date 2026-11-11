@@ -2,7 +2,7 @@ import {type ReactNode, useState} from "react";
 import {act, renderHook, waitFor} from "@testing-library/react";
 import {onlineManager, QueryClientProvider} from "@tanstack/react-query";
 import {api} from "@/api/client.tsx";
-import {useFormSubmission} from "@/features/auth/hooks/useFormSubmission.tsx";
+import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {createTestQueryClient} from "@test/support/render.tsx";
 import {mockNetworkError, mockPendingPost, mockPost, mockProblem} from "@test/support/server.tsx";
 
@@ -133,6 +133,17 @@ describe("useFormSubmission", () => {
             message: "wrongCredentials",
         }));
         expect(result.current.fieldErrors).toEqual({});
+    });
+
+    it("hands the error of a failure to onError", async () => {
+        mockPost("/form", 401);
+        const onError = vi.fn();
+        const {result} = renderHook(() => useFormSubmission(sendForm, {onError}), {wrapper});
+
+        act(() => result.current.submit(dto));
+
+        await waitFor(() => expect(onError).toHaveBeenCalledOnce());
+        expect(onError).toHaveBeenCalledWith({kind: "http", status: 401});
     });
 
     it.each([

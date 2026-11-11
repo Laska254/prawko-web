@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import {App} from "@/app/App.tsx";
 import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {tokens, user} from "@test/support/data.tsx";
-import {startedState} from "@test/support/gitHubSignIn.tsx";
+import {startedState, startSignIn} from "@test/support/gitHubSignIn.tsx";
 import {renderWithoutRouter} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 
@@ -20,6 +20,8 @@ function signIn() {
 }
 
 describe("App", () => {
+    afterEach(() => vi.unstubAllEnvs());
+
     it.each([
         ["/", "/auth"],
         ["/exam", "/auth"],
@@ -27,6 +29,7 @@ describe("App", () => {
         ["/profile", "/auth"],
         ["/settings", "/auth"],
         ["/auth/github/callback", "/auth"],
+        ["/auth/github/callback/link", "/auth"],
     ])("sends a guest from %s to %s", async (path, expected) => {
         renderAt(path);
 
@@ -60,6 +63,20 @@ describe("App", () => {
 
         expect(await screen.findByRole("banner")).toBeInTheDocument();
         expect(window.location.pathname).toBe("/");
+        expect(window.location.search).toBe("");
+        expect(window.history.length).toBe(length);
+    });
+
+    it("replaces the GitHub link callback with the profile, which asks to confirm linking", async () => {
+        vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
+        signIn();
+        const {searchParams} = await startSignIn("client-id", "/auth/github/callback/link");
+
+        renderAt(`/auth/github/callback/link?code=code&state=${searchParams.get("state")}`);
+        const {length} = window.history;
+
+        expect(await screen.findByRole("dialog", {name: "Link GitHub?"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/profile");
         expect(window.location.search).toBe("");
         expect(window.history.length).toBe(length);
     });
