@@ -29,7 +29,7 @@ describe("UnlinkProvider", () => {
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(requests).toEqual([{search: "", body: {currentPassword: "secret1"}}]);
-        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users"]});
+        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true});
     });
 
     it("unlinks without a password when the user has none", async () => {
