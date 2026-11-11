@@ -11,11 +11,11 @@ import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
 
-// Signs in as `signedInUser` and opens the page behind `RequireAuth`, as the app does.
+// Signs in as `signedInUser` and opens the page behind `RequireAuth`, as the app does. Returns the query client.
 async function renderProfile(signedInUser: UserDto = user) {
     saveTokens(tokens);
     mockRequest("get", "/users/me", {body: signedInUser});
-    renderWithProviders(
+    const {queryClient} = renderWithProviders(
         <Routes>
             <Route element={<RequireAuth/>}>
                 <Route path="/profile" element={<ProfilePage/>}/>
@@ -25,6 +25,7 @@ async function renderProfile(signedInUser: UserDto = user) {
         {route: "/profile"}
     );
     await screen.findByRole("heading", {name: "Profile"});
+    return queryClient;
 }
 
 // The value next to each label of the account's description list.
@@ -76,6 +77,16 @@ describe("ProfilePage", () => {
 
         await waitFor(() => expect(screen.queryByRole("status")).not.toBeInTheDocument());
         expect(accountFields()).toContainEqual(["Email", "jan.nowy@example.com"]);
+    });
+
+    it("stops fetching the user on focus once the page is left", async () => {
+        const userEvents = userEvent.setup();
+        const queryClient = await renderProfile(changingEmailUser);
+        await userEvents.click(screen.getByRole("link", {name: "Settings"}));
+
+        act(() => window.dispatchEvent(new Event("focus")));
+
+        expect(queryClient.isFetching()).toBe(0);
     });
 
     it("opens the settings", async () => {
