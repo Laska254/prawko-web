@@ -7,6 +7,7 @@ import {Panel} from "@/components/layout/Panel.tsx";
 import {useCurrentUser} from "@/session/useCurrentUser.tsx";
 import {useSignOut} from "@/session/useSignOut.tsx";
 import {PendingEmailBanner} from "../components/PendingEmailBanner.tsx";
+import {SignInMethods} from "../components/SignInMethods.tsx";
 import {useRefetchUserOnFocus} from "../hooks/useRefetchUserOnFocus.tsx";
 
 interface AccountField {
@@ -56,6 +57,7 @@ export function ProfilePage() {
                     ))}
                 </Box>
             </Panel>
+            <SignInMethods user={user}/>
             <Panel p={3} spacing={2}>
                 <Typography variant="h6" component="h2" fontWeight={700}>{t("profile.actions")}</Typography>
                 <Stack direction="row" flexWrap="wrap" gap={2}>

@@ -57,6 +57,13 @@ describe("ProfilePage", () => {
         ]);
     });
 
+    it("shows the sign-in methods", async () => {
+        await renderProfile({...user, providers: ["GITHUB"]});
+
+        expect(screen.getByRole("heading", {name: "Sign-in methods"})).toBeInTheDocument();
+        expect(screen.getByText("linked")).toBeInTheDocument();
+    });
+
     it("shows no email change banner without a pending change", async () => {
         await renderProfile();
 

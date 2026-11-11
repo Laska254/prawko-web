@@ -18,6 +18,16 @@
     "opened": "otwarty",
     "notOpened": "jeszcze nieotwarty"
   },
+  "signInMethods": {
+    "title": "Metody logowania",
+    "password": "Hasło",
+    "passwordSet": "ustawione",
+    "passwordNotSet": "nieustawione",
+    "google": "Google",
+    "gitHub": "GitHub",
+    "linked": "połączone",
+    "notLinked": "niepołączone"
+  },
   "settings": {
     "title": "Ustawienia",
     "empty": "Tutaj pojawią się ustawienia języka, motywu i egzaminu."

@@ -18,6 +18,16 @@
     "opened": "opened",
     "notOpened": "not opened yet"
   },
+  "signInMethods": {
+    "title": "Sign-in methods",
+    "password": "Password",
+    "passwordSet": "set",
+    "passwordNotSet": "not set",
+    "google": "Google",
+    "gitHub": "GitHub",
+    "linked": "linked",
+    "notLinked": "not linked"
+  },
   "settings": {
     "title": "Settings",
     "empty": "Language, theme and exam preferences will show up here."
