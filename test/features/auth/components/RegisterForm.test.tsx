@@ -2,7 +2,7 @@ import {renderHook, screen, waitFor} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import {RegisterForm} from "@/features/auth/components/RegisterForm.tsx";
 import {COOLDOWN_MS, emailLinkCooldownKey} from "@/features/auth/emailLinkCooldown.tsx";
-import {useCooldown} from "@/features/auth/hooks/useCooldown.tsx";
+import {useCooldown} from "@/utils/useCooldown.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
 import {apiUrl, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
 import {longestEmail, registerDto} from "@test/support/data.tsx";

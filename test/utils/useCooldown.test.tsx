@@ -1,5 +1,5 @@
 import {act, renderHook} from "@testing-library/react";
-import {startCooldown, useCooldown} from "@/features/auth/hooks/useCooldown.tsx";
+import {startCooldown, useCooldown} from "@/utils/useCooldown.tsx";
 
 describe("useCooldown", () => {
     beforeEach(() => {
@@ -46,6 +46,14 @@ describe("useCooldown", () => {
         const {result} = renderHook(() => useCooldown("test", 60_000));
 
         expect(result.current.secondsLeft).toBe(40);
+    });
+
+    it("shows a cooldown started elsewhere while mounted", () => {
+        const {result} = renderHook(() => useCooldown("test", 60_000));
+
+        act(() => startCooldown("test", 60_000));
+
+        expect(result.current.secondsLeft).toBe(60);
     });
 
     it("shows the cooldown of a new key", () => {

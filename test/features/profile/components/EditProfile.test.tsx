@@ -2,14 +2,11 @@ import {screen, waitFor, within} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {EditProfile} from "@/features/profile/components/EditProfile.tsx";
-import {problem, user} from "@test/support/data.tsx";
+import {problem, user, userWithoutPassword} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {mockPendingRequest, mockRequest} from "@test/support/server.tsx";
 
 const PATH = "/users/1";
-
-// Signed up with a provider, so a new username needs no password.
-const userWithoutPassword: UserDto = {...user, hasPassword: false, providers: ["GOOGLE"]};
 
 // Opens the dialog of editing `editedUser`; returns the user events and the query client.
 async function openDialog(editedUser: UserDto = user) {

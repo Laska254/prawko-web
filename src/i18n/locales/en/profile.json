@@ -24,6 +24,32 @@
     "userNameTaken": "This username is taken.",
     "changedMeanwhile": "Your account was changed at the same time. Please try again."
   },
+  "changeEmail": {
+    "button": "Change email",
+    "title": "Change email",
+    "text": "We'll send a link to the new address and one to your current address. Your email changes once both are opened.",
+    "label": "New email",
+    "send": "Send links",
+    "passwordTitle": "Change your email?",
+    "passwordText": "Links will be sent to {{email}} and to your current address.",
+    "invalid": "Enter a valid email address.",
+    "taken": "An account with this email already exists.",
+    "tooSoon": "A link was sent less than a minute ago. Wait a moment and try again."
+  },
+  "resendEmail": {
+    "button": "Resend links",
+    "wait": "Resend in {{seconds}} s",
+    "title": "Resend the links?",
+    "text": "New links will be sent to {{email}} and to your current address. The ones sent before will stop working.",
+    "confirm": "Resend"
+  },
+  "cancelEmail": {
+    "button": "Cancel change",
+    "title": "Cancel the email change?",
+    "text": "The links already sent will stop working, and your email stays the same.",
+    "confirm": "Cancel change",
+    "keep": "Keep it"
+  },
   "pendingEmail": {
     "title": "Email change in progress",
     "text": "Your email changes to <email/> once both links below are opened.",
