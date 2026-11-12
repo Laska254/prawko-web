@@ -56,6 +56,19 @@ describe("RegisterForm", () => {
         expect(result.current.secondsLeft).toBe(60);
     });
 
+    it("keeps a username with @ invalid and sends nothing", async () => {
+        const requests = mockRequest("post", "/users",
+            {status: 201, headers: {Location: apiUrl("/users/5")}});
+
+        await register(user, {...registerDto, userName: "jan@"});
+
+        expect(screen.getByRole("textbox", {name: "Username"})).toBeInvalid();
+        expect(screen.getByRole("textbox", {name: "Username"}))
+            .toHaveAttribute("title", "Username must be 3 to 31 characters, without @.");
+        expect(screen.getByRole("button", {name: "Register"})).toBeInTheDocument();
+        expect(requests).toEqual([]);
+    });
+
     it("marks the invalid fields on a 400", async () => {
         mockProblem("/users", 400, {
             firstName: "First name is required.",

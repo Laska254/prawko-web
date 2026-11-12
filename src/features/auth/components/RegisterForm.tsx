@@ -4,7 +4,7 @@ import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import {register} from "@/api/users.tsx";
 import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
-import {EMAIL_LENGTH, NAME_LENGTH, PASSWORD_LENGTH} from "@/api/fieldRules.tsx";
+import {EMAIL_LENGTH, NAME_LENGTH, PASSWORD_LENGTH, USERNAME_PATTERN} from "@/api/fieldRules.tsx";
 import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
@@ -74,7 +74,10 @@ export function RegisterForm() {
                     inputRef={userNameRef}
                     errorText={fieldErrors.userName && t(fieldErrors.userName)}
                     required
-                    slotProps={{htmlInput: NAME_LENGTH}}
+                    slotProps={{
+                        // Browsers show the title when the pattern isn't matched, naming the @.
+                        htmlInput: {...NAME_LENGTH, pattern: USERNAME_PATTERN, title: t("messages.userNameInvalid")},
+                    }}
                 />
                 <FormTextField
                     label={t("fields.email")}
