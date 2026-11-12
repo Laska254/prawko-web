@@ -88,7 +88,8 @@ export function EditProfile({user}: EditProfileProps) {
         {field: "lastName", label: "profile.lastName", inputRef: lastNameRef, htmlInput: NAME_LENGTH},
         {
             field: "userName", label: "profile.userName", inputRef: userNameRef,
-            htmlInput: {...NAME_LENGTH, pattern: USERNAME_PATTERN},
+            // Browsers show the title when the pattern isn't matched, naming the @.
+            htmlInput: {...NAME_LENGTH, pattern: USERNAME_PATTERN, title: t("edit.userNameInvalid")},
         },
     ];
 

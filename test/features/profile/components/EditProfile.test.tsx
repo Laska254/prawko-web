@@ -100,6 +100,8 @@ describe("EditProfile", () => {
         await save(userEvents);
 
         expect(screen.getByRole("textbox", {name: "Username"})).toBeInvalid();
+        expect(screen.getByRole("textbox", {name: "Username"}))
+            .toHaveAttribute("title", "Username must be 3 to 31 characters, without @.");
         expect(screen.getByRole("dialog", {name: "Edit profile"})).toBeInTheDocument();
         expect(requests).toEqual([]);
     });
