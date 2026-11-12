@@ -26,6 +26,11 @@ function isCodeUnused(error: ApiError): boolean {
     return (error.kind === "http" || error.kind === "validation") && error.status === 400;
 }
 
+// A `409` may mean a GitHub account was linked to the user elsewhere since loading.
+function isUserChanged(error: ApiError): boolean {
+    return error.kind === "http" && error.status === 409;
+}
+
 interface LinkGitHubProps {
     readonly clientId: string;
     // The provider's name as shown.
@@ -52,9 +57,13 @@ export function LinkGitHub({clientId, name, hasPassword, gitHubLink, onDone}: Li
             await queryClient.invalidateQueries({queryKey: userKeys.me(), exact: true});
             onDone();
         },
+        // The dialog closes on a `409` too, so the user is fetched again at once.
         onError: error => {
             if (!isCodeUnused(error)) {
                 onDone();
+            }
+            if (isUserChanged(error)) {
+                void queryClient.invalidateQueries({queryKey: userKeys.me(), exact: true});
             }
         },
     });

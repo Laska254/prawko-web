@@ -102,6 +102,28 @@ describe("LinkGitHub", () => {
         expect(screen.getByRole("button", {name: "Continue with GitHub"})).toBeInTheDocument();
     });
 
+    // A GitHub account may have been linked to the user elsewhere since loading.
+    it("fetches the user again after a 409", async () => {
+        mockRequest("post", PATH, {status: 409, body: problem(409)});
+        const {queryClient} = renderLinkGitHub(gitHubSignInDto);
+        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+
+        await userEvent.setup().type(screen.getByLabelText(/Current password/), "secret1{Enter}");
+
+        await waitFor(() => expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true}));
+    });
+
+    it("doesn't fetch the user again after another failure", async () => {
+        mockRequest("post", PATH, {status: 403, body: problem(403)});
+        const {queryClient} = renderLinkGitHub(gitHubSignInDto);
+        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+
+        await userEvent.setup().type(screen.getByLabelText(/Current password/), "secret1{Enter}");
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(invalidate).not.toHaveBeenCalled();
+    });
+
     // The request may have reached the server, so the code may be used up too.
     it("closes the dialog after a network error", async () => {
         mockNetworkError(PATH);

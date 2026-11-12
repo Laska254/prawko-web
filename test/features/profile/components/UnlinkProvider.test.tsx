@@ -75,11 +75,40 @@ describe("UnlinkProvider", () => {
 
     it("unlinks nothing when cancelled", async () => {
         const requests = mockRequest("delete", PATH, {status: 204});
-        const {userEvents} = await openDialog();
+        const {userEvents, queryClient} = await openDialog();
+        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
 
         await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(requests).toEqual([]);
+        expect(invalidate).not.toHaveBeenCalled();
+    });
+
+    // The user changed elsewhere since loading.
+    it.each([404, 409])("fetches the user again once the dialog of a %i is closed", async status => {
+        mockRequest("delete", PATH, {status, body: problem(status)});
+        const {userEvents, queryClient} = await openDialog();
+        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret1{Enter}");
+        await screen.findByRole("alert");
+        expect(invalidate).not.toHaveBeenCalled();
+
+        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+
+        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true});
+    });
+
+    it("doesn't fetch the user again once the dialog of a wrong password is closed", async () => {
+        mockRequest("delete", PATH, {status: 400, body: problem(400)});
+        const {userEvents, queryClient} = await openDialog();
+        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        await userEvents.type(screen.getByLabelText(/Current password/), "wrong{Enter}");
+        await screen.findByRole("alert");
+
+        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(invalidate).not.toHaveBeenCalled();
     });
 });

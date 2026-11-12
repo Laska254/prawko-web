@@ -97,6 +97,33 @@ describe("LinkGoogle", () => {
         expect(requests).toEqual([{search: "", body: {idToken: ID_TOKEN, currentPassword: "secret1"}}]);
     });
 
+    // A Google account may have been linked to the user elsewhere since loading.
+    it("fetches the user again once the dialog of a 409 is closed", async () => {
+        mockRequest("post", PATH, {status: 409, body: problem(409)});
+        const {userEvents, queryClient} = await pickAccount();
+        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret1{Enter}");
+        await screen.findByRole("alert");
+        expect(invalidate).not.toHaveBeenCalled();
+
+        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+
+        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true});
+    });
+
+    it("doesn't fetch the user again once the dialog of a wrong password is closed", async () => {
+        mockRequest("post", PATH, {status: 400, body: problem(400)});
+        const {userEvents, queryClient} = await pickAccount();
+        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        await userEvents.type(screen.getByLabelText(/Current password/), "wrong{Enter}");
+        await screen.findByRole("alert");
+
+        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(invalidate).not.toHaveBeenCalled();
+    });
+
     it("drops the last error when another account is picked", async () => {
         mockRequest("post", PATH, {status: 409, body: problem(409)});
         const {userEvents, sendCredential} = await pickAccount();

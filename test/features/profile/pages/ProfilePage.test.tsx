@@ -7,7 +7,7 @@ import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import type {ProfilePageState} from "@/features/profile/gitHubLink.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
-import {changingEmailUser, gitHubSignInDto, tokens, user} from "@test/support/data.tsx";
+import {changingEmailUser, gitHubSignInDto, problem, tokens, user} from "@test/support/data.tsx";
 import {holdRefreshLock} from "@test/support/refreshLock.tsx";
 import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
@@ -85,6 +85,21 @@ describe("ProfilePage", () => {
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(screen.queryByText("linked")).not.toBeInTheDocument();
         expect(screen.queryByRole("button", {name: "Unlink Google"})).not.toBeInTheDocument();
+    });
+
+    it("shows a provider unlinked elsewhere once the dialog telling so is closed", async () => {
+        const userEvents = userEvent.setup();
+        await renderProfile({...user, providers: ["GOOGLE"]});
+        mockRequest("delete", "/users/me/identities/google", {status: 404, body: problem(404)});
+        mockRequest("get", "/users/me", {body: user});
+
+        await userEvents.click(screen.getByRole("button", {name: "Unlink Google"}));
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret{Enter}");
+        expect(await screen.findByRole("alert")).toHaveTextContent("Google is no longer linked to your account.");
+        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+
+        await waitFor(() => expect(screen.queryByRole("button", {name: "Unlink Google"})).not.toBeInTheDocument());
+        expect(screen.queryByText("linked")).not.toBeInTheDocument();
     });
 
     // The dialog goes with the Unlink button, as the row offers Google's button instead.

@@ -3,7 +3,7 @@ import {Box} from "@mui/material";
 import {useQueryClient} from "@tanstack/react-query";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
-import type {StatusMessages} from "@/api/errors.tsx";
+import type {ApiError, StatusMessages} from "@/api/errors.tsx";
 import {userKeys} from "@/api/queryKeys.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {linkGoogle} from "@/api/users.tsx";
@@ -17,6 +17,11 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     404: "link.notConfigured",
     409: "link.conflict",
 };
+
+// A `409` may mean a Google account was linked to the user elsewhere since loading.
+function isUserChanged(error: ApiError): boolean {
+    return error.kind === "http" && error.status === 409;
+}
 
 interface LinkGoogleProps {
     readonly clientId: string;
@@ -54,6 +59,15 @@ export function LinkGoogle({clientId, name, hasPassword}: LinkGoogleProps) {
         setIdToken(pickedIdToken);
     }
 
+    // After a failure that may say the user changed elsewhere, the user is fetched again once the dialog is closed:
+    // done earlier, the row's new action would replace the dialog before its message is read.
+    function close(): void {
+        setIdToken(null);
+        if (failure && isUserChanged(failure.error)) {
+            void queryClient.invalidateQueries({queryKey: userKeys.me(), exact: true});
+        }
+    }
+
     return (
         <>
             <Box width={GOOGLE_BUTTON_MIN_WIDTH}>
@@ -65,7 +79,7 @@ export function LinkGoogle({clientId, name, hasPassword}: LinkGoogleProps) {
                                    hasPassword={hasPassword} loading={isSending}
                                    failure={failure && t(failure.message, {provider: name})}
                                    onConfirm={currentPassword => submit({idToken: idToken!, currentPassword})}
-                                   onCancel={() => setIdToken(null)}/>
+                                   onCancel={close}/>
         </>
     );
 }
