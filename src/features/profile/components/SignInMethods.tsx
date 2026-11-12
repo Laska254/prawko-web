@@ -1,4 +1,4 @@
-import type {ReactNode} from "react";
+import {type ReactNode, useEffect, useRef} from "react";
 import {Box, Stack, Typography} from "@mui/material";
 import {CheckCircle, GitHub, Google, Password, RadioButtonUnchecked} from "@mui/icons-material";
 import type {ParseKeys} from "i18next";
@@ -98,6 +98,9 @@ function ProviderAction({user, provider, name, isUnlinkBlocked, gitHubLink, onGi
 // The ways the user can sign in: their password and each provider account linked to them.
 export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethodsProps) {
     const {t} = useTranslation("profile");
+    const headingRef = useRef<HTMLHeadingElement>(null);
+    const providers = user.providers.join();
+    const shownProviders = useRef(providers);
     const methodCount = user.providers.length + Number(user.hasPassword);
     const methods: readonly SignInMethod[] = [
         {
@@ -126,9 +129,23 @@ export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethod
         },
     ];
 
+    // Linking or unlinking swaps the row's action, so its dialog is unmounted along with the button focus would go
+    // back to. The focus that fell to the page goes to the heading instead; focus kept elsewhere stays.
+    useEffect(() => {
+        if (shownProviders.current === providers) {
+            return;
+        }
+        shownProviders.current = providers;
+        if (document.activeElement === document.body) {
+            headingRef.current?.focus();
+        }
+    }, [providers]);
+
     return (
         <Panel p={3} spacing={2}>
-            <Typography variant="h6" component="h2" fontWeight={700}>{t("signInMethods.title")}</Typography>
+            <Typography ref={headingRef} variant="h6" component="h2" fontWeight={700} tabIndex={-1}>
+                {t("signInMethods.title")}
+            </Typography>
             <Stack component="ul" spacing={1.5} m={0} p={0} sx={{listStyle: "none"}}>
                 {methods.map(method => {
                     // The only way to sign in, when it's a provider: the password has no Unlink button to block.

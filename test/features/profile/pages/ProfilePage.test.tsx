@@ -87,6 +87,31 @@ describe("ProfilePage", () => {
         expect(screen.queryByRole("button", {name: "Unlink Google"})).not.toBeInTheDocument();
     });
 
+    // The dialog goes with the Unlink button, as the row offers Google's button instead.
+    it("moves the focus to the sign-in methods once a provider is unlinked", async () => {
+        const userEvents = userEvent.setup();
+        await renderProfile({...user, providers: ["GOOGLE"]});
+        mockRequest("delete", "/users/me/identities/google", {status: 204});
+        mockRequest("get", "/users/me", {body: user});
+
+        await userEvents.click(screen.getByRole("button", {name: "Unlink Google"}));
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret{Enter}");
+
+        await waitFor(() => expect(screen.getByRole("heading", {name: "Sign-in methods"})).toHaveFocus());
+    });
+
+    it("keeps the focus where it is when the providers change in another tab or window", async () => {
+        await renderProfile({...user, providers: ["GOOGLE"]});
+        const settings = screen.getByRole("link", {name: "Settings"});
+        act(() => settings.focus());
+
+        mockRequest("get", "/users/me", {body: user});
+        act(() => window.dispatchEvent(new Event("focus")));
+
+        await waitFor(() => expect(screen.queryByRole("button", {name: "Unlink Google"})).not.toBeInTheDocument());
+        expect(settings).toHaveFocus();
+    });
+
     it("tells when linking GitHub failed on the way back from GitHub", async () => {
         await renderProfile(user, {failure: "link.gitHubInvalid"});
 

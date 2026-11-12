@@ -33,6 +33,12 @@ describe("SignInMethods", () => {
         ]);
     });
 
+    it("leaves the focus alone when shown", () => {
+        renderSignInMethods(user);
+
+        expect(document.body).toHaveFocus();
+    });
+
     it("shows the linked providers of an account without a password", () => {
         renderSignInMethods({...user, hasPassword: false, providers: ["GOOGLE", "GITHUB"]});
 
