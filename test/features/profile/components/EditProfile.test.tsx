@@ -1,5 +1,5 @@
 import {screen, waitFor, within} from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import userEvent, {type UserEvent} from "@testing-library/user-event";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {EditProfile} from "@/features/profile/components/EditProfile.tsx";
 import {problem, user} from "@test/support/data.tsx";
@@ -20,7 +20,7 @@ async function openDialog(editedUser: UserDto = user) {
 }
 
 // Replaces the value of the field labelled `label`.
-async function retype(userEvents: ReturnType<typeof userEvent.setup>, label: string, value: string) {
+async function retype(userEvents: UserEvent, label: string, value: string) {
     const field = screen.getByRole("textbox", {name: label});
     await userEvents.clear(field);
     await userEvents.type(field, value);
@@ -28,7 +28,7 @@ async function retype(userEvents: ReturnType<typeof userEvent.setup>, label: str
 
 // Enter doesn't submit in jsdom: user-event submits only forms with one field or their own submit button, and the
 // dialog's button sits outside its form.
-async function save(userEvents: ReturnType<typeof userEvent.setup>) {
+async function save(userEvents: UserEvent) {
     await userEvents.click(screen.getByRole("button", {name: "Save"}));
 }
 
@@ -186,7 +186,7 @@ describe("EditProfile", () => {
             return opened;
         }
 
-        async function confirmPassword(userEvents: ReturnType<typeof userEvent.setup>, password = "secret1") {
+        async function confirmPassword(userEvents: UserEvent, password = "secret1") {
             await userEvents.type(screen.getByLabelText(/Current password/), password);
             await userEvents.click(screen.getByRole("button", {name: "Save"}));
         }
