@@ -7,7 +7,7 @@ import {useTranslation} from "react-i18next";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import type {UserUpdateDto} from "@/api/dto/UserUpdateDto.tsx";
 import type {StatusMessages} from "@/api/errors.tsx";
-import {NAME_LENGTH, USERNAME_PATTERN} from "@/api/fieldLengths.tsx";
+import {NAME_LENGTH, USERNAME_PATTERN} from "@/api/fieldRules.tsx";
 import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {updateUser} from "@/api/users.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
