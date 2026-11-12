@@ -30,6 +30,12 @@ describe("ConfirmDialog", () => {
         expect(screen.getByRole("dialog", {name: "Delete account?", description: "This can't be undone."})).toBeInTheDocument();
     });
 
+    it("wraps a long word of the text, such as an email, within the dialog", () => {
+        renderDialog();
+
+        expect(screen.getByText("This can't be undone.")).toHaveStyle({overflowWrap: "anywhere"});
+    });
+
     it("shows the confirm button in green by default", () => {
         renderDialog();
 

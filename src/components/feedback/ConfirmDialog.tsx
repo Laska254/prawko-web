@@ -41,7 +41,9 @@ export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "
                 {/* Inside the content, so the dialog's paper still lays out the content and actions; the confirm button
                     submits it through `form`. */}
                 <form id={formId} onSubmit={handleSubmit}>
-                    <DialogContentText id={textId}>{text}</DialogContentText>
+                    {/* The text can hold what the user typed, e.g. an email, which browsers don't break at `.` or
+                        `@`; without this, a long one is wider than the dialog on a phone. */}
+                    <DialogContentText id={textId} sx={{overflowWrap: "anywhere"}}>{text}</DialogContentText>
                     {children}
                 </form>
             </DialogContent>
