@@ -40,7 +40,7 @@
     "button": "Wyślij linki ponownie",
     "wait": "Wyślij ponownie za {{seconds}} s",
     "title": "Wysłać linki ponownie?",
-    "text": "Nowe linki zostaną wysłane na {{email}} i na twój obecny adres. Wcześniej wysłane przestaną działać.",
+    "text": "Nowe linki zostaną wysłane na {{email}} i na Twój obecny adres. Wcześniej wysłane przestaną działać.",
     "confirm": "Wyślij ponownie"
   },
   "cancelEmail": {
