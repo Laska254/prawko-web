@@ -36,6 +36,13 @@
     "taken": "Konto z tym adresem e-mail już istnieje.",
     "tooSoon": "Link został wysłany niecałą minutę temu. Odczekaj chwilę i spróbuj ponownie."
   },
+  "resendEmail": {
+    "button": "Wyślij linki ponownie",
+    "wait": "Wyślij ponownie za {{seconds}} s",
+    "title": "Wysłać linki ponownie?",
+    "text": "Nowe linki zostaną wysłane na {{email}} i na twój obecny adres. Wcześniej wysłane przestaną działać.",
+    "confirm": "Wyślij ponownie"
+  },
   "cancelEmail": {
     "button": "Anuluj zmianę",
     "title": "Anulować zmianę adresu e-mail?",

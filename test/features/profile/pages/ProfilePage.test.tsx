@@ -309,6 +309,7 @@ describe("ProfilePage", () => {
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(screen.getByRole("status")).toHaveTextContent("Email change in progress");
+        expect(within(screen.getByRole("status")).getByRole("button", {name: "Resend in 60 s"})).toBeDisabled();
         expect(fetchUser).not.toHaveBeenCalled();
         expect(queryClient.isFetching()).toBe(0);
     });

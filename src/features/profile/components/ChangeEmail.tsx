@@ -13,6 +13,7 @@ import {updateUser} from "@/api/users.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {currentUserQuery} from "@/session/currentUserQuery.tsx";
+import {startEmailChangeCooldown} from "../emailChangeCooldown.tsx";
 import {PasswordConfirmDialog} from "./PasswordConfirmDialog.tsx";
 
 const FIELD_MESSAGES: FieldMessages<"email", ParseKeys<"profile">> = {
@@ -47,7 +48,9 @@ export function ChangeEmail({user}: ChangeEmailProps) {
         {
             fieldMessages: FIELD_MESSAGES,
             statusMessages: STATUS_MESSAGES,
+            // The banner's Resend, shown once the session's user has the pending email, waits for the links just sent.
             onSuccess: updated => {
+                startEmailChangeCooldown(user.id);
                 queryClient.setQueryData(currentUserQuery.queryKey, updated);
                 setConfirming(false);
                 setOpen(false);

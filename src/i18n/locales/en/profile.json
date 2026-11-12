@@ -36,6 +36,13 @@
     "taken": "An account with this email already exists.",
     "tooSoon": "A link was sent less than a minute ago. Wait a moment and try again."
   },
+  "resendEmail": {
+    "button": "Resend links",
+    "wait": "Resend in {{seconds}} s",
+    "title": "Resend the links?",
+    "text": "New links will be sent to {{email}} and to your current address. The ones sent before will stop working.",
+    "confirm": "Resend"
+  },
   "cancelEmail": {
     "button": "Cancel change",
     "title": "Cancel the email change?",
