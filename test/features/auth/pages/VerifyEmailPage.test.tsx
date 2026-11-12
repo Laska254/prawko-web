@@ -183,6 +183,24 @@ describe("VerifyEmailPage", () => {
         expect(await screen.findByRole("heading", {name: "Email changed"})).toBeInTheDocument();
     });
 
+    it("shows a session error instead of going to sign in and the result on retry", async () => {
+        const user = userEvent.setup();
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {status: 503});
+        const requests = mockPost("/auth/verify");
+        renderAtRoute(<VerifyEmailPage/>, "/auth/verify?token=token");
+
+        expect(await screen.findByRole("alert"))
+            .toHaveTextContent("Your account couldn't be loaded. Check your connection and try again.");
+        expect(screen.queryByTestId("location")).not.toBeInTheDocument();
+
+        mockRequest("get", "/users/me", {body: sampleUser});
+        await user.click(screen.getByRole("button", {name: "Try again"}));
+
+        expect(await screen.findByRole("heading", {name: "Email changed"})).toBeInTheDocument();
+        expect(requests).toHaveLength(1);
+    });
+
     it("tells that the new email was taken meanwhile, without offering a new link", async () => {
         mockProblem("/auth/verify", 409, {email: "User with email 'jan.nowy@example.com' already exists."});
 

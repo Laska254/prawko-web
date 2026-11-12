@@ -70,10 +70,10 @@ export function VerifyEmailPage() {
     const session = useSession();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const {t} = useTranslation(["auth", "errors"]);
+    const {t} = useTranslation(["auth", "errors", "common"]);
     // An account that isn't verified yet can't sign in, so a signed-in user's link is an email change.
     const isSignedIn = session.status === "signedIn";
-    const isSignInNext = result === "completed" && session.status !== "signedIn" && session.status !== "loading";
+    const isSignInNext = result === "completed" && session.status === "signedOut";
 
     useEffect(() => {
         if (!token || sentAttemptRef.current === attempt) return;
@@ -135,6 +135,10 @@ export function VerifyEmailPage() {
         // Most outcomes depend on whether the user is signed in.
         if (session.status === "loading") {
             return progress();
+        }
+        // Signed in or not is unknown until the user loads; the result is kept, so a retry shows it.
+        if (session.status === "error") {
+            return <PageError message={t("common:sessionLoadFailed")} onRetry={session.retry}/>;
         }
         if (!token || (error && isInvalidToken(error))) {
             return failed();
