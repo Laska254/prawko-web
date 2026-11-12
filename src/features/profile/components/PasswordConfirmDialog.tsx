@@ -21,7 +21,8 @@ interface PasswordConfirmDialogProps {
     readonly onCancel: () => void;
 }
 
-// Confirms a change to the sign-in methods, which the server allows only with the current password if there is one.
+// Confirms a change to how the user signs in (a provider, the username), which the server allows only with the current
+// password if there is one.
 export function PasswordConfirmDialog({open, title, text, confirmLabel, confirmColor, hasPassword, loading, failure,
                                           onConfirm, onCancel}: PasswordConfirmDialogProps) {
     const passwordRef = useRef<HTMLInputElement>(null);

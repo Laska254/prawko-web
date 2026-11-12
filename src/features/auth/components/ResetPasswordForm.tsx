@@ -6,13 +6,13 @@ import {Link as RouterLink, useNavigate} from "react-router";
 import {resetPassword} from "@/api/auth.tsx";
 import type {ResetPasswordDto} from "@/api/dto/ResetPasswordDto.tsx";
 import type {StatusMessages} from "@/api/errors.tsx";
+import {PASSWORD_LENGTH} from "@/api/fieldRules.tsx";
 import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useSession} from "@/session/useSession.tsx";
 import {isInvalidToken} from "../tokenErrors.tsx";
 import {authNoticeState} from "../authNotice.tsx";
-import {PASSWORD_LENGTH} from "../fieldLengths.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     400: "messages.resetLinkInvalid",

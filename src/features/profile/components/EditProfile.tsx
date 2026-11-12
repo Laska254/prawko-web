@@ -1,0 +1,148 @@
+import {type InputHTMLAttributes, type RefObject, useRef, useState} from "react";
+import {Alert, Button, Stack} from "@mui/material";
+import {Edit} from "@mui/icons-material";
+import {useQueryClient} from "@tanstack/react-query";
+import type {ParseKeys} from "i18next";
+import {useTranslation} from "react-i18next";
+import type {UserDto} from "@/api/dto/UserDto.tsx";
+import type {UserUpdateDto} from "@/api/dto/UserUpdateDto.tsx";
+import type {StatusMessages} from "@/api/errors.tsx";
+import {NAME_LENGTH, USERNAME_RULES} from "@/api/fieldRules.tsx";
+import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
+import {updateUser} from "@/api/users.tsx";
+import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
+import {FormTextField} from "@/components/form/FormTextField.tsx";
+import {currentUserQuery} from "@/session/currentUserQuery.tsx";
+import {PasswordConfirmDialog} from "./PasswordConfirmDialog.tsx";
+
+type EditableField = "firstName" | "lastName" | "userName";
+
+const FIELD_MESSAGES: FieldMessages<EditableField, ParseKeys<"profile">> = {
+    firstName: {400: "edit.firstNameLength"},
+    lastName: {400: "edit.lastNameLength"},
+    userName: {400: "edit.userNameInvalid", 409: "edit.userNameTaken"},
+};
+
+// A `400` without a field is the password, which the server reports like a wrong one when missing. A `409` without
+// one means the user was changed by another request at the same time.
+const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
+    400: "passwordConfirm.wrong",
+    409: "edit.changedMeanwhile",
+};
+
+interface EditableInput {
+    readonly field: EditableField;
+    readonly label: ParseKeys<"profile">;
+    readonly inputRef: RefObject<HTMLInputElement | null>;
+    readonly htmlInput: InputHTMLAttributes<HTMLInputElement>;
+}
+
+// The fields typed with a value other than the user's; an empty one stays as it is.
+function changedFields(user: UserDto, inputs: readonly EditableInput[]): UserUpdateDto {
+    const changes: Partial<Record<EditableField, string>> = {};
+    for (const {field, inputRef} of inputs) {
+        const value = inputRef.current!.value;
+        if (value !== "" && value !== user[field]) {
+            changes[field] = value;
+        }
+    }
+    return changes;
+}
+
+interface EditProfileProps {
+    readonly user: UserDto;
+}
+
+// Edits the names and username in a dialog, sending only the fields typed; a new username needs the password too,
+// asked in a second dialog when the user has one. The server answers with the updated user, which replaces the
+// session's.
+export function EditProfile({user}: EditProfileProps) {
+    const [isOpen, setOpen] = useState(false);
+    // The changes waiting for the password, kept while its dialog is open.
+    const [unconfirmedChanges, setUnconfirmedChanges] = useState<UserUpdateDto | null>(null);
+    const firstNameRef = useRef<HTMLInputElement>(null);
+    const lastNameRef = useRef<HTMLInputElement>(null);
+    const userNameRef = useRef<HTMLInputElement>(null);
+    const queryClient = useQueryClient();
+    const {t} = useTranslation(["profile", "errors"]);
+    const {submit, isSending, fieldErrors, failure, clear} = useFormSubmission(
+        (userUpdateDto: UserUpdateDto) => updateUser(user.id, userUpdateDto),
+        {
+            fieldMessages: FIELD_MESSAGES,
+            statusMessages: STATUS_MESSAGES,
+            onSuccess: updated => {
+                queryClient.setQueryData(currentUserQuery.queryKey, updated);
+                setUnconfirmedChanges(null);
+                setOpen(false);
+            },
+            // A field's error shows under the field, so the password's dialog gives way to the form.
+            onError: error => {
+                if (error.kind === "validation") {
+                    setUnconfirmedChanges(null);
+                }
+            },
+        },
+    );
+    const inputs: readonly EditableInput[] = [
+        {field: "firstName", label: "profile.firstName", inputRef: firstNameRef, htmlInput: NAME_LENGTH},
+        {field: "lastName", label: "profile.lastName", inputRef: lastNameRef, htmlInput: NAME_LENGTH},
+        {
+            field: "userName", label: "profile.userName", inputRef: userNameRef,
+            htmlInput: {...USERNAME_RULES, title: t("edit.userNameInvalid")},
+        },
+    ];
+
+    // The last attempt's errors stay while the dialog fades out, and are gone when it opens again.
+    function open(): void {
+        clear();
+        setOpen(true);
+    }
+
+    // Nothing changed closes the dialog without a request.
+    function save(): void {
+        const changes = changedFields(user, inputs);
+        if (Object.keys(changes).length === 0) {
+            setOpen(false);
+            return;
+        }
+        if (changes.userName !== undefined && user.hasPassword) {
+            clear();
+            setUnconfirmedChanges(changes);
+            return;
+        }
+        submit(changes);
+    }
+
+    // Back to the form, with the values typed kept and the password's error dropped.
+    function cancelPassword(): void {
+        clear();
+        setUnconfirmedChanges(null);
+    }
+
+    return (
+        <>
+            <Button variant="outlined" startIcon={<Edit/>} onClick={open}>{t("edit.button")}</Button>
+            <ConfirmDialog open={isOpen} title={t("edit.title")} text={t("edit.text")} confirmLabel={t("edit.save")}
+                           loading={isSending} onConfirm={save} onCancel={() => setOpen(false)}>
+                <Stack spacing={2} mt={2}>
+                    {failure && !unconfirmedChanges && <Alert severity="error">{t(failure.message)}</Alert>}
+                    {inputs.map(({field, label, inputRef, htmlInput}) => {
+                        const error = fieldErrors[field];
+                        return (
+                            // Every field is optional and starts empty, showing the current value; the label stays
+                            // above it so the placeholder shows before the field is focused.
+                            <FormTextField key={field} label={t(label)} type="text" inputRef={inputRef}
+                                           placeholder={user[field] ?? undefined} errorText={error && t(error)}
+                                           slotProps={{htmlInput, inputLabel: {shrink: true}}}/>
+                        );
+                    })}
+                </Stack>
+            </ConfirmDialog>
+            <PasswordConfirmDialog open={unconfirmedChanges !== null} title={t("edit.passwordTitle")}
+                                   text={t("edit.passwordText")} confirmLabel={t("edit.save")} hasPassword
+                                   loading={isSending} failure={failure && t(failure.message)}
+                                   onConfirm={currentPassword => submit({...unconfirmedChanges, currentPassword})}
+                                   onCancel={cancelPassword}/>
+        </>
+    );
+}
