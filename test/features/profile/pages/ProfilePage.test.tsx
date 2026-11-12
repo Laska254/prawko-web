@@ -313,6 +313,21 @@ describe("ProfilePage", () => {
         expect(queryClient.isFetching()).toBe(0);
     });
 
+    it("shows the email change cancelled without fetching the user again", async () => {
+        const userEvents = userEvent.setup();
+        const queryClient = await renderProfile(changingEmailUser);
+        const fetchUser = vi.spyOn(queryClient, "fetchQuery");
+        mockRequest("patch", "/users/1", {body: user});
+
+        await userEvents.click(within(screen.getByRole("status")).getByRole("button", {name: "Cancel change"}));
+        await userEvents.click(screen.getByRole("button", {name: "Cancel change"}));
+
+        await waitFor(() => expect(screen.queryByRole("status")).not.toBeInTheDocument());
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(fetchUser).not.toHaveBeenCalled();
+        expect(queryClient.isFetching()).toBe(0);
+    });
+
     it("opens the settings", async () => {
         const userEvents = userEvent.setup();
         await renderProfile();

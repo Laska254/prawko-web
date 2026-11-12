@@ -36,6 +36,12 @@
     "taken": "Konto z tym adresem e-mail już istnieje.",
     "tooSoon": "Link został wysłany niecałą minutę temu. Odczekaj chwilę i spróbuj ponownie."
   },
+  "cancelEmail": {
+    "button": "Anuluj zmianę",
+    "title": "Anulować zmianę adresu e-mail?",
+    "text": "Wysłane linki przestaną działać, a Twój adres e-mail się nie zmieni.",
+    "confirm": "Anuluj zmianę"
+  },
   "pendingEmail": {
     "title": "Trwa zmiana adresu e-mail",
     "text": "Twój adres e-mail zmieni się na <email/>, gdy otworzysz oba poniższe linki.",

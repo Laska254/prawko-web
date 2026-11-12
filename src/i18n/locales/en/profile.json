@@ -36,6 +36,12 @@
     "taken": "An account with this email already exists.",
     "tooSoon": "A link was sent less than a minute ago. Wait a moment and try again."
   },
+  "cancelEmail": {
+    "button": "Cancel change",
+    "title": "Cancel the email change?",
+    "text": "The links already sent will stop working, and your email stays the same.",
+    "confirm": "Cancel change"
+  },
   "pendingEmail": {
     "title": "Email change in progress",
     "text": "Your email changes to <email/> once both links below are opened.",

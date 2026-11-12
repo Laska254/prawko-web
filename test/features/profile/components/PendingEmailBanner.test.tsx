@@ -26,6 +26,7 @@ describe("PendingEmailBanner", () => {
             ["Link sent to jan.nowy@example.com:", "not opened yet"],
             ["Link sent to jan@example.com:", "not opened yet"],
         ]);
+        expect(within(banner).getByRole("button", {name: "Cancel change"})).toBeInTheDocument();
     });
 
     it.each([

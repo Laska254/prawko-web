@@ -2,6 +2,7 @@ import {Alert, AlertTitle, Stack, Typography} from "@mui/material";
 import {CheckCircle, RadioButtonUnchecked} from "@mui/icons-material";
 import {Trans, useTranslation} from "react-i18next";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
+import {CancelEmailChange} from "./CancelEmailChange.tsx";
 
 interface PendingEmailBannerProps {
     readonly user: UserDto;
@@ -66,6 +67,9 @@ export function PendingEmailBanner({user}: PendingEmailBannerProps) {
                 <Stack component="ul" spacing={0.5} m={0} p={0} sx={{listStyle: "none"}}>
                     <EmailLink email={user.pendingEmail} isOpened={!user.awaitingNewEmailConfirmation}/>
                     <EmailLink email={user.email} isOpened={!user.awaitingCurrentEmailConfirmation}/>
+                </Stack>
+                <Stack direction="row" flexWrap="wrap" gap={1}>
+                    <CancelEmailChange user={user}/>
                 </Stack>
             </Stack>
         </Alert>
