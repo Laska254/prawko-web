@@ -1,4 +1,4 @@
-import {screen, waitFor, within} from "@testing-library/react";
+import {act, screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import {saveTokens} from "@/api/tokens.tsx";
@@ -20,9 +20,10 @@ const stats: UserStatsDto = {
 
 const noExams: UserStatsDto = {examsTaken: 0, examsPassed: 0, averageScore: null, bestScore: null, categories: []};
 
+// Returns the query client.
 function renderStats() {
     saveTokens(tokens);
-    renderAtRoute(<ExamStats/>, "/profile");
+    return renderAtRoute(<ExamStats/>, "/profile").queryClient;
 }
 
 function panel() {
@@ -121,5 +122,18 @@ describe("ExamStats", () => {
         respond();
 
         expect(await screen.findByRole("list", {name: "By category"})).toBeInTheDocument();
+    });
+
+    it("keeps the stats loaded before when fetching them again fails", async () => {
+        mockRequest("get", "/users/me/stats", {body: stats});
+        const queryClient = renderStats();
+        await screen.findByRole("list", {name: "By category"});
+
+        mockRequest("get", "/users/me/stats", {status: 404});
+        await act(() => queryClient.refetchQueries());
+
+        expect(queryClient.getQueryState(["users", "me", "stats"])?.status).toBe("error");
+        expect(screen.getByRole("list", {name: "By category"})).toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 });
