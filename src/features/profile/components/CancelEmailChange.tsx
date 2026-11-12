@@ -6,7 +6,7 @@ import {useTranslation} from "react-i18next";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import type {StatusMessages} from "@/api/errors.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
-import {updateUser} from "@/api/users.tsx";
+import {getCurrentUser, updateUser} from "@/api/users.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {currentUserQuery} from "@/session/currentUserQuery.tsx";
 
@@ -15,19 +15,25 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     409: "edit.changedMeanwhile",
 };
 
-interface CancelEmailChangeProps {
-    readonly user: UserDto;
+// The user without a pending email change. The server takes the current email as cancelling it, without a password or
+// a cooldown, since no link is sent; the links already sent stop working. The user is fetched first, as the change may
+// have completed elsewhere: the session's old email would then start a change back to it.
+async function cancelChange(): Promise<UserDto> {
+    const user = await getCurrentUser();
+    if (!user.pendingEmail) {
+        return user;
+    }
+    return updateUser(user.id, {email: user.email});
 }
 
-// Cancels a pending email change after a confirmation. The server takes the current email as cancelling it, without
-// a password or a cooldown, since no link is sent; the links already sent stop working. The answer, without the
-// pending email, replaces the session's user, so the banner holding this goes away.
-export function CancelEmailChange({user}: CancelEmailChangeProps) {
+// Cancels a pending email change after a confirmation. The user it answers replaces the session's, so the banner
+// holding this goes away.
+export function CancelEmailChange() {
     const [isOpen, setOpen] = useState(false);
     const queryClient = useQueryClient();
     const {t} = useTranslation(["profile", "errors"]);
     const {submit, isSending, failure, clear} = useFormSubmission(
-        () => updateUser(user.id, {email: user.email}),
+        cancelChange,
         {
             statusMessages: STATUS_MESSAGES,
             onSuccess: updated => {

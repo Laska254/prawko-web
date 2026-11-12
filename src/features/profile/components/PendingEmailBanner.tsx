@@ -76,7 +76,7 @@ export function PendingEmailBanner({user}: PendingEmailBannerProps) {
             </Box>
             <Stack direction="row" flexWrap="wrap" gap={1} mt={1}>
                 <ResendEmailChange user={user} pendingEmail={user.pendingEmail}/>
-                <CancelEmailChange user={user}/>
+                <CancelEmailChange/>
             </Stack>
         </Alert>
     );
