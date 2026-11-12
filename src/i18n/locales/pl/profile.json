@@ -47,7 +47,8 @@
     "button": "Anuluj zmianę",
     "title": "Anulować zmianę adresu e-mail?",
     "text": "Wysłane linki przestaną działać, a Twój adres e-mail się nie zmieni.",
-    "confirm": "Anuluj zmianę"
+    "confirm": "Anuluj zmianę",
+    "keep": "Nie anuluj"
   },
   "pendingEmail": {
     "title": "Trwa zmiana adresu e-mail",

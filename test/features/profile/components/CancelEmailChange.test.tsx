@@ -25,6 +25,7 @@ describe("CancelEmailChange", () => {
             name: "Cancel the email change?",
             description: "The links already sent will stop working, and your email stays the same.",
         })).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Keep it"})).toBeInTheDocument();
         expect(requests).toEqual([]);
     });
 
@@ -46,7 +47,7 @@ describe("CancelEmailChange", () => {
         await userEvents.click(screen.getByRole("button", {name: "Cancel change"}));
 
         await waitFor(() => expect(screen.getByRole("button", {name: "Cancel change"})).toBeDisabled());
-        expect(screen.getByRole("button", {name: "Cancel"})).toBeDisabled();
+        expect(screen.getByRole("button", {name: "Keep it"})).toBeDisabled();
         respond();
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     });
@@ -71,7 +72,7 @@ describe("CancelEmailChange", () => {
         await userEvents.click(screen.getByRole("button", {name: "Cancel change"}));
         await screen.findByRole("alert");
 
-        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+        await userEvents.click(screen.getByRole("button", {name: "Keep it"}));
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         await userEvents.click(screen.getByRole("button", {name: "Cancel change"}));
 
@@ -83,7 +84,7 @@ describe("CancelEmailChange", () => {
         const requests = mockRequest("patch", PATH, {body: user});
         const {userEvents} = await openDialog();
 
-        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+        await userEvents.click(screen.getByRole("button", {name: "Keep it"}));
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(requests).toEqual([]);

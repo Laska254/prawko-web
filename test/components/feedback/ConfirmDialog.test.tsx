@@ -8,15 +8,16 @@ interface DialogOptions {
     open?: boolean;
     loading?: boolean;
     confirmColor?: "error";
+    cancelLabel?: string;
     children?: ReactNode;
 }
 
-function renderDialog({open = true, loading = false, confirmColor, children}: DialogOptions = {}) {
+function renderDialog({open = true, loading = false, confirmColor, cancelLabel, children}: DialogOptions = {}) {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
     renderWithProviders(
         <ConfirmDialog open={open} title="Delete account?" text="This can't be undone." confirmLabel="Delete"
-                       confirmColor={confirmColor} loading={loading} onConfirm={onConfirm} onCancel={onCancel}>
+                       cancelLabel={cancelLabel} confirmColor={confirmColor} loading={loading} onConfirm={onConfirm} onCancel={onCancel}>
             {children}
         </ConfirmDialog>
     );
@@ -79,6 +80,15 @@ describe("ConfirmDialog", () => {
 
         expect(onCancel).toHaveBeenCalledTimes(1);
         expect(onConfirm).not.toHaveBeenCalled();
+    });
+
+    it("cancels with a button of the label given", async () => {
+        const {onCancel} = renderDialog({cancelLabel: "Keep it"});
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Keep it"}));
+
+        expect(onCancel).toHaveBeenCalledTimes(1);
+        expect(screen.queryByRole("button", {name: "Cancel"})).not.toBeInTheDocument();
     });
 
     it("cancels with Escape", async () => {

@@ -49,7 +49,8 @@ export function CancelEmailChange({user}: CancelEmailChangeProps) {
                 {t("cancelEmail.button")}
             </Button>
             <ConfirmDialog open={isOpen} title={t("cancelEmail.title")} text={t("cancelEmail.text")}
-                           confirmLabel={t("cancelEmail.confirm")} confirmColor="error" loading={isSending}
+                           confirmLabel={t("cancelEmail.confirm")} cancelLabel={t("cancelEmail.keep")}
+                           confirmColor="error" loading={isSending}
                            onConfirm={() => submit(undefined)} onCancel={() => setOpen(false)}>
                 {failure && <Alert severity="error" sx={{mt: 2}}>{t(failure.message)}</Alert>}
             </ConfirmDialog>

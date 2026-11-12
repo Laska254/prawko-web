@@ -47,7 +47,8 @@
     "button": "Cancel change",
     "title": "Cancel the email change?",
     "text": "The links already sent will stop working, and your email stays the same.",
-    "confirm": "Cancel change"
+    "confirm": "Cancel change",
+    "keep": "Keep it"
   },
   "pendingEmail": {
     "title": "Email change in progress",

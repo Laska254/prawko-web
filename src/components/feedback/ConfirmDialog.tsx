@@ -7,6 +7,8 @@ interface ConfirmDialogProps {
     title: string;
     text: string;
     confirmLabel: string;
+    // The dismiss button's label, "Cancel" by default; named when the confirm label starts the same, e.g. "Cancel change".
+    cancelLabel?: string;
     // `error` (red) marks a destructive action such as a delete.
     confirmColor?: "secondary" | "error";
     loading: boolean;
@@ -17,7 +19,7 @@ interface ConfirmDialogProps {
 }
 
 // MUI links the title to the dialog itself; the text is linked through `aria-describedby`.
-export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "secondary", loading, onConfirm, onCancel, children}: ConfirmDialogProps) {
+export function ConfirmDialog({open, title, text, confirmLabel, cancelLabel, confirmColor = "secondary", loading, onConfirm, onCancel, children}: ConfirmDialogProps) {
     const textId = useId();
     const formId = useId();
     const {t} = useTranslation();
@@ -48,7 +50,7 @@ export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "
                 </form>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel} disabled={loading}>{t("cancel")}</Button>
+                <Button onClick={onCancel} disabled={loading}>{cancelLabel ?? t("cancel")}</Button>
                 <Button type="submit" form={formId} variant="contained" color={confirmColor} loading={loading}>
                     {confirmLabel}
                 </Button>
