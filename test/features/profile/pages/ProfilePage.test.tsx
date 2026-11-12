@@ -1,6 +1,6 @@
 import {act, screen, waitFor, within} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {Route, Routes} from "react-router";
+import {Link, Route, Routes} from "react-router";
 import {saveTokens} from "@/api/tokens.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
@@ -32,6 +32,9 @@ async function renderProfile(signedInUser: UserDto = user, state?: ProfilePageSt
     );
     // Hidden too, as a dialog the state opens hides the page behind it.
     await screen.findByRole("heading", {name: "Profile", hidden: true});
+    // The page fetches the user again on opening; a refetch on focus would join that fetch, which answers before the
+    // test mocks the next user.
+    await waitFor(() => expect(queryClient.isFetching({queryKey: ["users", "me"], exact: true})).toBe(0));
     return queryClient;
 }
 
@@ -243,6 +246,27 @@ describe("ProfilePage", () => {
 
         await waitFor(() => expect(screen.queryByRole("status")).not.toBeInTheDocument());
         expect(accountFields()).toContainEqual(["Email", "jan.nowy@example.com"]);
+    });
+
+    it("fetches the user again when opened, as another tab, window or device may have changed it", async () => {
+        const userEvents = userEvent.setup();
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: changingEmailUser});
+        mockRequest("get", "/users/me/stats", {body: noExams});
+        renderWithProviders(
+            <Routes>
+                <Route element={<RequireAuth/>}>
+                    <Route path="/" element={<Link to="/profile">Open profile</Link>}/>
+                    <Route path="/profile" element={<ProfilePage/>}/>
+                </Route>
+            </Routes>
+        );
+        const link = await screen.findByRole("link", {name: "Open profile"});
+        mockRequest("get", "/users/me", {body: {...changingEmailUser, awaitingNewEmailConfirmation: false}});
+
+        await userEvents.click(link);
+
+        expect(await screen.findByText("opened")).toBeInTheDocument();
     });
 
     it("stops fetching the user on focus once the page is left", async () => {
