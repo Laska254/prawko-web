@@ -7,7 +7,7 @@ import {useTranslation} from "react-i18next";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import type {UserUpdateDto} from "@/api/dto/UserUpdateDto.tsx";
 import type {StatusMessages} from "@/api/errors.tsx";
-import {NAME_LENGTH, USERNAME_PATTERN} from "@/api/fieldRules.tsx";
+import {NAME_LENGTH, USERNAME_RULES} from "@/api/fieldRules.tsx";
 import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {updateUser} from "@/api/users.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
@@ -88,8 +88,7 @@ export function EditProfile({user}: EditProfileProps) {
         {field: "lastName", label: "profile.lastName", inputRef: lastNameRef, htmlInput: NAME_LENGTH},
         {
             field: "userName", label: "profile.userName", inputRef: userNameRef,
-            // Browsers show the title when the pattern isn't matched, naming the @.
-            htmlInput: {...NAME_LENGTH, pattern: USERNAME_PATTERN, title: t("edit.userNameInvalid")},
+            htmlInput: {...USERNAME_RULES, title: t("edit.userNameInvalid")},
         },
     ];
 
