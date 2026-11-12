@@ -7,7 +7,15 @@ import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import type {ProfilePageState} from "@/features/profile/gitHubLink.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
-import {changingEmailUser, gitHubSignInDto, problem, tokens, user} from "@test/support/data.tsx";
+import {
+    changingEmailUser,
+    changingEmailUserWithoutPassword,
+    gitHubSignInDto,
+    problem,
+    tokens,
+    user,
+    userWithoutPassword,
+} from "@test/support/data.tsx";
 import {holdRefreshLock} from "@test/support/refreshLock.tsx";
 import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
@@ -299,9 +307,9 @@ describe("ProfilePage", () => {
 
     it("shows the email change started without fetching the user again", async () => {
         const userEvents = userEvent.setup();
-        const queryClient = await renderProfile({...user, hasPassword: false});
+        const queryClient = await renderProfile(userWithoutPassword);
         const fetchUser = vi.spyOn(queryClient, "fetchQuery");
-        mockRequest("patch", "/users/1", {body: {...changingEmailUser, hasPassword: false}});
+        mockRequest("patch", "/users/1", {body: changingEmailUserWithoutPassword});
 
         await userEvents.click(screen.getByRole("button", {name: "Change email"}));
         await userEvents.type(screen.getByRole("textbox", {name: "New email"}), "jan.nowy@example.com");
@@ -316,7 +324,7 @@ describe("ProfilePage", () => {
 
     it("makes Resend wait when a new email change comes within the minute", async () => {
         const userEvents = userEvent.setup();
-        await renderProfile({...changingEmailUser, hasPassword: false});
+        await renderProfile(changingEmailUserWithoutPassword);
         mockRequest("patch", "/users/1", {status: 429, body: problem(429)});
         expect(screen.getByRole("button", {name: "Resend links"})).toBeEnabled();
 

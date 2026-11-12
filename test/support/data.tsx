@@ -52,6 +52,16 @@ export const changingEmailUser: UserDto = {
     awaitingCurrentEmailConfirmation: true,
 };
 
+// `user` signed up with Google, so a new username or email needs no password.
+export const userWithoutPassword: UserDto = {...user, hasPassword: false, providers: ["GOOGLE"]};
+
+// `userWithoutPassword` changing their email, as `changingEmailUser`.
+export const changingEmailUserWithoutPassword: UserDto = {
+    ...changingEmailUser,
+    hasPassword: userWithoutPassword.hasPassword,
+    providers: userWithoutPassword.providers,
+};
+
 // A ProblemDetail of `status`; `details` are the errors per field of a `400`/`409`.
 export function problem(status: number, details?: Readonly<Record<string, string>>): ProblemDetail {
     return {type: "about:blank", title: "Title", status, detail: "Detail.", details};

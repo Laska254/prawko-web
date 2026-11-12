@@ -2,7 +2,7 @@ import {act, screen, waitFor} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {ResendEmailChange} from "@/features/profile/components/ResendEmailChange.tsx";
-import {changingEmailUser, problem} from "@test/support/data.tsx";
+import {changingEmailUser, changingEmailUserWithoutPassword, problem} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {mockPendingRequest, mockRequest} from "@test/support/server.tsx";
 
@@ -71,7 +71,7 @@ describe("ResendEmailChange", () => {
 
     it("only asks for a confirmation when the user has no password", async () => {
         const requests = mockRequest("patch", PATH, {body: changingEmailUser});
-        const {userEvents} = renderResend({...halfConfirmedUser, hasPassword: false, providers: ["GOOGLE"]});
+        const {userEvents} = renderResend({...changingEmailUserWithoutPassword, awaitingNewEmailConfirmation: false});
         await openDialog(userEvents);
 
         expect(screen.getByRole("dialog", {

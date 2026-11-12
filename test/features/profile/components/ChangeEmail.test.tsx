@@ -2,15 +2,18 @@ import {screen, waitFor} from "@testing-library/react";
 import userEvent, {type UserEvent} from "@testing-library/user-event";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {ChangeEmail} from "@/features/profile/components/ChangeEmail.tsx";
-import {changingEmailUser, problem, user} from "@test/support/data.tsx";
+import {
+    changingEmailUser,
+    changingEmailUserWithoutPassword,
+    problem,
+    user,
+    userWithoutPassword,
+} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {mockPendingRequest, mockRequest} from "@test/support/server.tsx";
 
 const PATH = "/users/1";
 const NEW_EMAIL = changingEmailUser.pendingEmail!;
-
-// Signed up with a provider, so a new email needs no password.
-const userWithoutPassword: UserDto = {...user, hasPassword: false, providers: ["GOOGLE"]};
 
 // Opens the dialog of changing the email of `changedUser`; returns the user events and the query client.
 async function openDialog(changedUser: UserDto = user) {
@@ -71,7 +74,7 @@ describe("ChangeEmail", () => {
     });
 
     it("is sent without a password when the user has none", async () => {
-        const requests = mockRequest("patch", PATH, {body: {...userWithoutPassword, pendingEmail: NEW_EMAIL}});
+        const requests = mockRequest("patch", PATH, {body: changingEmailUserWithoutPassword});
         const {userEvents} = await openDialog(userWithoutPassword);
 
         await send(userEvents);
