@@ -182,17 +182,34 @@ describe("VerifyEmailPage", () => {
         expect(currentLocation().pathname).toBe("/profile");
     });
 
-    it("waits for the session before showing the result", async () => {
+    it("waits for the session before sending the token", async () => {
         saveTokens(tokens);
         const session = mockPendingRequest("get", "/users/me", {body: sampleUser});
         const requests = mockPost("/auth/verify");
         renderAtRoute(<VerifyEmailPage/>, "/auth/verify?token=token");
 
-        await waitFor(() => expect(requests).toHaveLength(1));
+        await waitFor(() => expect(session.requestCount()).toBe(1));
         expect(screen.getByText("Verifying your email…")).toBeInTheDocument();
+        expect(requests).toEqual([]);
         session.respond();
 
         expect(await screen.findByRole("heading", {name: "Email verified"})).toBeInTheDocument();
+        expect(requests).toEqual([{token: "token"}]);
+    });
+
+    it("shows a completed email change when the session loads after the page opens", async () => {
+        saveTokens(tokens);
+        const session = mockPendingRequest("get", "/users/me", {body: changingEmailUser});
+        mockPost("/auth/verify");
+        const {queryClient} = renderAtRoute(<VerifyEmailPage/>, "/auth/verify?token=token");
+        await waitFor(() => expect(session.requestCount()).toBe(1));
+
+        const changed: UserDto = {...sampleUser, email: "jan.nowy@example.com"};
+        session.respond();
+        mockRequest("get", "/users/me", {body: changed});
+
+        expect(await screen.findByRole("heading", {name: "Email changed"})).toBeInTheDocument();
+        expect(queryClient.getQueryData(currentUserQuery.queryKey)).toEqual(changed);
     });
 
     it("shows a session error instead of going to sign in and the result on retry", async () => {

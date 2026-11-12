@@ -16,8 +16,8 @@ import {isInvalidToken} from "../tokenErrors.tsx";
 import {authNoticeState} from "../authNotice.tsx";
 
 // What a link completed, which the server answers alike for an account verification and an email change: `changed`
-// the email change the signed-in user was waiting for; `completed` any other link, or a change whose user wasn't
-// loaded before it; `awaiting` an email change confirmed by this address, still waiting for the link sent to the other.
+// the email change the signed-in user was waiting for; `completed` any other link; `awaiting` an email change confirmed
+// by this address, still waiting for the link sent to the other.
 type VerifyResult = "changed" | "completed" | "awaiting";
 
 interface ResultMessageProps {
@@ -77,8 +77,10 @@ export function VerifyEmailPage() {
     const isSignedIn = session.status === "signedIn";
     const isSignInNext = result === "completed" && session.status === "signedOut";
 
+    // The token is sent once the session has loaded, so a signed-in user's pending change is read from before the link.
     useEffect(() => {
         if (!token || sentAttemptRef.current === attempt) return;
+        if (session.status === "loading" || session.status === "error") return;
         sentAttemptRef.current = attempt;
         verifyEmail({token})
             .then(async response => {
@@ -89,7 +91,7 @@ export function VerifyEmailPage() {
                 setResult(resultOf(response.status, user));
             })
             .catch(caught => setError(toApiError(caught)));
-    }, [token, attempt, queryClient]);
+    }, [token, attempt, session.status, queryClient]);
 
     useEffect(() => {
         if (isSignInNext) {
@@ -140,7 +142,7 @@ export function VerifyEmailPage() {
         if (session.status === "loading") {
             return progress();
         }
-        // Signed in or not is unknown until the user loads; the result is kept, so a retry shows it.
+        // Signed in or not is unknown until the user loads, and so is the result, as the token waits for the session.
         if (session.status === "error") {
             return <PageError message={t("common:sessionLoadFailed")} onRetry={session.retry}/>;
         }
