@@ -150,7 +150,7 @@ describe("AuthPage", () => {
     });
 
     it.each([
-        ["verified", "Your email is verified. You can sign in now.", "SuccessOutlinedIcon"],
+        ["verified", "Your email is verified. You can sign in with it now.", "SuccessOutlinedIcon"],
         ["passwordReset", "Your password has been changed. You can sign in now.", "SuccessOutlinedIcon"],
         ["sessionExpired", "Your session has expired. Sign in again to continue.", "InfoOutlinedIcon"],
     ])("shows the %s notice until the user switches forms", async (notice, message, icon) => {
