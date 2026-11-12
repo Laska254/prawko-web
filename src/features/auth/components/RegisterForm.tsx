@@ -4,15 +4,13 @@ import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import {register} from "@/api/users.tsx";
 import type {RegisterDto} from "@/api/dto/RegisterDto.tsx";
+import {EMAIL_LENGTH, NAME_LENGTH, PASSWORD_LENGTH} from "@/api/fieldLengths.tsx";
 import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {startEmailLinkCooldown} from "../emailLinkCooldown.tsx";
-import {EMAIL_LENGTH, PASSWORD_LENGTH} from "../fieldLengths.tsx";
-
-const NAME_LENGTH = {minLength: 3, maxLength: 31};
 
 const FIELD_MESSAGES: FieldMessages<keyof RegisterDto, ParseKeys<"auth">> = {
     firstName: {400: "messages.firstNameLength"},

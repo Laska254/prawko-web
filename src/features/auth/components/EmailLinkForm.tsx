@@ -2,11 +2,11 @@ import {useState} from "react";
 import {Alert, type AlertColor, Stack} from "@mui/material";
 import {useTranslation} from "react-i18next";
 import {errorMessage, type GenericMessageKey, toApiError} from "@/api/errors.tsx";
+import {EMAIL_LENGTH} from "@/api/fieldLengths.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useCooldown} from "../hooks/useCooldown.tsx";
 import {COOLDOWN_MS, emailLinkCooldownKey} from "../emailLinkCooldown.tsx";
-import {EMAIL_LENGTH} from "../fieldLengths.tsx";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";
 
