@@ -26,8 +26,15 @@ describe("PendingEmailBanner", () => {
             ["Link sent to jan.nowy@example.com:", "not opened yet"],
             ["Link sent to jan@example.com:", "not opened yet"],
         ]);
-        expect(within(banner).getByRole("button", {name: "Resend links"})).toBeInTheDocument();
-        expect(within(banner).getByRole("button", {name: "Cancel change"})).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Resend links"})).toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Cancel change"})).toBeInTheDocument();
+    });
+
+    it("keeps the buttons out of the status, so screen readers don't read out Resend's countdown each second", () => {
+        renderWithProviders(<PendingEmailBanner user={changingEmailUser}/>);
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(within(screen.getByRole("status")).queryByRole("button")).not.toBeInTheDocument();
     });
 
     it.each([

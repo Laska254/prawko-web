@@ -309,7 +309,7 @@ describe("ProfilePage", () => {
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(screen.getByRole("status")).toHaveTextContent("Email change in progress");
-        expect(within(screen.getByRole("status")).getByRole("button", {name: "Resend in 60 s"})).toBeDisabled();
+        expect(screen.getByRole("button", {name: "Resend in 60 s"})).toBeDisabled();
         expect(fetchUser).not.toHaveBeenCalled();
         expect(queryClient.isFetching()).toBe(0);
     });
@@ -320,7 +320,7 @@ describe("ProfilePage", () => {
         const fetchUser = vi.spyOn(queryClient, "fetchQuery");
         mockRequest("patch", "/users/1", {body: user});
 
-        await userEvents.click(within(screen.getByRole("status")).getByRole("button", {name: "Cancel change"}));
+        await userEvents.click(screen.getByRole("button", {name: "Cancel change"}));
         await userEvents.click(screen.getByRole("button", {name: "Cancel change"}));
 
         await waitFor(() => expect(screen.queryByRole("status")).not.toBeInTheDocument());
