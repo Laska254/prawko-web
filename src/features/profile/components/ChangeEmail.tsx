@@ -13,7 +13,7 @@ import {updateUser} from "@/api/users.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {currentUserQuery} from "@/session/currentUserQuery.tsx";
-import {startEmailChangeCooldown} from "../emailChangeCooldown.tsx";
+import {isTooSoon, startEmailChangeCooldown} from "../emailChangeCooldown.tsx";
 import {PasswordConfirmDialog} from "./PasswordConfirmDialog.tsx";
 
 const FIELD_MESSAGES: FieldMessages<"email", ParseKeys<"profile">> = {
@@ -55,10 +55,14 @@ export function ChangeEmail({user}: ChangeEmailProps) {
                 setConfirming(false);
                 setOpen(false);
             },
-            // The email's error shows under its field, so the password's dialog gives way to the form.
+            // The email's error shows under its field, so the password's dialog gives way to the form. A `429` makes
+            // the banner's Resend wait too, as it would fail the same way.
             onError: error => {
                 if (error.kind === "validation") {
                     setConfirming(false);
+                }
+                if (isTooSoon(error)) {
+                    startEmailChangeCooldown(user.id);
                 }
             },
         },

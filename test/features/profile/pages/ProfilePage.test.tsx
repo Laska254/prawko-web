@@ -314,6 +314,23 @@ describe("ProfilePage", () => {
         expect(queryClient.isFetching()).toBe(0);
     });
 
+    it("makes Resend wait when a new email change comes within the minute", async () => {
+        const userEvents = userEvent.setup();
+        await renderProfile({...changingEmailUser, hasPassword: false});
+        mockRequest("patch", "/users/1", {status: 429, body: problem(429)});
+        expect(screen.getByRole("button", {name: "Resend links"})).toBeEnabled();
+
+        await userEvents.click(screen.getByRole("button", {name: "Change email"}));
+        await userEvents.type(screen.getByRole("textbox", {name: "New email"}), "jan.inny@example.com");
+        await userEvents.click(screen.getByRole("button", {name: "Send links"}));
+        expect(await screen.findByRole("alert"))
+            .toHaveTextContent("A link was sent less than a minute ago. Wait a moment and try again.");
+        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.getByRole("button", {name: "Resend in 60 s"})).toBeDisabled();
+    });
+
     it("shows the email change cancelled without fetching the user again", async () => {
         const userEvents = userEvent.setup();
         const queryClient = await renderProfile(changingEmailUser);
