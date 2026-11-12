@@ -21,13 +21,13 @@ function signIn(signedInUser: UserDto = changingEmailUser): void {
     mockRequest("get", "/users/me", {body: signedInUser});
 }
 
-// Opens the link signed in as `changingEmailUser`, with the server answering `status`, and waits for the session to
+// Opens the link signed in as `signedInUser`, with the server answering `status`, and waits for the session to
 // load before the answer. The user is `updated` when fetched again. Returns the query client.
-async function verifySignedIn(status: number, updated: UserDto) {
-    signIn();
+async function verifySignedIn(status: number, updated: UserDto, signedInUser: UserDto = changingEmailUser) {
+    signIn(signedInUser);
     const request = mockPendingPost("/auth/verify", status);
     const {queryClient} = renderAtRoute(<VerifyEmailPage/>, "/auth/verify?token=token");
-    await waitFor(() => expect(queryClient.getQueryData(currentUserQuery.queryKey)).toEqual(changingEmailUser));
+    await waitFor(() => expect(queryClient.getQueryData(currentUserQuery.queryKey)).toEqual(signedInUser));
 
     mockRequest("get", "/users/me", {body: updated});
     request.respond();
@@ -170,6 +170,18 @@ describe("VerifyEmailPage", () => {
         expect(screen.queryByTestId("location")).not.toBeInTheDocument();
     });
 
+    it("tells a signed-in user without a pending change neutrally that the link is verified", async () => {
+        const user = userEvent.setup();
+
+        await verifySignedIn(204, sampleUser, sampleUser);
+
+        expect(await screen.findByRole("heading", {name: "Email verified"})).toBeInTheDocument();
+        expect(screen.getByText("The email address of this link is confirmed.")).toBeInTheDocument();
+        expect(screen.queryByRole("heading", {name: "Email changed"})).not.toBeInTheDocument();
+        await user.click(screen.getByRole("link", {name: "Go to profile"}));
+        expect(currentLocation().pathname).toBe("/profile");
+    });
+
     it("waits for the session before showing the result", async () => {
         saveTokens(tokens);
         const session = mockPendingRequest("get", "/users/me", {body: sampleUser});
@@ -180,7 +192,7 @@ describe("VerifyEmailPage", () => {
         expect(screen.getByText("Verifying your email…")).toBeInTheDocument();
         session.respond();
 
-        expect(await screen.findByRole("heading", {name: "Email changed"})).toBeInTheDocument();
+        expect(await screen.findByRole("heading", {name: "Email verified"})).toBeInTheDocument();
     });
 
     it("shows a session error instead of going to sign in and the result on retry", async () => {
@@ -197,7 +209,7 @@ describe("VerifyEmailPage", () => {
         mockRequest("get", "/users/me", {body: sampleUser});
         await user.click(screen.getByRole("button", {name: "Try again"}));
 
-        expect(await screen.findByRole("heading", {name: "Email changed"})).toBeInTheDocument();
+        expect(await screen.findByRole("heading", {name: "Email verified"})).toBeInTheDocument();
         expect(requests).toHaveLength(1);
     });
 

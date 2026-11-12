@@ -4,6 +4,7 @@ import {useQueryClient} from "@tanstack/react-query";
 import {useTranslation} from "react-i18next";
 import {Link as RouterLink, useNavigate, useSearchParams} from "react-router";
 import {resendVerification, verifyEmail} from "@/api/auth.tsx";
+import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {type ApiError, errorMessage, toApiError} from "@/api/errors.tsx";
 import {PageError} from "@/components/feedback/PageError.tsx";
 import {currentUserQuery} from "@/session/currentUserQuery.tsx";
@@ -14,9 +15,10 @@ import {AuthCard} from "../components/AuthCard.tsx";
 import {isInvalidToken} from "../tokenErrors.tsx";
 import {authNoticeState} from "../authNotice.tsx";
 
-// What a link completed: `completed` an account verification or an email change, which the server answers alike;
-// `awaiting` an email change confirmed by this address, still waiting for the link sent to the other one.
-type VerifyResult = "completed" | "awaiting";
+// What a link completed, which the server answers alike for an account verification and an email change: `changed`
+// the email change the signed-in user was waiting for; `completed` any other link, or a change whose user wasn't
+// loaded before it; `awaiting` an email change confirmed by this address, still waiting for the link sent to the other.
+type VerifyResult = "changed" | "completed" | "awaiting";
 
 interface NextLinkProps {
     readonly isSignedIn: boolean;
@@ -27,9 +29,13 @@ interface ResultMessageProps {
     readonly text: string;
 }
 
-function resultOf(status: number): VerifyResult {
+// `user` is the signed-in user as loaded before the link's answer, if any.
+function resultOf(status: number, user: UserDto | undefined): VerifyResult {
     if (status === 202) {
         return "awaiting";
+    }
+    if (user?.pendingEmail) {
+        return "changed";
     }
     return "completed";
 }
@@ -71,7 +77,6 @@ export function VerifyEmailPage() {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const {t} = useTranslation(["auth", "errors", "common"]);
-    // An account that isn't verified yet can't sign in, so a signed-in user's link is an email change.
     const isSignedIn = session.status === "signedIn";
     const isSignInNext = result === "completed" && session.status === "signedOut";
 
@@ -80,9 +85,11 @@ export function VerifyEmailPage() {
         sentAttemptRef.current = attempt;
         verifyEmail({token})
             .then(async response => {
+                // Read before the refetch, which no longer shows the change as pending.
+                const user = queryClient.getQueryData(currentUserQuery.queryKey);
                 // A signed-in user's email or pending change is different now; a signed-out session has no user.
                 await queryClient.invalidateQueries({queryKey: currentUserQuery.queryKey, exact: true});
-                setResult(resultOf(response.status));
+                setResult(resultOf(response.status, user));
             })
             .catch(caught => setError(toApiError(caught)));
     }, [token, attempt, queryClient]);
@@ -167,11 +174,19 @@ export function VerifyEmailPage() {
                 </>
             );
         }
-        // Signed out, a completed link goes on to sign in.
-        if (result === "completed" && isSignedIn) {
+        if (result === "changed") {
             return (
                 <>
                     <ResultMessage title={t("verifyEmail.changedTitle")} text={t("verifyEmail.changedText")}/>
+                    <NextLink isSignedIn={isSignedIn}/>
+                </>
+            );
+        }
+        // Signed out, a completed link goes on to sign in. Signed in, it may be another account's link.
+        if (result === "completed" && isSignedIn) {
+            return (
+                <>
+                    <ResultMessage title={t("verifyEmail.verifiedTitle")} text={t("verifyEmail.verifiedText")}/>
                     <NextLink isSignedIn/>
                 </>
             );
