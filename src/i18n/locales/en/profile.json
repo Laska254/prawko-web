@@ -11,6 +11,19 @@
     "settings": "Settings",
     "signOut": "Sign out"
   },
+  "edit": {
+    "button": "Edit profile",
+    "title": "Edit profile",
+    "text": "Fill in only what you want to change.",
+    "save": "Save",
+    "passwordTitle": "Change your username?",
+    "passwordText": "You'll sign in with the new username from now on.",
+    "firstNameLength": "First name must be 3 to 31 characters.",
+    "lastNameLength": "Last name must be 3 to 31 characters.",
+    "userNameInvalid": "Username must be 3 to 31 characters, without @.",
+    "userNameTaken": "This username is taken.",
+    "changedMeanwhile": "Your account was changed at the same time. Please try again."
+  },
   "pendingEmail": {
     "title": "Email change in progress",
     "text": "Your email changes to <email/> once both links below are opened.",

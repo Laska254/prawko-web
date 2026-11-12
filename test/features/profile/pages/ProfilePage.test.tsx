@@ -279,6 +279,24 @@ describe("ProfilePage", () => {
         expect(queryClient.isFetching()).toBe(0);
     });
 
+    it("shows the account edited without fetching the user again", async () => {
+        const userEvents = userEvent.setup();
+        const queryClient = await renderProfile();
+        const fetchUser = vi.spyOn(queryClient, "fetchQuery");
+        mockRequest("patch", "/users/1", {body: {...user, lastName: "Nowak"}});
+
+        await userEvents.click(screen.getByRole("button", {name: "Edit profile"}));
+        const lastName = screen.getByRole("textbox", {name: "Last name"});
+        await userEvents.clear(lastName);
+        await userEvents.type(lastName, "Nowak");
+        await userEvents.click(screen.getByRole("button", {name: "Save"}));
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(accountFields()).toContainEqual(["Last name", "Nowak"]);
+        expect(fetchUser).not.toHaveBeenCalled();
+        expect(queryClient.isFetching()).toBe(0);
+    });
+
     it("opens the settings", async () => {
         const userEvents = userEvent.setup();
         await renderProfile();

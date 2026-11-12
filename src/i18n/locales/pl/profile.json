@@ -11,6 +11,19 @@
     "settings": "Ustawienia",
     "signOut": "Wyloguj się"
   },
+  "edit": {
+    "button": "Edytuj profil",
+    "title": "Edytuj profil",
+    "text": "Wypełnij tylko to, co chcesz zmienić.",
+    "save": "Zapisz",
+    "passwordTitle": "Zmienić nazwę użytkownika?",
+    "passwordText": "Od teraz będziesz logować się nową nazwą użytkownika.",
+    "firstNameLength": "Imię musi mieć od 3 do 31 znaków.",
+    "lastNameLength": "Nazwisko musi mieć od 3 do 31 znaków.",
+    "userNameInvalid": "Nazwa użytkownika musi mieć od 3 do 31 znaków i nie może zawierać @.",
+    "userNameTaken": "Ta nazwa użytkownika jest zajęta.",
+    "changedMeanwhile": "Twoje konto zmieniło się w tym samym czasie. Spróbuj ponownie."
+  },
   "pendingEmail": {
     "title": "Trwa zmiana adresu e-mail",
     "text": "Twój adres e-mail zmieni się na <email/>, gdy otworzysz oba poniższe linki.",
