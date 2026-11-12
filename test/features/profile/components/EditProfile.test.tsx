@@ -8,6 +8,9 @@ import {mockPendingRequest, mockRequest} from "@test/support/server.tsx";
 
 const PATH = "/users/1";
 
+// Signed up with a provider, so a new username needs no password.
+const userWithoutPassword: UserDto = {...user, hasPassword: false, providers: ["GOOGLE"]};
+
 // Opens the dialog of editing `editedUser`; returns the user events and the query client.
 async function openDialog(editedUser: UserDto = user) {
     const userEvents = userEvent.setup();
@@ -57,7 +60,7 @@ describe("EditProfile", () => {
         const {respond} = mockPendingRequest("patch", PATH, {body: user});
         const {userEvents} = await openDialog();
 
-        await retype(userEvents, "Username", "janek");
+        await retype(userEvents, "First name", "Janek");
         await save(userEvents);
 
         await waitFor(() => expect(screen.getByRole("button", {name: "Save"})).toBeDisabled());
@@ -107,7 +110,7 @@ describe("EditProfile", () => {
         [409, "userName", "Username", "This username is taken."],
     ])("shows a %i of %s under its field", async (status, field, label, message) => {
         mockRequest("patch", PATH, {status, body: problem(status, {[field]: "Server's message."})});
-        const {userEvents} = await openDialog();
+        const {userEvents} = await openDialog(userWithoutPassword);
 
         await retype(userEvents, label, "Nowy");
         await save(userEvents);
@@ -125,7 +128,7 @@ describe("EditProfile", () => {
         mockRequest("patch", PATH, {status, body: problem(status)});
         const {userEvents, queryClient} = await openDialog();
 
-        await retype(userEvents, "Username", "janek");
+        await retype(userEvents, "First name", "Janek");
         await save(userEvents);
 
         expect(await screen.findByRole("alert")).toHaveTextContent(message);
@@ -135,7 +138,7 @@ describe("EditProfile", () => {
 
     it("drops the last errors and typed values when opened again", async () => {
         mockRequest("patch", PATH, {status: 409, body: problem(409, {userName: "Taken."})});
-        const {userEvents} = await openDialog();
+        const {userEvents} = await openDialog(userWithoutPassword);
         await retype(userEvents, "Username", "taken");
         await save(userEvents);
         await waitFor(() => expect(screen.getByRole("textbox", {name: "Username"})).toBeInvalid());
@@ -157,5 +160,100 @@ describe("EditProfile", () => {
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(requests).toEqual([]);
+    });
+
+    describe("a new username", () => {
+        // Changes the username to `userName` and saves, which asks for the password.
+        async function changeUserName(userName = "janek") {
+            const opened = await openDialog();
+            await retype(opened.userEvents, "Username", userName);
+            await save(opened.userEvents);
+            return opened;
+        }
+
+        async function confirmPassword(userEvents: ReturnType<typeof userEvent.setup>, password = "secret1") {
+            await userEvents.type(screen.getByLabelText(/Current password/), password);
+            await userEvents.click(screen.getByRole("button", {name: "Save"}));
+        }
+
+        it("asks for the password and sends it with the changes", async () => {
+            const updated: UserDto = {...user, firstName: "Janek", userName: "janek"};
+            const requests = mockRequest("patch", PATH, {body: updated});
+            const {userEvents, queryClient} = await openDialog();
+            await retype(userEvents, "First name", "Janek");
+            await retype(userEvents, "Username", "janek");
+            await save(userEvents);
+
+            expect(screen.getByRole("dialog", {
+                name: "Change your username?",
+                description: "You'll sign in with the new username from now on. Enter your password to confirm.",
+            })).toBeInTheDocument();
+            expect(requests).toEqual([]);
+            await confirmPassword(userEvents);
+
+            await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+            expect(requests).toEqual([
+                {search: "", body: {firstName: "Janek", userName: "janek", currentPassword: "secret1"}},
+            ]);
+            expect(queryClient.getQueryData(["users", "me"])).toEqual(updated);
+        });
+
+        it("is sent without a password when the user has none", async () => {
+            const requests = mockRequest("patch", PATH, {body: {...userWithoutPassword, userName: "janek"}});
+            const {userEvents} = await openDialog(userWithoutPassword);
+
+            await retype(userEvents, "Username", "janek");
+            await save(userEvents);
+
+            await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+            expect(requests).toEqual([{search: "", body: {userName: "janek"}}]);
+        });
+
+        it.each([
+            [400, "The password is incorrect."],
+            [409, "Your account was changed at the same time. Please try again."],
+        ])("keeps asking for the password with the error of a %i without fields", async (status, message) => {
+            mockRequest("patch", PATH, {status, body: problem(status)});
+            const {userEvents} = await changeUserName();
+
+            await confirmPassword(userEvents, "wrong");
+
+            expect(await screen.findByRole("alert")).toHaveTextContent(message);
+            expect(screen.getByRole("dialog", {name: "Change your username?"})).toBeInTheDocument();
+            // Not repeated in the form behind.
+            expect(screen.getAllByRole("alert", {hidden: true})).toHaveLength(1);
+        });
+
+        it("goes back to the form with the values typed when the password is cancelled", async () => {
+            const requests = mockRequest("patch", PATH, {status: 400, body: problem(400)});
+            const {userEvents} = await changeUserName();
+            await confirmPassword(userEvents, "wrong");
+            await screen.findByRole("alert");
+
+            await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+
+            await waitFor(() => expect(screen.getByRole("dialog", {name: "Edit profile"})).toBeInTheDocument());
+            expect(screen.getByRole("textbox", {name: "Username"})).toHaveValue("janek");
+            expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+            await save(userEvents);
+            expect(screen.getByRole("dialog", {name: "Change your username?"})).toBeInTheDocument();
+            expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+            expect(requests).toHaveLength(1);
+        });
+
+        it.each([
+            [400, "Username must be 3 to 31 characters, without @."],
+            [409, "This username is taken."],
+        ])("goes back to the form with a %i of the username under its field", async (status, message) => {
+            mockRequest("patch", PATH, {status, body: problem(status, {userName: "Server's message."})});
+            const {userEvents} = await changeUserName("jan@");
+
+            await confirmPassword(userEvents);
+
+            await waitFor(() => expect(screen.getByRole("textbox", {name: "Username"}))
+                .toHaveAccessibleDescription(message));
+            expect(screen.getByRole("dialog", {name: "Edit profile"})).toBeInTheDocument();
+            expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        });
     });
 });

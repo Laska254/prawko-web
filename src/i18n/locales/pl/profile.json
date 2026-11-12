@@ -16,6 +16,8 @@
     "title": "Edytuj profil",
     "text": "Zmień imię, nazwisko i nazwę użytkownika.",
     "save": "Zapisz",
+    "passwordTitle": "Zmienić nazwę użytkownika?",
+    "passwordText": "Od teraz będziesz logować się nową nazwą użytkownika.",
     "firstNameLength": "Imię musi mieć od 3 do 31 znaków.",
     "lastNameLength": "Nazwisko musi mieć od 3 do 31 znaków.",
     "userNameInvalid": "Nazwa użytkownika musi mieć od 3 do 31 znaków i nie może zawierać @.",

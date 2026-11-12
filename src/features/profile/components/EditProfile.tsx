@@ -13,6 +13,7 @@ import {updateUser} from "@/api/users.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {currentUserQuery} from "@/session/currentUserQuery.tsx";
+import {PasswordConfirmDialog} from "./PasswordConfirmDialog.tsx";
 
 type EditableField = "firstName" | "lastName" | "userName";
 
@@ -22,8 +23,10 @@ const FIELD_MESSAGES: FieldMessages<EditableField, ParseKeys<"profile">> = {
     userName: {400: "edit.userNameInvalid", 409: "edit.userNameTaken"},
 };
 
-// A `409` without a field means the user was changed by another request at the same time.
+// A `400` without a field is the password, which the server reports like a wrong one when missing. A `409` without
+// one means the user was changed by another request at the same time.
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
+    400: "passwordConfirm.wrong",
     409: "edit.changedMeanwhile",
 };
 
@@ -49,10 +52,13 @@ interface EditProfileProps {
     readonly user: UserDto;
 }
 
-// Edits the names and username in a dialog, sending only the fields changed. The server answers with the updated
-// user, which replaces the session's.
+// Edits the names and username in a dialog, sending only the fields changed; a new username needs the password too,
+// asked in a second dialog when the user has one. The server answers with the updated user, which replaces the
+// session's.
 export function EditProfile({user}: EditProfileProps) {
     const [isOpen, setOpen] = useState(false);
+    // The changes waiting for the password, kept while its dialog is open.
+    const [unconfirmedChanges, setUnconfirmedChanges] = useState<UserUpdateDto | null>(null);
     const firstNameRef = useRef<HTMLInputElement>(null);
     const lastNameRef = useRef<HTMLInputElement>(null);
     const userNameRef = useRef<HTMLInputElement>(null);
@@ -65,7 +71,14 @@ export function EditProfile({user}: EditProfileProps) {
             statusMessages: STATUS_MESSAGES,
             onSuccess: updated => {
                 queryClient.setQueryData(currentUserQuery.queryKey, updated);
+                setUnconfirmedChanges(null);
                 setOpen(false);
+            },
+            // A field's error shows under the field, so the password's dialog gives way to the form.
+            onError: error => {
+                if (error.kind === "validation") {
+                    setUnconfirmedChanges(null);
+                }
             },
         },
     );
@@ -88,7 +101,18 @@ export function EditProfile({user}: EditProfileProps) {
             setOpen(false);
             return;
         }
+        if (changes.userName !== undefined && user.hasPassword) {
+            clear();
+            setUnconfirmedChanges(changes);
+            return;
+        }
         submit(changes);
+    }
+
+    // Back to the form, with the values typed kept and the password's error dropped.
+    function cancelPassword(): void {
+        clear();
+        setUnconfirmedChanges(null);
     }
 
     return (
@@ -97,7 +121,7 @@ export function EditProfile({user}: EditProfileProps) {
             <ConfirmDialog open={isOpen} title={t("edit.title")} text={t("edit.text")} confirmLabel={t("edit.save")}
                            loading={isSending} onConfirm={save} onCancel={() => setOpen(false)}>
                 <Stack spacing={2} mt={2}>
-                    {failure && <Alert severity="error">{t(failure.message)}</Alert>}
+                    {failure && !unconfirmedChanges && <Alert severity="error">{t(failure.message)}</Alert>}
                     {inputs.map(({field, label, inputRef}) => {
                         const error = fieldErrors[field];
                         return (
@@ -109,6 +133,11 @@ export function EditProfile({user}: EditProfileProps) {
                     })}
                 </Stack>
             </ConfirmDialog>
+            <PasswordConfirmDialog open={unconfirmedChanges !== null} title={t("edit.passwordTitle")}
+                                   text={t("edit.passwordText")} confirmLabel={t("edit.save")} hasPassword
+                                   loading={isSending} failure={failure && t(failure.message)}
+                                   onConfirm={currentPassword => submit({...unconfirmedChanges, currentPassword})}
+                                   onCancel={cancelPassword}/>
         </>
     );
 }
