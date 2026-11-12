@@ -1,10 +1,8 @@
 import {Alert, Stack} from "@mui/material";
-import {useQueryClient} from "@tanstack/react-query";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import type {GitHubSignInDto} from "@/api/dto/GitHubSignInDto.tsx";
 import type {ApiError, StatusMessages} from "@/api/errors.tsx";
-import {userKeys} from "@/api/queryKeys.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {linkGitHub} from "@/api/users.tsx";
 import {GitHubButton} from "@/components/github/GitHubButton.tsx";
@@ -42,19 +40,19 @@ interface LinkGitHubProps {
     readonly gitHubLink: GitHubSignInDto | undefined;
     // Called once the code is used up or the user cancelled, so the profile drops it.
     readonly onDone: () => void;
+    // Fetches the user again after a change; resolves once it's fetched, even if that failed.
+    readonly refetchUser: () => Promise<void>;
 }
 
 // Leaves for GitHub's consent page; back on the profile with its code, links the account after a confirmation. The
 // dialog closes once the user is fetched again with the account linked.
-export function LinkGitHub({clientId, name, hasPassword, gitHubLink, onDone}: LinkGitHubProps) {
-    const queryClient = useQueryClient();
+export function LinkGitHub({clientId, name, hasPassword, gitHubLink, onDone, refetchUser}: LinkGitHubProps) {
     const {t} = useTranslation(["profile", "errors"]);
     const {submit, isSending, failure} = useFormSubmission(linkGitHub, {
         statusMessages: STATUS_MESSAGES,
-        // Only the user, not the stats under its key. Awaited, so the dialog stays busy until the user is fetched
-        // again; closed even if that fetch fails.
+        // Awaited, so the dialog stays busy until the user is fetched again; closed even if that fetch fails.
         onSuccess: async () => {
-            await queryClient.invalidateQueries({queryKey: userKeys.me(), exact: true});
+            await refetchUser();
             onDone();
         },
         // The dialog closes on a `409` too, so the user is fetched again at once.
@@ -63,7 +61,7 @@ export function LinkGitHub({clientId, name, hasPassword, gitHubLink, onDone}: Li
                 onDone();
             }
             if (isUserChanged(error)) {
-                void queryClient.invalidateQueries({queryKey: userKeys.me(), exact: true});
+                void refetchUser();
             }
         },
     });

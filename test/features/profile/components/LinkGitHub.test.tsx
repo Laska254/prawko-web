@@ -9,8 +9,11 @@ import {mockNetworkError, mockRequest} from "@test/support/server.tsx";
 
 const PATH = "/users/me/identities/github";
 
+// Returns the mock fetching the user again.
 function renderLinkGitHub(returned?: GitHubSignInDto, hasPassword = true) {
-    return renderWithProviders(<LinkGitHubWithCode returned={returned} hasPassword={hasPassword}/>);
+    const refetchUser = vi.fn(() => Promise.resolve());
+    renderWithProviders(<LinkGitHubWithCode returned={returned} hasPassword={hasPassword} refetchUser={refetchUser}/>);
+    return {refetchUser};
 }
 
 describe("LinkGitHub", () => {
@@ -38,8 +41,7 @@ describe("LinkGitHub", () => {
     it("asks for the password with GitHub's code, and links with both", async () => {
         const requests = mockRequest("post", PATH, {status: 204});
         const userEvents = userEvent.setup();
-        const {queryClient} = renderLinkGitHub(gitHubSignInDto);
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {refetchUser} = renderLinkGitHub(gitHubSignInDto);
 
         expect(screen.getByRole("dialog", {
             name: "Link GitHub?",
@@ -49,7 +51,7 @@ describe("LinkGitHub", () => {
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(requests).toEqual([{search: "", body: {...gitHubSignInDto, currentPassword: "secret1"}}]);
-        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true});
+        expect(refetchUser).toHaveBeenCalledTimes(1);
     });
 
     it("links without a password when the user has none", async () => {
@@ -105,23 +107,21 @@ describe("LinkGitHub", () => {
     // A GitHub account may have been linked to the user elsewhere since loading.
     it("fetches the user again after a 409", async () => {
         mockRequest("post", PATH, {status: 409, body: problem(409)});
-        const {queryClient} = renderLinkGitHub(gitHubSignInDto);
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {refetchUser} = renderLinkGitHub(gitHubSignInDto);
 
         await userEvent.setup().type(screen.getByLabelText(/Current password/), "secret1{Enter}");
 
-        await waitFor(() => expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true}));
+        await waitFor(() => expect(refetchUser).toHaveBeenCalledTimes(1));
     });
 
     it("doesn't fetch the user again after another failure", async () => {
         mockRequest("post", PATH, {status: 403, body: problem(403)});
-        const {queryClient} = renderLinkGitHub(gitHubSignInDto);
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {refetchUser} = renderLinkGitHub(gitHubSignInDto);
 
         await userEvent.setup().type(screen.getByLabelText(/Current password/), "secret1{Enter}");
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-        expect(invalidate).not.toHaveBeenCalled();
+        expect(refetchUser).not.toHaveBeenCalled();
     });
 
     // The request may have reached the server, so the code may be used up too.

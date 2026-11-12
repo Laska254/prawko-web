@@ -7,19 +7,21 @@ import {mockRequest} from "@test/support/server.tsx";
 
 const PATH = "/users/me/identities/google";
 
-// Opens the dialog of unlinking Google; returns the user events and the query client.
+// Opens the dialog of unlinking Google; returns the user events and the mock fetching the user again.
 async function openDialog(hasPassword = true) {
     const userEvents = userEvent.setup();
-    const {queryClient} = renderWithProviders(<UnlinkProvider provider="GOOGLE" name="Google" hasPassword={hasPassword}/>);
+    const refetchUser = vi.fn(() => Promise.resolve());
+    renderWithProviders(
+        <UnlinkProvider provider="GOOGLE" name="Google" hasPassword={hasPassword} refetchUser={refetchUser}/>
+    );
     await userEvents.click(screen.getByRole("button", {name: "Unlink Google"}));
-    return {userEvents, queryClient};
+    return {userEvents, refetchUser};
 }
 
 describe("UnlinkProvider", () => {
     it("asks for the password and unlinks with it", async () => {
         const requests = mockRequest("delete", PATH, {status: 204});
-        const {userEvents, queryClient} = await openDialog();
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {userEvents, refetchUser} = await openDialog();
 
         const dialog = screen.getByRole("dialog", {
             name: "Unlink Google?",
@@ -29,7 +31,7 @@ describe("UnlinkProvider", () => {
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(requests).toEqual([{search: "", body: {currentPassword: "secret1"}}]);
-        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true});
+        expect(refetchUser).toHaveBeenCalledTimes(1);
     });
 
     it("unlinks without a password when the user has none", async () => {
@@ -75,40 +77,37 @@ describe("UnlinkProvider", () => {
 
     it("unlinks nothing when cancelled", async () => {
         const requests = mockRequest("delete", PATH, {status: 204});
-        const {userEvents, queryClient} = await openDialog();
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {userEvents, refetchUser} = await openDialog();
 
         await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(requests).toEqual([]);
-        expect(invalidate).not.toHaveBeenCalled();
+        expect(refetchUser).not.toHaveBeenCalled();
     });
 
     // The user changed elsewhere since loading.
     it.each([404, 409])("fetches the user again once the dialog of a %i is closed", async status => {
         mockRequest("delete", PATH, {status, body: problem(status)});
-        const {userEvents, queryClient} = await openDialog();
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {userEvents, refetchUser} = await openDialog();
         await userEvents.type(screen.getByLabelText(/Current password/), "secret1{Enter}");
         await screen.findByRole("alert");
-        expect(invalidate).not.toHaveBeenCalled();
+        expect(refetchUser).not.toHaveBeenCalled();
 
         await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
 
-        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true});
+        expect(refetchUser).toHaveBeenCalledTimes(1);
     });
 
     it("doesn't fetch the user again once the dialog of a wrong password is closed", async () => {
         mockRequest("delete", PATH, {status: 400, body: problem(400)});
-        const {userEvents, queryClient} = await openDialog();
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {userEvents, refetchUser} = await openDialog();
         await userEvents.type(screen.getByLabelText(/Current password/), "wrong{Enter}");
         await screen.findByRole("alert");
 
         await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-        expect(invalidate).not.toHaveBeenCalled();
+        expect(refetchUser).not.toHaveBeenCalled();
     });
 });

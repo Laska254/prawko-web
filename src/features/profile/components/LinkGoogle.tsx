@@ -1,10 +1,8 @@
 import {useState} from "react";
 import {Box} from "@mui/material";
-import {useQueryClient} from "@tanstack/react-query";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import type {ApiError, StatusMessages} from "@/api/errors.tsx";
-import {userKeys} from "@/api/queryKeys.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {linkGoogle} from "@/api/users.tsx";
 import {GoogleButton} from "@/components/google/GoogleButton.tsx";
@@ -29,22 +27,22 @@ interface LinkGoogleProps {
     readonly name: string;
     // Asks for the password only when the user has one.
     readonly hasPassword: boolean;
+    // Fetches the user again after a change; resolves once it's fetched, even if that failed.
+    readonly refetchUser: () => Promise<void>;
 }
 
 // Links the Google account picked with Google's button, after a confirmation. Left out when Google's script can't be
 // loaded; the dialog closes once the user is fetched again with the account linked.
-export function LinkGoogle({clientId, name, hasPassword}: LinkGoogleProps) {
+export function LinkGoogle({clientId, name, hasPassword, refetchUser}: LinkGoogleProps) {
     // The ID token of the account picked, kept while the dialog is open; Google's tokens last an hour.
     const [idToken, setIdToken] = useState<string | null>(null);
     const [isUnavailable, setUnavailable] = useState(false);
-    const queryClient = useQueryClient();
     const {t} = useTranslation(["profile", "errors"]);
     const {submit, isSending, failure, clear} = useFormSubmission(linkGoogle, {
         statusMessages: STATUS_MESSAGES,
-        // Only the user, not the stats under its key. Awaited, so the dialog stays busy until the user is fetched
-        // again; closed even if that fetch fails.
+        // Awaited, so the dialog stays busy until the user is fetched again; closed even if that fetch fails.
         onSuccess: async () => {
-            await queryClient.invalidateQueries({queryKey: userKeys.me(), exact: true});
+            await refetchUser();
             setIdToken(null);
         },
     });
@@ -64,7 +62,7 @@ export function LinkGoogle({clientId, name, hasPassword}: LinkGoogleProps) {
     function close(): void {
         setIdToken(null);
         if (failure && isUserChanged(failure.error)) {
-            void queryClient.invalidateQueries({queryKey: userKeys.me(), exact: true});
+            void refetchUser();
         }
     }
 

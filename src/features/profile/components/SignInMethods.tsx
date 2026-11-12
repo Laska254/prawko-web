@@ -1,6 +1,7 @@
 import {type ReactNode, useEffect, useRef} from "react";
 import {Box, Stack, Typography} from "@mui/material";
 import {CheckCircle, GitHub, Google, Password, RadioButtonUnchecked} from "@mui/icons-material";
+import {useQueryClient} from "@tanstack/react-query";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import type {GitHubSignInDto} from "@/api/dto/GitHubSignInDto.tsx";
@@ -8,6 +9,7 @@ import type {IdentityProvider} from "@/api/dto/IdentityProvider.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {isGitHubAuthorizationSupported} from "@/components/github/gitHubAuthorization.tsx";
 import {Panel} from "@/components/layout/Panel.tsx";
+import {currentUserQuery} from "@/session/currentUserQuery.tsx";
 import {LinkGitHub} from "./LinkGitHub.tsx";
 import {LinkGoogle} from "./LinkGoogle.tsx";
 import {UnlinkProvider} from "./UnlinkProvider.tsx";
@@ -69,22 +71,27 @@ interface ProviderActionProps {
     readonly isUnlinkBlocked: boolean;
     readonly gitHubLink: GitHubSignInDto | undefined;
     readonly onGitHubLinkDone: () => void;
+    readonly refetchUser: () => Promise<void>;
 }
 
 // The only way to sign in can't be unlinked; its status says why. A provider is linked only with its client ID, and
 // GitHub only where the browser can start its authorization.
-function ProviderAction({user, provider, name, isUnlinkBlocked, gitHubLink, onGitHubLinkDone}: ProviderActionProps) {
+function ProviderAction({user, provider, name, isUnlinkBlocked, gitHubLink, onGitHubLinkDone,
+                            refetchUser}: ProviderActionProps) {
     const googleClientId: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const gitHubClientId: string | undefined = import.meta.env.VITE_GITHUB_CLIENT_ID;
 
     if (!user.providers.includes(provider)) {
         if (provider === "GOOGLE" && googleClientId) {
-            return <LinkGoogle clientId={googleClientId} name={name} hasPassword={user.hasPassword}/>;
+            return (
+                <LinkGoogle clientId={googleClientId} name={name} hasPassword={user.hasPassword}
+                            refetchUser={refetchUser}/>
+            );
         }
         if (provider === "GITHUB" && gitHubClientId && isGitHubAuthorizationSupported()) {
             return (
                 <LinkGitHub clientId={gitHubClientId} name={name} hasPassword={user.hasPassword} gitHubLink={gitHubLink}
-                            onDone={onGitHubLinkDone}/>
+                            onDone={onGitHubLinkDone} refetchUser={refetchUser}/>
             );
         }
         return null;
@@ -92,15 +99,18 @@ function ProviderAction({user, provider, name, isUnlinkBlocked, gitHubLink, onGi
     if (isUnlinkBlocked) {
         return null;
     }
-    return <UnlinkProvider provider={provider} name={name} hasPassword={user.hasPassword}/>;
+    return <UnlinkProvider provider={provider} name={name} hasPassword={user.hasPassword} refetchUser={refetchUser}/>;
 }
 
 // The ways the user can sign in: their password and each provider account linked to them.
 export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethodsProps) {
     const {t} = useTranslation("profile");
+    const queryClient = useQueryClient();
     const headingRef = useRef<HTMLHeadingElement>(null);
     const providers = user.providers.join();
     const shownProviders = useRef(providers);
+    // Set when a row's action fetched the user again with other providers, so the swap that comes moves the focus.
+    const isSwappedHere = useRef(false);
     const methodCount = user.providers.length + Number(user.hasPassword);
     const methods: readonly SignInMethod[] = [
         {
@@ -129,16 +139,26 @@ export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethod
         },
     ];
 
-    // Linking or unlinking swaps the row's action, so its dialog is unmounted along with the button focus would go
-    // back to. The focus that fell to the page goes to the heading instead; focus kept elsewhere stays.
+    // Only the user, not the stats under its key. TanStack Query hands the fetched user to the page only after a
+    // `setTimeout`, so once this resolves the cache holds it while the providers shown are still the old ones.
+    async function refetchUser(): Promise<void> {
+        await queryClient.invalidateQueries({queryKey: currentUserQuery.queryKey, exact: true});
+        const fetched = queryClient.getQueryData(currentUserQuery.queryKey)!;
+        isSwappedHere.current = fetched.providers.join() !== shownProviders.current;
+    }
+
+    // Linking or unlinking here swaps the row's action, so its dialog is unmounted along with the button focus would go
+    // back to. The focus that fell to the page goes to the heading instead; focus kept elsewhere stays, and a change
+    // made in another tab or window leaves it alone.
     useEffect(() => {
         if (shownProviders.current === providers) {
             return;
         }
         shownProviders.current = providers;
-        if (document.activeElement === document.body) {
+        if (isSwappedHere.current && document.activeElement === document.body) {
             headingRef.current?.focus();
         }
+        isSwappedHere.current = false;
     }, [providers]);
 
     return (
@@ -161,7 +181,7 @@ export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethod
                                 <Box ml="auto">
                                     <ProviderAction user={user} provider={method.provider} name={t(method.name)}
                                                     isUnlinkBlocked={isUnlinkBlocked} gitHubLink={gitHubLink}
-                                                    onGitHubLinkDone={onGitHubLinkDone}/>
+                                                    onGitHubLinkDone={onGitHubLinkDone} refetchUser={refetchUser}/>
                                 </Box>
                             )}
                         </Stack>

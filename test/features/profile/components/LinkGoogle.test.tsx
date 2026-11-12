@@ -9,21 +9,24 @@ import {mockPendingRequest, mockRequest} from "@test/support/server.tsx";
 const PATH = "/users/me/identities/google";
 const ID_TOKEN = "google-id-token";
 
-// Renders the button and picks a Google account with it; returns the user events and the query client.
+// Renders the button and picks a Google account with it; returns the user events, the mock fetching the user again
+// and a way to pick another account.
 async function pickAccount(hasPassword = true) {
     const userEvents = userEvent.setup();
-    const {queryClient} = renderWithProviders(<LinkGoogle clientId="client-id" name="Google" hasPassword={hasPassword}/>);
+    const refetchUser = vi.fn(() => Promise.resolve());
+    renderWithProviders(
+        <LinkGoogle clientId="client-id" name="Google" hasPassword={hasPassword} refetchUser={refetchUser}/>
+    );
     const {sendCredential} = loadGoogleScript();
     await screen.findByRole("button", {name: "Continue with Google"});
     await sendCredential(ID_TOKEN);
-    return {userEvents, queryClient, sendCredential};
+    return {userEvents, refetchUser, sendCredential};
 }
 
 describe("LinkGoogle", () => {
     it("asks for the password once an account is picked, and links it with both", async () => {
         const requests = mockRequest("post", PATH, {status: 204});
-        const {userEvents, queryClient} = await pickAccount();
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {userEvents, refetchUser} = await pickAccount();
 
         expect(screen.getByRole("dialog", {
             name: "Link Google?",
@@ -33,7 +36,7 @@ describe("LinkGoogle", () => {
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(requests).toEqual([{search: "", body: {idToken: ID_TOKEN, currentPassword: "secret1"}}]);
-        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true});
+        expect(refetchUser).toHaveBeenCalledTimes(1);
     });
 
     it("links without a password when the user has none", async () => {
@@ -100,28 +103,26 @@ describe("LinkGoogle", () => {
     // A Google account may have been linked to the user elsewhere since loading.
     it("fetches the user again once the dialog of a 409 is closed", async () => {
         mockRequest("post", PATH, {status: 409, body: problem(409)});
-        const {userEvents, queryClient} = await pickAccount();
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {userEvents, refetchUser} = await pickAccount();
         await userEvents.type(screen.getByLabelText(/Current password/), "secret1{Enter}");
         await screen.findByRole("alert");
-        expect(invalidate).not.toHaveBeenCalled();
+        expect(refetchUser).not.toHaveBeenCalled();
 
         await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
 
-        expect(invalidate).toHaveBeenCalledWith({queryKey: ["users", "me"], exact: true});
+        expect(refetchUser).toHaveBeenCalledTimes(1);
     });
 
     it("doesn't fetch the user again once the dialog of a wrong password is closed", async () => {
         mockRequest("post", PATH, {status: 400, body: problem(400)});
-        const {userEvents, queryClient} = await pickAccount();
-        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+        const {userEvents, refetchUser} = await pickAccount();
         await userEvents.type(screen.getByLabelText(/Current password/), "wrong{Enter}");
         await screen.findByRole("alert");
 
         await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-        expect(invalidate).not.toHaveBeenCalled();
+        expect(refetchUser).not.toHaveBeenCalled();
     });
 
     it("drops the last error when another account is picked", async () => {
@@ -139,7 +140,9 @@ describe("LinkGoogle", () => {
     });
 
     it("leaves the button out when Google's script can't be loaded", async () => {
-        const {container} = renderWithProviders(<LinkGoogle clientId="client-id" name="Google" hasPassword/>);
+        const {container} = renderWithProviders(
+            <LinkGoogle clientId="client-id" name="Google" hasPassword refetchUser={vi.fn()}/>
+        );
 
         failGoogleScript();
 

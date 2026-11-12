@@ -75,7 +75,8 @@ describe("ProfilePage", () => {
 
     it("shows a provider unlinked once the user is fetched again", async () => {
         const userEvents = userEvent.setup();
-        await renderProfile({...user, providers: ["GOOGLE"]});
+        const queryClient = await renderProfile({...user, providers: ["GOOGLE"]});
+        const invalidate = vi.spyOn(queryClient, "invalidateQueries");
         mockRequest("delete", "/users/me/identities/google", {status: 204});
         mockRequest("get", "/users/me", {body: user});
 
@@ -85,6 +86,8 @@ describe("ProfilePage", () => {
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(screen.queryByText("linked")).not.toBeInTheDocument();
         expect(screen.queryByRole("button", {name: "Unlink Google"})).not.toBeInTheDocument();
+        // Only the user, not the stats under its key.
+        expect(invalidate.mock.calls).toEqual([[{queryKey: ["users", "me"], exact: true}]]);
     });
 
     it("shows a provider unlinked elsewhere once the dialog telling so is closed", async () => {
@@ -100,6 +103,7 @@ describe("ProfilePage", () => {
 
         await waitFor(() => expect(screen.queryByRole("button", {name: "Unlink Google"})).not.toBeInTheDocument());
         expect(screen.queryByText("linked")).not.toBeInTheDocument();
+        expect(screen.getByRole("heading", {name: "Sign-in methods"})).toHaveFocus();
     });
 
     // The dialog goes with the Unlink button, as the row offers Google's button instead.
@@ -125,6 +129,34 @@ describe("ProfilePage", () => {
 
         await waitFor(() => expect(screen.queryByRole("button", {name: "Unlink Google"})).not.toBeInTheDocument());
         expect(settings).toHaveFocus();
+    });
+
+    it("leaves the focus on the page when the providers change in another tab or window", async () => {
+        await renderProfile({...user, providers: ["GOOGLE"]});
+
+        mockRequest("get", "/users/me", {body: user});
+        act(() => window.dispatchEvent(new Event("focus")));
+
+        await waitFor(() => expect(screen.queryByRole("button", {name: "Unlink Google"})).not.toBeInTheDocument());
+        expect(document.body).toHaveFocus();
+    });
+
+    // Fetched again after a 409, the user is the same, as the GitHub account is another user's.
+    it("leaves the focus on the page when a change here changed nothing and one elsewhere did", async () => {
+        vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
+        const userEvents = userEvent.setup();
+        await renderProfile(user, {gitHubLink: gitHubSignInDto});
+        mockRequest("post", "/users/me/identities/github", {status: 409, body: problem(409)});
+        const refetches = mockRequest("get", "/users/me", {body: user});
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret{Enter}");
+        await waitFor(() => expect(refetches).toHaveLength(1));
+        await waitFor(() => expect(document.body).toHaveFocus());
+
+        mockRequest("get", "/users/me", {body: {...user, providers: ["GOOGLE"]}});
+        act(() => window.dispatchEvent(new Event("focus")));
+
+        await waitFor(() => expect(screen.getByRole("button", {name: "Unlink Google"})).toBeInTheDocument());
+        expect(document.body).toHaveFocus();
     });
 
     it("tells when linking GitHub failed on the way back from GitHub", async () => {
