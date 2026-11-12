@@ -79,6 +79,30 @@ describe("ExamStats", () => {
         expect(requests).toHaveLength(1);
     });
 
+    it("reads 100% only when every exam passed and 0% only when none did", async () => {
+        mockRequest("get", "/users/me/stats", {
+            body: {
+                ...stats,
+                examsTaken: 404,
+                examsPassed: 203,
+                categories: [
+                    {category: "A", examsTaken: 200, examsPassed: 199, averageScore: 70, bestScore: 74},
+                    {category: "B", examsTaken: 201, examsPassed: 1, averageScore: 40, bestScore: 68},
+                    {category: "C", examsTaken: 3, examsPassed: 3, averageScore: 70, bestScore: 72},
+                ],
+            },
+        });
+        renderStats();
+
+        await screen.findByRole("list", {name: "By category"});
+
+        expect(categoryCards().map(card => card.meters[0])).toEqual([
+            ["Pass rate", "199", "200", "99%"],
+            ["Pass rate", "1", "201", "1%"],
+            ["Pass rate", "3", "3", "100%"],
+        ]);
+    });
+
     it("shows the loading while the stats are fetched", async () => {
         const {respond} = mockPendingRequest("get", "/users/me/stats", {body: stats});
         renderStats();

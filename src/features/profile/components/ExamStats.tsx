@@ -56,13 +56,22 @@ function chartColors(theme: Theme) {
     };
 }
 
-// Scores as the server averages them, to one decimal place; pass rates as whole percentages.
+// Scores as the server averages them, to one decimal place; pass rates as whole percentages. Rounding alone would
+// show 199 of 200 passed as 100%, so a rate reads 0% only when no exam passed and 100% only when every one did.
 function useStatsFormat() {
     const {number} = useFormat();
 
+    function passRate(passed: number, taken: number): string {
+        let rate = passed / taken;
+        if (passed > 0 && passed < taken) {
+            rate = Math.min(Math.max(rate, 0.01), 0.99);
+        }
+        return number(rate, {style: "percent"});
+    }
+
     return {
         score: (score: number) => number(score, {maximumFractionDigits: 1}),
-        passRate: (passed: number, taken: number) => number(passed / taken, {style: "percent"}),
+        passRate,
     };
 }
 
