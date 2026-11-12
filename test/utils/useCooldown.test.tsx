@@ -1,5 +1,5 @@
 import {act, renderHook} from "@testing-library/react";
-import {startCooldown, useCooldown} from "@/features/auth/hooks/useCooldown.tsx";
+import {startCooldown, useCooldown} from "@/utils/useCooldown.tsx";
 
 describe("useCooldown", () => {
     beforeEach(() => {

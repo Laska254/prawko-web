@@ -1,4 +1,4 @@
-import {startCooldown} from "./hooks/useCooldown.tsx";
+import {startCooldown} from "@/utils/useCooldown.tsx";
 
 // The server sends a new link at most once a minute; earlier requests are skipped without an error.
 export const COOLDOWN_MS = 60_000;

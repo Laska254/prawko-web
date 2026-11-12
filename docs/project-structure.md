@@ -10,7 +10,7 @@ src/
   i18n/         translations setup, locales/<language>/<namespace>.json
   components/   shared UI with no feature or server knowledge, grouped by role (form/, feedback/, layout/,
                 google/ and github/ for the providers' buttons)
-  utils/        generic helpers (planned)
+  utils/        generic helpers with no feature or server knowledge
   features/
     <feature>/  auth, home, exam, profile, admin
       pages/        one component per route
