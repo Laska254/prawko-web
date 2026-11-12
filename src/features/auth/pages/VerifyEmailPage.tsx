@@ -20,10 +20,6 @@ import {authNoticeState} from "../authNotice.tsx";
 // loaded before it; `awaiting` an email change confirmed by this address, still waiting for the link sent to the other.
 type VerifyResult = "changed" | "completed" | "awaiting";
 
-interface NextLinkProps {
-    readonly isSignedIn: boolean;
-}
-
 interface ResultMessageProps {
     readonly title: string;
     readonly text: string;
@@ -47,10 +43,11 @@ function isEmailTaken(error: ApiError): boolean {
 }
 
 // Signed-in users go to the profile, where an email change is followed; `/auth` would send them home.
-function NextLink({isSignedIn}: NextLinkProps) {
+function NextLink() {
+    const session = useSession();
     const {t} = useTranslation("auth");
 
-    if (isSignedIn) {
+    if (session.status === "signedIn") {
         return <Link component={RouterLink} to="/profile" underline="hover">{t("verifyEmail.toProfile")}</Link>;
     }
     return <Link component={RouterLink} to="/auth" underline="hover">{t("backToSignIn")}</Link>;
@@ -112,7 +109,7 @@ export function VerifyEmailPage() {
             return (
                 <>
                     <ResultMessage title={t("verifyEmail.failedTitle")} text={t("verifyEmail.failedSignedIn")}/>
-                    <NextLink isSignedIn/>
+                    <NextLink/>
                 </>
             );
         }
@@ -133,7 +130,7 @@ export function VerifyEmailPage() {
                     send={email => resendVerification({email})}
                     cooldownKey="verification"
                 />
-                <NextLink isSignedIn={false}/>
+                <NextLink/>
             </>
         );
     }
@@ -154,7 +151,7 @@ export function VerifyEmailPage() {
             return (
                 <>
                     <ResultMessage title={t("verifyEmail.emailTakenTitle")} text={t("verifyEmail.emailTakenText")}/>
-                    <NextLink isSignedIn={isSignedIn}/>
+                    <NextLink/>
                 </>
             );
         }
@@ -162,7 +159,7 @@ export function VerifyEmailPage() {
             return (
                 <>
                     <PageError message={t(errorMessage(error, {409: "verifyEmail.conflict"}))} onRetry={retry}/>
-                    <NextLink isSignedIn={isSignedIn}/>
+                    <NextLink/>
                 </>
             );
         }
@@ -170,7 +167,7 @@ export function VerifyEmailPage() {
             return (
                 <>
                     <ResultMessage title={t("verifyEmail.awaitingTitle")} text={t("verifyEmail.awaitingText")}/>
-                    <NextLink isSignedIn={isSignedIn}/>
+                    <NextLink/>
                 </>
             );
         }
@@ -178,7 +175,7 @@ export function VerifyEmailPage() {
             return (
                 <>
                     <ResultMessage title={t("verifyEmail.changedTitle")} text={t("verifyEmail.changedText")}/>
-                    <NextLink isSignedIn={isSignedIn}/>
+                    <NextLink/>
                 </>
             );
         }
@@ -187,7 +184,7 @@ export function VerifyEmailPage() {
             return (
                 <>
                     <ResultMessage title={t("verifyEmail.verifiedTitle")} text={t("verifyEmail.verifiedText")}/>
-                    <NextLink isSignedIn/>
+                    <NextLink/>
                 </>
             );
         }
