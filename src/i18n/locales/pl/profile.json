@@ -44,8 +44,8 @@
     "title": "Odłączyć {{provider}}?",
     "text": "Nie będzie już można logować się tym kontem {{provider}}.",
     "confirm": "Odłącz",
-    "notLinked": "Konto {{provider}} nie jest już połączone z Twoim kontem.",
-    "lastMethod": "{{provider}} to Twój jedyny sposób logowania, więc nie można go odłączyć."
+    "notLinked": "Konto {{provider}} nie jest już połączone z twoim kontem.",
+    "lastMethod": "{{provider}} to twój jedyny sposób logowania, więc nie można go odłączyć."
   },
   "passwordConfirm": {
     "label": "Obecne hasło",
@@ -63,7 +63,7 @@
     "categoryCounts": "Ukończone: {{taken}} · zdane: {{passed}}",
     "best": "najlepszy {{score}}",
     "passMark": "Próg zaliczenia: {{passMark}} z {{max}} punktów",
-    "empty": "Nie masz jeszcze ukończonych egzaminów. Tutaj pojawią się Twoje wyniki.",
+    "empty": "Nie masz jeszcze ukończonych egzaminów. Tutaj pojawią się twoje wyniki.",
     "startExam": "Rozpocznij egzamin"
   },
   "settings": {
