@@ -5,7 +5,7 @@ import {errorMessage, type GenericMessageKey, toApiError} from "@/api/errors.tsx
 import {EMAIL_LENGTH} from "@/api/fieldRules.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
-import {useCooldown} from "../hooks/useCooldown.tsx";
+import {useCooldown} from "@/utils/useCooldown.tsx";
 import {COOLDOWN_MS, emailLinkCooldownKey} from "../emailLinkCooldown.tsx";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";

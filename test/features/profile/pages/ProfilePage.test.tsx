@@ -7,7 +7,15 @@ import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import type {ProfilePageState} from "@/features/profile/gitHubLink.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
-import {changingEmailUser, gitHubSignInDto, problem, tokens, user} from "@test/support/data.tsx";
+import {
+    changingEmailUser,
+    changingEmailUserWithoutPassword,
+    gitHubSignInDto,
+    problem,
+    tokens,
+    user,
+    userWithoutPassword,
+} from "@test/support/data.tsx";
 import {holdRefreshLock} from "@test/support/refreshLock.tsx";
 import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
 import {mockPost, mockRequest} from "@test/support/server.tsx";
@@ -294,6 +302,55 @@ describe("ProfilePage", () => {
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         expect(accountFields()).toContainEqual(["Last name", "Nowak"]);
         expect(fetchUser).not.toHaveBeenCalled();
+        expect(queryClient.isFetching()).toBe(0);
+    });
+
+    it("shows the email change started without fetching the user again", async () => {
+        const userEvents = userEvent.setup();
+        const queryClient = await renderProfile(userWithoutPassword);
+        const fetchUser = vi.spyOn(queryClient, "fetchQuery");
+        mockRequest("patch", "/users/1", {body: changingEmailUserWithoutPassword});
+
+        await userEvents.click(screen.getByRole("button", {name: "Change email"}));
+        await userEvents.type(screen.getByRole("textbox", {name: "New email"}), "jan.nowy@example.com");
+        await userEvents.click(screen.getByRole("button", {name: "Send links"}));
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.getByRole("status")).toHaveTextContent("Email change in progress");
+        expect(screen.getByRole("button", {name: "Resend in 60 s"})).toBeDisabled();
+        expect(fetchUser).not.toHaveBeenCalled();
+        expect(queryClient.isFetching()).toBe(0);
+    });
+
+    it("makes Resend wait when a new email change comes within the minute", async () => {
+        const userEvents = userEvent.setup();
+        await renderProfile(changingEmailUserWithoutPassword);
+        mockRequest("patch", "/users/1", {status: 429, body: problem(429)});
+        expect(screen.getByRole("button", {name: "Resend links"})).toBeEnabled();
+
+        await userEvents.click(screen.getByRole("button", {name: "Change email"}));
+        await userEvents.type(screen.getByRole("textbox", {name: "New email"}), "jan.inny@example.com");
+        await userEvents.click(screen.getByRole("button", {name: "Send links"}));
+        expect(await screen.findByRole("alert"))
+            .toHaveTextContent("A link was sent less than a minute ago. Wait a moment and try again.");
+        await userEvents.click(screen.getByRole("button", {name: "Cancel"}));
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.getByRole("button", {name: "Resend in 60 s"})).toBeDisabled();
+    });
+
+    it("shows the email change cancelled with the user fetched only before cancelling", async () => {
+        const userEvents = userEvent.setup();
+        const queryClient = await renderProfile(changingEmailUser);
+        const fetches = mockRequest("get", "/users/me", {body: changingEmailUser});
+        mockRequest("patch", "/users/1", {body: user});
+
+        await userEvents.click(screen.getByRole("button", {name: "Cancel change"}));
+        await userEvents.click(screen.getByRole("button", {name: "Cancel change"}));
+
+        await waitFor(() => expect(screen.queryByRole("status")).not.toBeInTheDocument());
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(fetches).toHaveLength(1);
         expect(queryClient.isFetching()).toBe(0);
     });
 

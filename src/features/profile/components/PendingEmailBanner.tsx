@@ -1,7 +1,9 @@
-import {Alert, AlertTitle, Stack, Typography} from "@mui/material";
+import {Alert, AlertTitle, Box, Stack, Typography} from "@mui/material";
 import {CheckCircle, RadioButtonUnchecked} from "@mui/icons-material";
 import {Trans, useTranslation} from "react-i18next";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
+import {CancelEmailChange} from "./CancelEmailChange.tsx";
+import {ResendEmailChange} from "./ResendEmailChange.tsx";
 
 interface PendingEmailBannerProps {
     readonly user: UserDto;
@@ -49,7 +51,9 @@ function EmailLink({email, isOpened}: EmailLinkProps) {
 }
 
 // An email change in progress: it completes once the links sent to the new and the current address are both opened.
-// A standing status rather than an error, so `role="status"` keeps screen readers from interrupting on each visit.
+// A standing status rather than an error, so `role="status"` keeps screen readers from interrupting on each visit. It
+// holds the title, text and links only: the Alert's own `role="alert"` is dropped, and the buttons stay outside, as
+// screen readers would read out Resend's countdown each second inside it.
 export function PendingEmailBanner({user}: PendingEmailBannerProps) {
     const {t} = useTranslation("profile");
 
@@ -57,16 +61,22 @@ export function PendingEmailBanner({user}: PendingEmailBannerProps) {
         return null;
     }
     return (
-        <Alert severity="info" role="status">
-            <AlertTitle>{t("pendingEmail.title")}</AlertTitle>
-            <Stack spacing={1}>
-                <Typography variant="body2" sx={{overflowWrap: "anywhere"}}>
-                    <Trans t={t} i18nKey="pendingEmail.text" components={{email: <b>{user.pendingEmail}</b>}}/>
-                </Typography>
-                <Stack component="ul" spacing={0.5} m={0} p={0} sx={{listStyle: "none"}}>
-                    <EmailLink email={user.pendingEmail} isOpened={!user.awaitingNewEmailConfirmation}/>
-                    <EmailLink email={user.email} isOpened={!user.awaitingCurrentEmailConfirmation}/>
+        <Alert severity="info" role="none">
+            <Box role="status">
+                <AlertTitle>{t("pendingEmail.title")}</AlertTitle>
+                <Stack spacing={1}>
+                    <Typography variant="body2" sx={{overflowWrap: "anywhere"}}>
+                        <Trans t={t} i18nKey="pendingEmail.text" components={{email: <b>{user.pendingEmail}</b>}}/>
+                    </Typography>
+                    <Stack component="ul" spacing={0.5} m={0} p={0} sx={{listStyle: "none"}}>
+                        <EmailLink email={user.pendingEmail} isOpened={!user.awaitingNewEmailConfirmation}/>
+                        <EmailLink email={user.email} isOpened={!user.awaitingCurrentEmailConfirmation}/>
+                    </Stack>
                 </Stack>
+            </Box>
+            <Stack direction="row" flexWrap="wrap" gap={1} mt={1}>
+                <ResendEmailChange user={user} pendingEmail={user.pendingEmail}/>
+                <CancelEmailChange/>
             </Stack>
         </Alert>
     );

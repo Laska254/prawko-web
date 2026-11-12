@@ -7,6 +7,8 @@ interface ConfirmDialogProps {
     title: string;
     text: string;
     confirmLabel: string;
+    // The dismiss button's label, "Cancel" by default; named when the confirm label starts the same, e.g. "Cancel change".
+    cancelLabel?: string;
     // `error` (red) marks a destructive action such as a delete.
     confirmColor?: "secondary" | "error";
     loading: boolean;
@@ -17,7 +19,7 @@ interface ConfirmDialogProps {
 }
 
 // MUI links the title to the dialog itself; the text is linked through `aria-describedby`.
-export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "secondary", loading, onConfirm, onCancel, children}: ConfirmDialogProps) {
+export function ConfirmDialog({open, title, text, confirmLabel, cancelLabel, confirmColor = "secondary", loading, onConfirm, onCancel, children}: ConfirmDialogProps) {
     const textId = useId();
     const formId = useId();
     const {t} = useTranslation();
@@ -41,12 +43,14 @@ export function ConfirmDialog({open, title, text, confirmLabel, confirmColor = "
                 {/* Inside the content, so the dialog's paper still lays out the content and actions; the confirm button
                     submits it through `form`. */}
                 <form id={formId} onSubmit={handleSubmit}>
-                    <DialogContentText id={textId}>{text}</DialogContentText>
+                    {/* The text can hold what the user typed, e.g. an email, which browsers don't break at `.` or
+                        `@`; without this, a long one is wider than the dialog on a phone. */}
+                    <DialogContentText id={textId} sx={{overflowWrap: "anywhere"}}>{text}</DialogContentText>
                     {children}
                 </form>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel} disabled={loading}>{t("cancel")}</Button>
+                <Button onClick={onCancel} disabled={loading}>{cancelLabel ?? t("cancel")}</Button>
                 <Button type="submit" form={formId} variant="contained" color={confirmColor} loading={loading}>
                     {confirmLabel}
                 </Button>

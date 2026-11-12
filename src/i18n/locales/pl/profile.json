@@ -24,6 +24,32 @@
     "userNameTaken": "Ta nazwa użytkownika jest zajęta.",
     "changedMeanwhile": "Twoje konto zmieniło się w tym samym czasie. Spróbuj ponownie."
   },
+  "changeEmail": {
+    "button": "Zmień e-mail",
+    "title": "Zmień e-mail",
+    "text": "Wyślemy link na nowy adres i drugi na obecny. E-mail zmieni się, gdy otworzysz oba.",
+    "label": "Nowy e-mail",
+    "send": "Wyślij linki",
+    "passwordTitle": "Zmienić e-mail?",
+    "passwordText": "Linki zostaną wysłane na {{email}} i na Twój obecny adres.",
+    "invalid": "Podaj prawidłowy adres e-mail.",
+    "taken": "Konto z tym adresem e-mail już istnieje.",
+    "tooSoon": "Link został wysłany niecałą minutę temu. Odczekaj chwilę i spróbuj ponownie."
+  },
+  "resendEmail": {
+    "button": "Wyślij linki ponownie",
+    "wait": "Wyślij ponownie za {{seconds}} s",
+    "title": "Wysłać linki ponownie?",
+    "text": "Nowe linki zostaną wysłane na {{email}} i na Twój obecny adres. Wcześniej wysłane przestaną działać.",
+    "confirm": "Wyślij ponownie"
+  },
+  "cancelEmail": {
+    "button": "Anuluj zmianę",
+    "title": "Anulować zmianę adresu e-mail?",
+    "text": "Wysłane linki przestaną działać, a Twój adres e-mail się nie zmieni.",
+    "confirm": "Anuluj zmianę",
+    "keep": "Nie anuluj"
+  },
   "pendingEmail": {
     "title": "Trwa zmiana adresu e-mail",
     "text": "Twój adres e-mail zmieni się na <email/>, gdy otworzysz oba poniższe linki.",
@@ -57,8 +83,8 @@
     "title": "Odłączyć {{provider}}?",
     "text": "Nie będzie już można logować się tym kontem {{provider}}.",
     "confirm": "Odłącz",
-    "notLinked": "Konto {{provider}} nie jest już połączone z twoim kontem.",
-    "lastMethod": "{{provider}} to twój jedyny sposób logowania, więc nie można go odłączyć."
+    "notLinked": "Konto {{provider}} nie jest już połączone z Twoim kontem.",
+    "lastMethod": "{{provider}} to Twój jedyny sposób logowania, więc nie można go odłączyć."
   },
   "passwordConfirm": {
     "label": "Obecne hasło",
@@ -76,7 +102,7 @@
     "categoryCounts": "Ukończone: {{taken}} · zdane: {{passed}}",
     "best": "najlepszy {{score}}",
     "passMark": "Próg zaliczenia: {{passMark}} z {{max}} punktów",
-    "empty": "Nie masz jeszcze ukończonych egzaminów. Tutaj pojawią się twoje wyniki.",
+    "empty": "Nie masz jeszcze ukończonych egzaminów. Tutaj pojawią się Twoje wyniki.",
     "startExam": "Rozpocznij egzamin"
   },
   "settings": {
