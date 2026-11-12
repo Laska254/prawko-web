@@ -1,14 +1,24 @@
+import type {ReactNode} from "react";
 import {screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 
-function renderDialog({open = true, loading = false, confirmColor}: {open?: boolean; loading?: boolean; confirmColor?: "error"} = {}) {
+interface DialogOptions {
+    open?: boolean;
+    loading?: boolean;
+    confirmColor?: "error";
+    children?: ReactNode;
+}
+
+function renderDialog({open = true, loading = false, confirmColor, children}: DialogOptions = {}) {
     const onConfirm = vi.fn();
     const onCancel = vi.fn();
     renderWithProviders(
         <ConfirmDialog open={open} title="Delete account?" text="This can't be undone." confirmLabel="Delete"
-                       confirmColor={confirmColor} loading={loading} onConfirm={onConfirm} onCancel={onCancel}/>
+                       confirmColor={confirmColor} loading={loading} onConfirm={onConfirm} onCancel={onCancel}>
+            {children}
+        </ConfirmDialog>
     );
     return {onConfirm, onCancel};
 }
@@ -45,6 +55,15 @@ describe("ConfirmDialog", () => {
 
         expect(onConfirm).toHaveBeenCalledTimes(1);
         expect(onCancel).not.toHaveBeenCalled();
+    });
+
+    it("confirms with Enter in a field of its content", async () => {
+        const {onConfirm} = renderDialog({children: <input aria-label="Password"/>});
+        const userEvents = userEvent.setup();
+
+        await userEvents.type(screen.getByRole("textbox", {name: "Password"}), "secret{Enter}");
+
+        expect(onConfirm).toHaveBeenCalledTimes(1);
     });
 
     it("cancels with the button", async () => {

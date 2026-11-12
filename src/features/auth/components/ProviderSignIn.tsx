@@ -1,9 +1,10 @@
 import {useState} from "react";
 import {Divider, Stack} from "@mui/material";
 import {useTranslation} from "react-i18next";
+import {GitHubButton} from "@/components/github/GitHubButton.tsx";
+import {isGitHubAuthorizationSupported} from "@/components/github/gitHubAuthorization.tsx";
 import type {FormType} from "../formConfig.tsx";
-import {isGitHubSignInSupported} from "../gitHubAuthorization.tsx";
-import {GitHubSignIn} from "./GitHubSignIn.tsx";
+import {GITHUB_CALLBACK_PATH} from "../gitHubCallback.tsx";
 import {GoogleSignIn} from "./GoogleSignIn.tsx";
 
 interface ProviderSignInProps {
@@ -18,7 +19,7 @@ export function ProviderSignIn({formType}: ProviderSignInProps) {
     const googleClientId: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const gitHubClientId: string | undefined = import.meta.env.VITE_GITHUB_CLIENT_ID;
     const showsGoogle = googleClientId && !isGoogleUnavailable;
-    const showsGitHub = gitHubClientId && isGitHubSignInSupported();
+    const showsGitHub = gitHubClientId && isGitHubAuthorizationSupported();
 
     if (!showsGoogle && !showsGitHub) {
         return null;
@@ -29,7 +30,7 @@ export function ProviderSignIn({formType}: ProviderSignInProps) {
             {showsGoogle && (
                 <GoogleSignIn clientId={googleClientId} formType={formType} setUnavailable={setGoogleUnavailable}/>
             )}
-            {showsGitHub && <GitHubSignIn clientId={gitHubClientId}/>}
+            {showsGitHub && <GitHubButton clientId={gitHubClientId} redirectPath={GITHUB_CALLBACK_PATH}/>}
             <Divider>{t("providers.or")}</Divider>
         </Stack>
     );

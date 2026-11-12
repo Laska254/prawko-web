@@ -1,20 +1,16 @@
 import {type ReactNode, useEffect, useState} from "react";
-import {queryOptions, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {login, loginWithGitHub, loginWithGoogle, logout} from "@/api/auth.tsx";
 import {clearTokens, endSession, isAuthenticated, onSessionEnded, onSessionStarted} from "@/api/tokens.tsx";
 import type {GitHubSignInDto} from "@/api/dto/GitHubSignInDto.tsx";
 import type {GoogleSignInDto} from "@/api/dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
-import {userKeys} from "@/api/queryKeys.tsx";
-import {getCurrentUser} from "@/api/users.tsx";
+import {currentUserQuery} from "./currentUserQuery.tsx";
 import {SessionContext, type SessionState} from "./session.tsx";
 
 interface SessionProviderProps {
     children: ReactNode;
 }
-
-// Fresh until a change to the user invalidates `userKeys`, so the query enabled after `signIn` doesn't fetch it again.
-const currentUserQuery = queryOptions({queryKey: userKeys.me(), queryFn: getCurrentUser, staleTime: Infinity});
 
 // Loads the user of the stored tokens on app start.
 export function SessionProvider({children}: SessionProviderProps) {
@@ -78,6 +74,11 @@ export function SessionProvider({children}: SessionProviderProps) {
             case "pending":
                 return {status: "loading"};
             case "error":
+                // A failed refetch keeps the user loaded before, so the session stays signed in with it instead of
+                // replacing every page with the error.
+                if (user.data !== undefined) {
+                    return {status: "signedIn", user: user.data};
+                }
                 return {status: "error", retry: () => user.refetch()};
             case "success":
                 return {status: "signedIn", user: user.data};

@@ -1,7 +1,70 @@
 {
   "profile": {
     "title": "Profil",
-    "empty": "Tutaj pojawią się dane twojego konta."
+    "account": "Konto",
+    "firstName": "Imię",
+    "lastName": "Nazwisko",
+    "userName": "Nazwa użytkownika",
+    "email": "E-mail",
+    "notProvided": "Nie podano",
+    "actions": "Działania na koncie",
+    "settings": "Ustawienia",
+    "signOut": "Wyloguj się"
+  },
+  "pendingEmail": {
+    "title": "Trwa zmiana adresu e-mail",
+    "text": "Twój adres e-mail zmieni się na <email/>, gdy otworzysz oba poniższe linki.",
+    "linkSentTo": "Link wysłany na <email/>:",
+    "opened": "otwarty",
+    "notOpened": "jeszcze nieotwarty"
+  },
+  "signInMethods": {
+    "title": "Metody logowania",
+    "password": "Hasło",
+    "passwordSet": "ustawione",
+    "passwordNotSet": "nieustawione",
+    "google": "Google",
+    "gitHub": "GitHub",
+    "linked": "połączone",
+    "notLinked": "niepołączone",
+    "onlyMethod": "jedyny sposób logowania"
+  },
+  "link": {
+    "title": "Połączyć {{provider}}?",
+    "text": "Będzie można też logować się tym kontem {{provider}}.",
+    "confirm": "Połącz",
+    "notConfigured": "Łączenie z {{provider}} jest teraz niedostępne.",
+    "conflict": "To konto {{provider}} jest połączone z innym użytkownikiem albo masz już połączone takie konto.",
+    "gitHubInvalid": "Nie udało się połączyć konta GitHub. Spróbuj ponownie.",
+    "gitHubEmailNotVerified": "GitHub nie potwierdził głównego adresu e-mail tego konta."
+  },
+  "unlink": {
+    "button": "Odłącz",
+    "buttonLabel": "Odłącz {{provider}}",
+    "title": "Odłączyć {{provider}}?",
+    "text": "Nie będzie już można logować się tym kontem {{provider}}.",
+    "confirm": "Odłącz",
+    "notLinked": "Konto {{provider}} nie jest już połączone z twoim kontem.",
+    "lastMethod": "{{provider}} to twój jedyny sposób logowania, więc nie można go odłączyć."
+  },
+  "passwordConfirm": {
+    "label": "Obecne hasło",
+    "prompt": "Wpisz hasło, aby potwierdzić.",
+    "wrong": "Hasło jest nieprawidłowe."
+  },
+  "stats": {
+    "title": "Statystyki egzaminów",
+    "passRate": "Zdawalność",
+    "passedOf": "zdane {{passed}} z {{taken}}",
+    "averageScore": "Średni wynik",
+    "bestScore": "Najlepszy wynik",
+    "byCategory": "Według kategorii",
+    "category": "Kategoria {{category}}",
+    "categoryCounts": "Ukończone: {{taken}} · zdane: {{passed}}",
+    "best": "najlepszy {{score}}",
+    "passMark": "Próg zaliczenia: {{passMark}} z {{max}} punktów",
+    "empty": "Nie masz jeszcze ukończonych egzaminów. Tutaj pojawią się twoje wyniki.",
+    "startExam": "Rozpocznij egzamin"
   },
   "settings": {
     "title": "Ustawienia",

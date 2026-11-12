@@ -4,12 +4,12 @@ import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
 import type {ApiError, StatusMessages} from "@/api/errors.tsx";
+import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {Link as RouterLink, useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useSession} from "@/session/useSession.tsx";
-import {type FieldMessages, useFormSubmission} from "../hooks/useFormSubmission.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     401: "messages.wrongCredentials",

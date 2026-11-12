@@ -1,6 +1,6 @@
 import {useRef, useState} from "react";
 import {useMutation} from "@tanstack/react-query";
-import {type ApiError, errorMessage, type GenericMessageKey, type StatusMessages, toApiError} from "@/api/errors.tsx";
+import {type ApiError, errorMessage, type GenericMessageKey, type StatusMessages, toApiError} from "./errors.tsx";
 
 // The client's messages for each form field. The server's texts don't say which rule failed, so a field has one
 // message per status (e.g. `400` invalid, `409` taken).
@@ -20,7 +20,9 @@ interface FormSubmissionOptions<V, R, F extends string, K extends string> {
     readonly fieldMessages?: FieldMessages<F, K>;
     // The message of a failure per response status, before the generic ones.
     readonly statusMessages?: StatusMessages<K>;
-    readonly onSuccess?: (result: R, variables: V) => void;
+    // A promise it returns keeps the form sending until it settles, e.g. to stay busy until the data is fetched again.
+    readonly onSuccess?: (result: R, variables: V) => void | Promise<void>;
+    readonly onError?: (error: ApiError) => void;
 }
 
 interface SubmissionErrors<F extends string, K extends string> {
@@ -76,11 +78,16 @@ function shownError(error: Error | null, clearedError: Error | null): Error | nu
 // Messages are translation keys, which the form translates. Sending again drops the last errors.
 export function useFormSubmission<V, R, F extends string = never, K extends string = never>(
     send: (variables: V) => Promise<R>,
-    {fieldMessages, statusMessages, onSuccess}: FormSubmissionOptions<V, R, F, K> = {},
+    {fieldMessages, statusMessages, onSuccess, onError}: FormSubmissionOptions<V, R, F, K> = {},
 ) {
     // Sent even offline, not paused until the connection is back: axios fails at once, and the form shows the network
     // error.
-    const mutation = useMutation({mutationFn: send, onSuccess, networkMode: "always"});
+    const mutation = useMutation({
+        mutationFn: send,
+        onSuccess,
+        onError: caught => onError?.(toApiError(caught)),
+        networkMode: "always",
+    });
     // The error `clear` hid. Hidden in state, not with `mutation.reset()`, which renders only after a tick and so
     // can't clear while rendering; the error of a send still running, or of a later one, shows.
     const [clearedError, setClearedError] = useState<Error | null>(null);
