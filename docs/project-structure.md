@@ -50,7 +50,7 @@ Folders are created when their first file is added.
   (`common` for shared components, `errors` for `api/` messages, `app` for the shell, one per feature) and is read with
   `useTranslation`. Code outside `i18n/` holds keys, typed as `ParseKeys<"namespace">`; `api/` returns keys and the
   caller translates them. Dates and numbers are shown through `useFormat` (`i18n/useFormat.tsx`). Polish texts write
-  the second person lowercase mid-sentence ("sprawdzaj, jak rosną twoje wyniki", "wyślemy ci link").
+  the second person capitalized mid-sentence too ("sprawdzaj, jak rosną Twoje wyniki", "wyślemy Ci link").
 * Types live next to the code that owns them; there is no `types/` folder.
 * A component's SCSS and imported assets sit next to it. `public/` is only for files served as-is.
 * All routes are defined in `app/`; their pages are loaded on demand with `lazyPage`.
