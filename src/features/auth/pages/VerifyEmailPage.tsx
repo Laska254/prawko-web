@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {type ReactNode, useEffect, useRef, useState} from "react";
 import {CircularProgress, Link, Stack, Typography} from "@mui/material";
 import {useQueryClient} from "@tanstack/react-query";
 import {useTranslation} from "react-i18next";
@@ -23,6 +23,10 @@ type VerifyResult = "changed" | "completed" | "awaiting";
 interface ResultMessageProps {
     readonly title: string;
     readonly text: string;
+    // A smaller line under the text.
+    readonly hint?: string;
+    // Shown between the message and the next link, e.g. a form.
+    readonly children?: ReactNode;
 }
 
 // `user` is the signed-in user as loaded before the link's answer, if any.
@@ -53,12 +57,18 @@ function NextLink() {
     return <Link component={RouterLink} to="/auth" underline="hover">{t("backToSignIn")}</Link>;
 }
 
-function ResultMessage({title, text}: ResultMessageProps) {
+// A result's title and text, followed by the link on from the page.
+function ResultMessage({title, text, hint, children}: ResultMessageProps) {
     return (
-        <Stack spacing={1}>
-            <Typography variant="h4" fontWeight={700}>{title}</Typography>
-            <Typography color="text.secondary">{text}</Typography>
-        </Stack>
+        <>
+            <Stack spacing={1}>
+                <Typography variant="h4" fontWeight={700}>{title}</Typography>
+                <Typography color="text.secondary">{text}</Typography>
+                {hint && <Typography variant="body2" color="text.secondary">{hint}</Typography>}
+            </Stack>
+            {children}
+            <NextLink/>
+        </>
     );
 }
 
@@ -108,32 +118,18 @@ export function VerifyEmailPage() {
         // Signed in, the account is verified already, so the link was an email change's; its links are sent again
         // from the profile.
         if (isSignedIn) {
-            return (
-                <>
-                    <ResultMessage title={t("verifyEmail.failedTitle")} text={t("verifyEmail.failedSignedIn")}/>
-                    <NextLink/>
-                </>
-            );
+            return <ResultMessage title={t("verifyEmail.failedTitle")} text={t("verifyEmail.failedSignedIn")}/>;
         }
         return (
-            <>
-                <Stack spacing={1}>
-                    <Typography variant="h4" fontWeight={700}>{t("verifyEmail.failedTitle")}</Typography>
-                    <Typography color="text.secondary">
-                        {t("verifyEmail.failedSubtitle")}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        {t("verifyEmail.failedEmailChange")}
-                    </Typography>
-                </Stack>
+            <ResultMessage title={t("verifyEmail.failedTitle")} text={t("verifyEmail.failedSubtitle")}
+                           hint={t("verifyEmail.failedEmailChange")}>
                 <EmailLinkForm
                     submitLabel={t("resendVerification.submit")}
                     sentMessage={t("resendVerification.sent")}
                     send={email => resendVerification({email})}
                     cooldownKey="verification"
                 />
-                <NextLink/>
-            </>
+            </ResultMessage>
         );
     }
 
@@ -150,12 +146,7 @@ export function VerifyEmailPage() {
             return failed();
         }
         if (error && isEmailTaken(error)) {
-            return (
-                <>
-                    <ResultMessage title={t("verifyEmail.emailTakenTitle")} text={t("verifyEmail.emailTakenText")}/>
-                    <NextLink/>
-                </>
-            );
+            return <ResultMessage title={t("verifyEmail.emailTakenTitle")} text={t("verifyEmail.emailTakenText")}/>;
         }
         if (error) {
             return (
@@ -166,29 +157,14 @@ export function VerifyEmailPage() {
             );
         }
         if (result === "awaiting") {
-            return (
-                <>
-                    <ResultMessage title={t("verifyEmail.awaitingTitle")} text={t("verifyEmail.awaitingText")}/>
-                    <NextLink/>
-                </>
-            );
+            return <ResultMessage title={t("verifyEmail.awaitingTitle")} text={t("verifyEmail.awaitingText")}/>;
         }
         if (result === "changed") {
-            return (
-                <>
-                    <ResultMessage title={t("verifyEmail.changedTitle")} text={t("verifyEmail.changedText")}/>
-                    <NextLink/>
-                </>
-            );
+            return <ResultMessage title={t("verifyEmail.changedTitle")} text={t("verifyEmail.changedText")}/>;
         }
         // Signed out, a completed link goes on to sign in. Signed in, it may be another account's link.
         if (result === "completed" && isSignedIn) {
-            return (
-                <>
-                    <ResultMessage title={t("verifyEmail.verifiedTitle")} text={t("verifyEmail.verifiedText")}/>
-                    <NextLink/>
-                </>
-            );
+            return <ResultMessage title={t("verifyEmail.verifiedTitle")} text={t("verifyEmail.verifiedText")}/>;
         }
         return progress();
     }
