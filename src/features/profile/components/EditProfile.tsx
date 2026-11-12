@@ -37,12 +37,12 @@ interface EditableInput {
     readonly htmlInput: InputHTMLAttributes<HTMLInputElement>;
 }
 
-// The fields whose typed value differs from the user's; a name the provider didn't share is unchanged while empty.
+// The fields typed with a value other than the user's; an empty one stays as it is.
 function changedFields(user: UserDto, inputs: readonly EditableInput[]): UserUpdateDto {
     const changes: Partial<Record<EditableField, string>> = {};
     for (const {field, inputRef} of inputs) {
         const value = inputRef.current!.value;
-        if (value !== (user[field] ?? "")) {
+        if (value !== "" && value !== user[field]) {
             changes[field] = value;
         }
     }
@@ -53,7 +53,7 @@ interface EditProfileProps {
     readonly user: UserDto;
 }
 
-// Edits the names and username in a dialog, sending only the fields changed; a new username needs the password too,
+// Edits the names and username in a dialog, sending only the fields typed; a new username needs the password too,
 // asked in a second dialog when the user has one. The server answers with the updated user, which replaces the
 // session's.
 export function EditProfile({user}: EditProfileProps) {
@@ -129,10 +129,11 @@ export function EditProfile({user}: EditProfileProps) {
                     {inputs.map(({field, label, inputRef, htmlInput}) => {
                         const error = fieldErrors[field];
                         return (
-                            // A name can't be removed once set, only one never shared can stay empty.
+                            // Every field is optional and starts empty, showing the current value; the label stays
+                            // above it so the placeholder shows before the field is focused.
                             <FormTextField key={field} label={t(label)} type="text" inputRef={inputRef}
-                                           defaultValue={user[field] ?? ""} required={user[field] !== null}
-                                           errorText={error && t(error)} slotProps={{htmlInput}}/>
+                                           placeholder={user[field] ?? undefined} errorText={error && t(error)}
+                                           slotProps={{htmlInput, inputLabel: {shrink: true}}}/>
                         );
                     })}
                 </Stack>

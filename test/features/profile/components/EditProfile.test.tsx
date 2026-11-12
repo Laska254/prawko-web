@@ -33,26 +33,28 @@ async function save(userEvents: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("EditProfile", () => {
-    it("opens prefilled from the user", async () => {
+    it("opens with empty fields showing the user's values", async () => {
         await openDialog();
 
-        const dialog = screen.getByRole("dialog", {name: "Edit profile", description: "Change your name and username."});
-        expect(within(dialog).getByRole("textbox", {name: "First name"})).toHaveValue("Jan");
-        expect(within(dialog).getByRole("textbox", {name: "Last name"})).toHaveValue("Kowalski");
-        expect(within(dialog).getByRole("textbox", {name: "Username"})).toHaveValue("jan");
+        const dialog = screen.getByRole("dialog", {
+            name: "Edit profile", description: "Fill in only what you want to change.",
+        });
+        for (const [name, value] of [["First name", "Jan"], ["Last name", "Kowalski"], ["Username", "jan"]]) {
+            expect(within(dialog).getByRole("textbox", {name})).toHaveValue("");
+            expect(within(dialog).getByRole("textbox", {name})).toHaveAttribute("placeholder", value);
+        }
     });
 
-    it("sends only the changed fields and replaces the session's user with the answer", async () => {
-        const updated: UserDto = {...user, firstName: "Janek", lastName: "Nowak"};
+    it("sends only the fields typed and replaces the session's user with the answer", async () => {
+        const updated: UserDto = {...user, firstName: "Janek"};
         const requests = mockRequest("patch", PATH, {body: updated});
         const {userEvents, queryClient} = await openDialog();
 
         await retype(userEvents, "First name", "Janek");
-        await retype(userEvents, "Last name", "Nowak");
         await save(userEvents);
 
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-        expect(requests).toEqual([{search: "", body: {firstName: "Janek", lastName: "Nowak"}}]);
+        expect(requests).toEqual([{search: "", body: {firstName: "Janek"}}]);
         expect(queryClient.getQueryData(["users", "me"])).toEqual(updated);
     });
 
@@ -69,7 +71,7 @@ describe("EditProfile", () => {
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     });
 
-    it("closes without a request when nothing changed", async () => {
+    it("closes without a request when nothing typed differs from the user", async () => {
         const requests = mockRequest("patch", PATH, {body: user});
         const {userEvents} = await openDialog();
 
@@ -80,11 +82,11 @@ describe("EditProfile", () => {
         expect(requests).toEqual([]);
     });
 
-    it("requires the names set, which can't be removed", async () => {
+    it("keeps every field optional, within the server's lengths", async () => {
         await openDialog();
 
         for (const name of ["First name", "Last name", "Username"]) {
-            expect(screen.getByRole("textbox", {name})).toBeRequired();
+            expect(screen.getByRole("textbox", {name})).not.toBeRequired();
             expect(screen.getByRole("textbox", {name})).toHaveAttribute("minlength", "3");
             expect(screen.getByRole("textbox", {name})).toHaveAttribute("maxlength", "31");
         }
@@ -102,12 +104,11 @@ describe("EditProfile", () => {
         expect(requests).toEqual([]);
     });
 
-    it("leaves a name the provider didn't share empty and unsent until it's typed", async () => {
+    it("shows no placeholder for a name the provider didn't share, and sends it once typed", async () => {
         const requests = mockRequest("patch", PATH, {body: {...user, lastName: null}});
         const {userEvents} = await openDialog({...user, firstName: null, lastName: null});
 
-        expect(screen.getByRole("textbox", {name: "First name"})).toHaveValue("");
-        expect(screen.getByRole("textbox", {name: "First name"})).not.toBeRequired();
+        expect(screen.getByRole("textbox", {name: "First name"})).not.toHaveAttribute("placeholder");
         await userEvents.type(screen.getByRole("textbox", {name: "First name"}), "Jan");
         await save(userEvents);
 
@@ -159,7 +160,7 @@ describe("EditProfile", () => {
         await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
         await userEvents.click(screen.getByRole("button", {name: "Edit profile"}));
 
-        expect(screen.getByRole("textbox", {name: "Username"})).toHaveValue("jan");
+        expect(screen.getByRole("textbox", {name: "Username"})).toHaveValue("");
         expect(screen.getByRole("textbox", {name: "Username"})).toBeValid();
     });
 

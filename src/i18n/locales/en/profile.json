@@ -14,7 +14,7 @@
   "edit": {
     "button": "Edit profile",
     "title": "Edit profile",
-    "text": "Change your name and username.",
+    "text": "Fill in only what you want to change.",
     "save": "Save",
     "passwordTitle": "Change your username?",
     "passwordText": "You'll sign in with the new username from now on.",
