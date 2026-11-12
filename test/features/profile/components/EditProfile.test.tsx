@@ -90,6 +90,18 @@ describe("EditProfile", () => {
         }
     });
 
+    it("keeps a username with @ invalid and sends nothing", async () => {
+        const requests = mockRequest("patch", PATH, {body: user});
+        const {userEvents} = await openDialog(userWithoutPassword);
+
+        await retype(userEvents, "Username", "jan@");
+        await save(userEvents);
+
+        expect(screen.getByRole("textbox", {name: "Username"})).toBeInvalid();
+        expect(screen.getByRole("dialog", {name: "Edit profile"})).toBeInTheDocument();
+        expect(requests).toEqual([]);
+    });
+
     it("leaves a name the provider didn't share empty and unsent until it's typed", async () => {
         const requests = mockRequest("patch", PATH, {body: {...user, lastName: null}});
         const {userEvents} = await openDialog({...user, firstName: null, lastName: null});
@@ -163,10 +175,10 @@ describe("EditProfile", () => {
     });
 
     describe("a new username", () => {
-        // Changes the username to `userName` and saves, which asks for the password.
-        async function changeUserName(userName = "janek") {
+        // Changes the username and saves, which asks for the password.
+        async function changeUserName() {
             const opened = await openDialog();
-            await retype(opened.userEvents, "Username", userName);
+            await retype(opened.userEvents, "Username", "janek");
             await save(opened.userEvents);
             return opened;
         }
@@ -246,7 +258,7 @@ describe("EditProfile", () => {
             [409, "This username is taken."],
         ])("goes back to the form with a %i of the username under its field", async (status, message) => {
             mockRequest("patch", PATH, {status, body: problem(status, {userName: "Server's message."})});
-            const {userEvents} = await changeUserName("jan@");
+            const {userEvents} = await changeUserName();
 
             await confirmPassword(userEvents);
 

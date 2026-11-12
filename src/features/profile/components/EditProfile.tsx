@@ -1,4 +1,4 @@
-import {type RefObject, useRef, useState} from "react";
+import {type InputHTMLAttributes, type RefObject, useRef, useState} from "react";
 import {Alert, Button, Stack} from "@mui/material";
 import {Edit} from "@mui/icons-material";
 import {useQueryClient} from "@tanstack/react-query";
@@ -7,7 +7,7 @@ import {useTranslation} from "react-i18next";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import type {UserUpdateDto} from "@/api/dto/UserUpdateDto.tsx";
 import type {StatusMessages} from "@/api/errors.tsx";
-import {NAME_LENGTH} from "@/api/fieldLengths.tsx";
+import {NAME_LENGTH, USERNAME_PATTERN} from "@/api/fieldLengths.tsx";
 import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {updateUser} from "@/api/users.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
@@ -34,6 +34,7 @@ interface EditableInput {
     readonly field: EditableField;
     readonly label: ParseKeys<"profile">;
     readonly inputRef: RefObject<HTMLInputElement | null>;
+    readonly htmlInput: InputHTMLAttributes<HTMLInputElement>;
 }
 
 // The fields whose typed value differs from the user's; a name the provider didn't share is unchanged while empty.
@@ -83,9 +84,12 @@ export function EditProfile({user}: EditProfileProps) {
         },
     );
     const inputs: readonly EditableInput[] = [
-        {field: "firstName", label: "profile.firstName", inputRef: firstNameRef},
-        {field: "lastName", label: "profile.lastName", inputRef: lastNameRef},
-        {field: "userName", label: "profile.userName", inputRef: userNameRef},
+        {field: "firstName", label: "profile.firstName", inputRef: firstNameRef, htmlInput: NAME_LENGTH},
+        {field: "lastName", label: "profile.lastName", inputRef: lastNameRef, htmlInput: NAME_LENGTH},
+        {
+            field: "userName", label: "profile.userName", inputRef: userNameRef,
+            htmlInput: {...NAME_LENGTH, pattern: USERNAME_PATTERN},
+        },
     ];
 
     // The last attempt's errors stay while the dialog fades out, and are gone when it opens again.
@@ -122,13 +126,13 @@ export function EditProfile({user}: EditProfileProps) {
                            loading={isSending} onConfirm={save} onCancel={() => setOpen(false)}>
                 <Stack spacing={2} mt={2}>
                     {failure && !unconfirmedChanges && <Alert severity="error">{t(failure.message)}</Alert>}
-                    {inputs.map(({field, label, inputRef}) => {
+                    {inputs.map(({field, label, inputRef, htmlInput}) => {
                         const error = fieldErrors[field];
                         return (
                             // A name can't be removed once set, only one never shared can stay empty.
                             <FormTextField key={field} label={t(label)} type="text" inputRef={inputRef}
                                            defaultValue={user[field] ?? ""} required={user[field] !== null}
-                                           errorText={error && t(error)} slotProps={{htmlInput: NAME_LENGTH}}/>
+                                           errorText={error && t(error)} slotProps={{htmlInput}}/>
                         );
                     })}
                 </Stack>
