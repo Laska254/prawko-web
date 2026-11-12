@@ -24,6 +24,18 @@
     "userNameTaken": "Ta nazwa użytkownika jest zajęta.",
     "changedMeanwhile": "Twoje konto zmieniło się w tym samym czasie. Spróbuj ponownie."
   },
+  "changeEmail": {
+    "button": "Zmień e-mail",
+    "title": "Zmień e-mail",
+    "text": "Wyślemy link na nowy adres i drugi na obecny. E-mail zmieni się, gdy otworzysz oba.",
+    "label": "Nowy e-mail",
+    "send": "Wyślij linki",
+    "passwordTitle": "Zmienić e-mail?",
+    "passwordText": "Linki zostaną wysłane na {{email}} i na Twój obecny adres.",
+    "invalid": "Podaj prawidłowy adres e-mail.",
+    "taken": "Konto z tym adresem e-mail już istnieje.",
+    "tooSoon": "Link został wysłany niecałą minutę temu. Odczekaj chwilę i spróbuj ponownie."
+  },
   "pendingEmail": {
     "title": "Trwa zmiana adresu e-mail",
     "text": "Twój adres e-mail zmieni się na <email/>, gdy otworzysz oba poniższe linki.",

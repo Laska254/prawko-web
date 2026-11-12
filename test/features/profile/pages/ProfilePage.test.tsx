@@ -297,6 +297,22 @@ describe("ProfilePage", () => {
         expect(queryClient.isFetching()).toBe(0);
     });
 
+    it("shows the email change started without fetching the user again", async () => {
+        const userEvents = userEvent.setup();
+        const queryClient = await renderProfile({...user, hasPassword: false});
+        const fetchUser = vi.spyOn(queryClient, "fetchQuery");
+        mockRequest("patch", "/users/1", {body: {...changingEmailUser, hasPassword: false}});
+
+        await userEvents.click(screen.getByRole("button", {name: "Change email"}));
+        await userEvents.type(screen.getByRole("textbox", {name: "New email"}), "jan.nowy@example.com");
+        await userEvents.click(screen.getByRole("button", {name: "Send links"}));
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.getByRole("status")).toHaveTextContent("Email change in progress");
+        expect(fetchUser).not.toHaveBeenCalled();
+        expect(queryClient.isFetching()).toBe(0);
+    });
+
     it("opens the settings", async () => {
         const userEvents = userEvent.setup();
         await renderProfile();
