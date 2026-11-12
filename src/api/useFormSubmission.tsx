@@ -20,7 +20,8 @@ interface FormSubmissionOptions<V, R, F extends string, K extends string> {
     readonly fieldMessages?: FieldMessages<F, K>;
     // The message of a failure per response status, before the generic ones.
     readonly statusMessages?: StatusMessages<K>;
-    readonly onSuccess?: (result: R, variables: V) => void;
+    // A promise it returns keeps the form sending until it settles, e.g. to stay busy until the data is fetched again.
+    readonly onSuccess?: (result: R, variables: V) => void | Promise<void>;
     readonly onError?: (error: ApiError) => void;
 }
 
