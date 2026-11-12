@@ -1,9 +1,11 @@
-import {screen, within} from "@testing-library/react";
+import {screen, waitFor, within} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import {SignInMethods} from "@/features/profile/components/SignInMethods.tsx";
 import {user} from "@test/support/data.tsx";
 import {googleScripts, loadGoogleScript} from "@test/support/googleScript.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
+import {mockRequest} from "@test/support/server.tsx";
 
 // Each method's name and status.
 function methods() {
@@ -65,6 +67,19 @@ describe("SignInMethods", () => {
             ["GitHub", "linked", "your only way to sign in"],
         ]);
         expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    });
+
+    // As when the session ends while the user is fetched again, which clears the cache.
+    it("closes the dialog when no user is left once it's fetched again", async () => {
+        const userEvents = userEvent.setup();
+        renderSignInMethods({...user, providers: ["GOOGLE"]});
+        mockRequest("delete", "/users/me/identities/google", {status: 204});
+
+        await userEvents.click(screen.getByRole("button", {name: "Unlink Google"}));
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret{Enter}");
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
     it("offers Google's button to link Google with its client ID", async () => {

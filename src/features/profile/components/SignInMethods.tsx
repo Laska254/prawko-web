@@ -140,11 +140,12 @@ export function SignInMethods({user, gitHubLink, onGitHubLinkDone}: SignInMethod
     ];
 
     // Only the user, not the stats under its key. TanStack Query hands the fetched user to the page only after a
-    // `setTimeout`, so once this resolves the cache holds it while the providers shown are still the old ones.
+    // `setTimeout`, so once this resolves the cache holds it while the providers shown are still the old ones. The user
+    // is gone when the session ended meanwhile, which clears the cache.
     async function refetchUser(): Promise<void> {
         await queryClient.invalidateQueries({queryKey: currentUserQuery.queryKey, exact: true});
-        const fetched = queryClient.getQueryData(currentUserQuery.queryKey)!;
-        isSwappedHere.current = fetched.providers.join() !== shownProviders.current;
+        const fetched = queryClient.getQueryData(currentUserQuery.queryKey);
+        isSwappedHere.current = fetched !== undefined && fetched.providers.join() !== shownProviders.current;
     }
 
     // Linking or unlinking here swaps the row's action, so its dialog is unmounted along with the button focus would go
