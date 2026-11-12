@@ -6,8 +6,8 @@
 * `/` home page
 * `/exam` exam (placeholder)
 * `/history` past exams (placeholder)
-* `/profile` account data, pending email change, sign-in methods (link and unlink Google and GitHub), settings link and
-  sign out
+* `/profile` account data, pending email change, sign-in methods (link and unlink Google and GitHub), exam statistics,
+  settings link and sign out
 * `/settings` preferences (placeholder)
 * `/auth/github/callback` finishes signing in with GitHub
 * `/auth/github/callback/link` hands GitHub's code to the profile to link the account (signed in)
