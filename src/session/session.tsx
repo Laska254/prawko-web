@@ -8,7 +8,7 @@ import type {UserDto} from "@/api/dto/UserDto.tsx";
 // Who is signed in. `loading` while the stored tokens' user is fetched; `error` when that failed with no answer
 // or a server error (a `401` that a refresh can't fix ends the session in the API client instead), but not when
 // fetching it again fails, which keeps the user loaded before. `endReason` when this tab's session ended as the server
-// no longer accepted it, `null` when the user signed out.
+// no longer accepted it, `null` when the user signed out, or another tab ended it without saying why.
 export type SessionState =
     | {readonly status: "loading"}
     | {readonly status: "signedIn"; readonly user: UserDto}
