@@ -4,7 +4,7 @@ import {DeleteForever} from "@mui/icons-material";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
-import type {ApiError, StatusMessages} from "@/api/errors.tsx";
+import {isTooManyRequests, type StatusMessages} from "@/api/errors.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {requestAccountDeletion} from "@/api/users.tsx";
 import {useCooldown} from "@/utils/useCooldown.tsx";
@@ -18,11 +18,6 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     400: "passwordConfirm.wrong",
     429: "changeEmail.tooSoon",
 };
-
-// A `429` says the link was sent less than the cooldown ago, e.g. from another tab.
-function isTooSoon(error: ApiError): boolean {
-    return error.kind === "http" && error.status === 429;
-}
 
 interface DeleteAccountProps {
     readonly user: UserDto;
@@ -45,7 +40,8 @@ export function DeleteAccount({user, onSent}: DeleteAccountProps) {
             onSent(user.email);
         },
         onError: error => {
-            if (isTooSoon(error)) {
+            // A `429` says the link was sent less than the cooldown ago, e.g. from another tab.
+            if (isTooManyRequests(error)) {
                 start();
             }
         },
