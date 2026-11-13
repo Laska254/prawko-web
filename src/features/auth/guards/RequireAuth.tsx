@@ -4,17 +4,12 @@ import {PageError} from "@/components/feedback/PageError.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
 import {useSession} from "@/session/useSession.tsx";
 import type {SessionEndReason} from "@/api/tokens.tsx";
-import {type AuthNoticeType, authNoticeState} from "../authNotice.tsx";
-
-const END_NOTICES: Record<SessionEndReason, AuthNoticeType> = {
-    expired: "sessionExpired",
-    passwordChanged: "passwordChanged",
-};
+import {authNoticeState, SESSION_END_NOTICES} from "../authNotice.tsx";
 
 // A session the server ended tells the sign in page why the user is back there.
 function signedOutState(endReason: SessionEndReason | null) {
     if (endReason) {
-        return authNoticeState(END_NOTICES[endReason]);
+        return authNoticeState(SESSION_END_NOTICES[endReason]);
     }
 }
 

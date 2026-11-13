@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router";
 import {useSession} from "@/session/useSession.tsx";
 import {FORM_CONFIGS, type FormType} from "../formConfig.tsx";
-import type {AuthNoticeType, AuthPageState} from "../authNotice.tsx";
+import {type AuthNoticeType, type AuthPageState, SESSION_END_NOTICES} from "../authNotice.tsx";
 import {AuthForm, type AuthNotice} from "../components/AuthForm.tsx";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 
@@ -26,7 +26,7 @@ export function AuthPage() {
     const navigate = useNavigate();
     const [notice, setNotice] = useState(() => noticeOf(location.state));
     const {clearEndReason} = useSession();
-    const isSessionEndNotice = notice === NOTICES.sessionExpired || notice === NOTICES.passwordChanged;
+    const isSessionEndNotice = Object.values(SESSION_END_NOTICES).some(type => NOTICES[type] === notice);
 
     // The browser keeps the navigation state for reloads and back navigation, so the notice is read once (above) and
     // cleared from it.
