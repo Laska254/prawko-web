@@ -69,6 +69,21 @@ async function sendRefresh(): Promise<void> {
     saveTokens(response.data);
 }
 
+// Runs `task` with a new access token, holding the refresh lock until it ends, so neither this tab nor another
+// refreshes in between, e.g. while a request revokes every refresh token and the user signs in again. `task` sends its
+// requests through `tokenApi` with `authorization`: one through `api` would wait on a `401` for the lock it holds.
+// Rejects with the refresh's error, or when another tab ended the session meanwhile.
+export function withLockedSession<T>(task: (authorization: string) => Promise<T>): Promise<T> {
+    return withRefreshLock(async () => {
+        await sendRefresh();
+        const header = authorization();
+        if (!header) {
+            throw new Error("The session ended.");
+        }
+        return task(header);
+    });
+}
+
 let refreshing: Promise<void> | null = null;
 
 // Swaps the refresh token for a new pair. The server accepts each refresh token once, so parallel calls share one

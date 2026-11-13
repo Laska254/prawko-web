@@ -7,7 +7,7 @@ import type {AuthTokensDto} from "@/api/dto/AuthTokensDto.tsx";
 import type {RefreshTokenDto} from "@/api/dto/RefreshTokenDto.tsx";
 import type {ExamSummaryDto} from "@/api/dto/ExamSummaryDto.tsx";
 import type {PagedModel} from "@/api/dto/PagedModel.tsx";
-import {api, createdId} from "@/api/client.tsx";
+import {api, createdId, withLockedSession} from "@/api/client.tsx";
 
 describe("client", () => {
     it("parses a paged response with its instants as dates", async () => {
@@ -381,6 +381,57 @@ describe("client", () => {
             expect(refreshes).toEqual([]);
             expect(getAccessToken()).toBe("access-token");
             expect(getRefreshToken()).toBe("refresh-token");
+        });
+    });
+
+    describe("withLockedSession", () => {
+        // Answers each refresh with a new pair numbered by the refresh.
+        function mockNumberedRefresh(): void {
+            let number = 0;
+            server.use(http.post(apiUrl("/auth/refresh"), () => {
+                number++;
+                return HttpResponse.json({
+                    accessToken: `access-token-${number}`,
+                    refreshToken: `refresh-token-${number}`,
+                    expiresIn: 900,
+                });
+            }));
+        }
+
+        it("runs the task with a new access token", async () => {
+            mockNumberedRefresh();
+            saveTokens(tokens);
+
+            await expect(withLockedSession(async authorization => authorization)).resolves.toBe("Bearer access-token-1");
+            expect(getRefreshToken()).toBe("refresh-token-1");
+        });
+
+        it("refreshes for another task only once the first one ended", async () => {
+            mockNumberedRefresh();
+            saveTokens(tokens);
+            const events: string[] = [];
+
+            await Promise.all([
+                withLockedSession(async authorization => {
+                    events.push(`first ${authorization}`);
+                    await delay(10);
+                    events.push("first ended");
+                }),
+                withLockedSession(async authorization => {
+                    events.push(`second ${authorization}`);
+                }),
+            ]);
+
+            expect(events).toEqual(["first Bearer access-token-1", "first ended", "second Bearer access-token-2"]);
+        });
+
+        it("rejects without running the task when another tab ended the session", async () => {
+            const refreshes = mockRequest("post", "/auth/refresh", {body: tokens});
+            const task = vi.fn();
+
+            await expect(withLockedSession(task)).rejects.toThrow("The session ended.");
+            expect(refreshes).toEqual([]);
+            expect(task).not.toHaveBeenCalled();
         });
     });
 });

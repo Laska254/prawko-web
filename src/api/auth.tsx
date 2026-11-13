@@ -1,4 +1,5 @@
-import {api, tokenApi, withRefreshLock} from "./client.tsx";
+import {api, tokenApi, withLockedSession, withRefreshLock} from "./client.tsx";
+import type {ChangePasswordDto} from "./dto/ChangePasswordDto.tsx";
 import type {GitHubSignInDto} from "./dto/GitHubSignInDto.tsx";
 import type {GoogleSignInDto} from "./dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "./dto/LoginDto.tsx";
@@ -8,7 +9,7 @@ import type {ForgotPasswordDto} from "./dto/ForgotPasswordDto.tsx";
 import type {ResetPasswordDto} from "./dto/ResetPasswordDto.tsx";
 import type {AuthTokensDto} from "./dto/AuthTokensDto.tsx";
 import type {RefreshTokenDto} from "./dto/RefreshTokenDto.tsx";
-import {clearTokens, endSession, getRefreshToken, saveTokens} from "./tokens.tsx";
+import {clearTokens, endSession, expireSession, getRefreshToken, saveTokens} from "./tokens.tsx";
 
 async function requestTokens(path: string, body: LoginDto | GoogleSignInDto | GitHubSignInDto) {
     clearTokens();
@@ -44,6 +45,22 @@ export async function logout(): Promise<void> {
         const body: RefreshTokenDto = {refreshToken};
         await tokenApi.post("/auth/logout", body).catch(() => undefined);
     }
+}
+
+// Changes the password, then signs in again with the new one, as the server revokes the refresh token of every session.
+// Both under the refresh lock, so no tab refreshes with a revoked token in between. The new tokens replace the old ones
+// without clearing them first, so other tabs keep the session and take the new refresh token on their next refresh.
+// Rejects with the change's error; when signing in again fails, the session expires and the user signs in themselves.
+export async function changePassword(userName: string, changePasswordDto: ChangePasswordDto): Promise<void> {
+    await withLockedSession(async authorization => {
+        await tokenApi.patch("/users/me/password", changePasswordDto, {headers: {Authorization: authorization}});
+        const loginDto: LoginDto = {userName, password: changePasswordDto.newPassword};
+        try {
+            saveTokens((await tokenApi.post<AuthTokensDto>("/auth", loginDto)).data);
+        } catch {
+            expireSession();
+        }
+    });
 }
 
 export async function verifyEmail(verifyEmailDto: VerifyEmailDto) {
