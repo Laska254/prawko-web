@@ -51,6 +51,14 @@
     "changed": "Your password has been changed.",
     "emailChangeCancelled": "The email change to {{email}} was cancelled."
   },
+  "setPassword": {
+    "button": "Set a password",
+    "wait": "Send again in {{seconds}} s",
+    "title": "Set a password?",
+    "text": "We'll send a link to {{email}}. Open it to choose a password, then sign in again.",
+    "send": "Send link",
+    "sent": "We sent a link to set your password to {{email}}."
+  },
   "resendEmail": {
     "button": "Resend links",
     "wait": "Resend in {{seconds}} s",

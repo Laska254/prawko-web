@@ -354,7 +354,7 @@ describe("ProfilePage", () => {
         expect(queryClient.isFetching()).toBe(0);
     });
 
-    describe("changing the password", () => {
+    describe("the password", () => {
         // Changes the password, after which the user is fetched again as `fetchedUser`.
         async function changePassword(fetchedUser: UserDto) {
             const userEvents = userEvent.setup();
@@ -393,10 +393,18 @@ describe("ProfilePage", () => {
             );
         });
 
-        it("isn't offered without a password", async () => {
+        it("is replaced by a link to set one without a password, and tells once the link was sent", async () => {
+            const userEvents = userEvent.setup();
             await renderProfile(userWithoutPassword);
-
+            mockPost("/auth/password/forgot");
             expect(screen.queryByRole("button", {name: "Change password"})).not.toBeInTheDocument();
+
+            await userEvents.click(screen.getByRole("button", {name: "Set a password"}));
+            await userEvents.click(screen.getByRole("button", {name: "Send link"}));
+
+            await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+            expect(screen.getByRole("status"))
+                .toHaveTextContent("We sent a link to set your password to jan@example.com.");
         });
     });
 
