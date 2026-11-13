@@ -6,7 +6,7 @@ import {EMAIL_LENGTH} from "@/api/fieldRules.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useCooldown} from "@/utils/useCooldown.tsx";
-import {COOLDOWN_MS, type EmailLink, emailLinkCooldownKey} from "@/api/emailLinkCooldown.tsx";
+import {COOLDOWN_MS, type EmailLinkType, emailLinkCooldownKey} from "@/api/emailLinkCooldown.tsx";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";
 
@@ -15,17 +15,17 @@ interface EmailLinkFormProps {
     sentMessage: string;
     send: (email: string) => Promise<unknown>;
     // Forms sending the same kind of link share it, so their cooldown for an email is the same.
-    cooldownKey: EmailLink;
+    linkType: EmailLinkType;
     defaultEmail?: string;
 }
 
-export function EmailLinkForm({submitLabel, sentMessage, send, cooldownKey, defaultEmail}: EmailLinkFormProps) {
+export function EmailLinkForm({submitLabel, sentMessage, send, linkType, defaultEmail}: EmailLinkFormProps) {
     // The field stays uncontrolled; this follows it, so the countdown shown is the one for the email typed in.
     const [email, setEmail] = useState(defaultEmail ?? "");
     const [status, setStatus] = useState<SendStatus>("idle");
     // Only shown in the `error` status, which always sets it first.
     const [errorKey, setErrorKey] = useState<GenericMessageKey>("errors:unexpected");
-    const {secondsLeft, start} = useCooldown(emailLinkCooldownKey(cooldownKey, email), COOLDOWN_MS);
+    const {secondsLeft, start} = useCooldown(emailLinkCooldownKey(linkType, email), COOLDOWN_MS);
     const {t} = useTranslation(["auth", "errors"]);
 
     const statusAlerts: Partial<Record<SendStatus, {severity: AlertColor; message: string}>> = {

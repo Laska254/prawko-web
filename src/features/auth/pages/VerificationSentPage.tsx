@@ -37,7 +37,7 @@ export function VerificationSentPage() {
                     submitLabel={t("resendVerification.submit")}
                     sentMessage={t("resendVerification.sent")}
                     send={email => resendVerification({email})}
-                    cooldownKey="verification"
+                    linkType="verification"
                     defaultEmail={email}
                 />
                 <Link component={RouterLink} to="/auth" underline="hover" fontWeight={600} alignSelf="flex-start">
