@@ -56,6 +56,7 @@
     "wait": "Send again in {{seconds}} s",
     "title": "Set a password?",
     "text": "We'll send a link to {{email}}. Open it to choose a password, then sign in again.",
+    "cancelsEmailChange": "Setting a password cancels the email change to {{email}}.",
     "send": "Send link",
     "sent": "We sent a link to set your password to {{email}}."
   },

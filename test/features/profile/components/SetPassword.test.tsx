@@ -2,17 +2,18 @@ import {act, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {startEmailLinkCooldown} from "@/api/emailLinkCooldown.tsx";
 import {SetPassword} from "@/features/profile/components/SetPassword.tsx";
-import {userWithoutPassword} from "@test/support/data.tsx";
+import type {UserDto} from "@/api/dto/UserDto.tsx";
+import {changingEmailUserWithoutPassword, userWithoutPassword} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {mockPendingPost, mockPost, mockProblem} from "@test/support/server.tsx";
 
 const PATH = "/auth/password/forgot";
 
-// Opens the dialog of sending the link; returns the user events and the `onSent` callback.
-async function openDialog() {
+// Opens `linkUser`'s dialog of sending the link; returns the user events and the `onSent` callback.
+async function openDialog(linkUser: UserDto = userWithoutPassword) {
     const onSent = vi.fn();
     const userEvents = userEvent.setup({advanceTimers: vi.advanceTimersByTime});
-    renderWithProviders(<SetPassword user={userWithoutPassword} onSent={onSent}/>);
+    renderWithProviders(<SetPassword user={linkUser} onSent={onSent}/>);
     await userEvents.click(screen.getByRole("button", {name: "Set a password"}));
     return {userEvents, onSent};
 }
@@ -32,6 +33,16 @@ describe("SetPassword", () => {
         expect(screen.getByRole("dialog", {
             name: "Set a password?",
             description: "We'll send a link to jan@example.com. Open it to choose a password, then sign in again.",
+        })).toBeInTheDocument();
+    });
+
+    it("tells that a pending email change will be cancelled", async () => {
+        await openDialog(changingEmailUserWithoutPassword);
+
+        expect(screen.getByRole("dialog", {
+            name: "Set a password?",
+            description: "We'll send a link to jan@example.com. Open it to choose a password, then sign in again. "
+                + "Setting a password cancels the email change to jan.nowy@example.com.",
         })).toBeInTheDocument();
     });
 

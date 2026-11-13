@@ -56,6 +56,7 @@
     "wait": "Wyślij ponownie za {{seconds}} s",
     "title": "Ustawić hasło?",
     "text": "Wyślemy link na {{email}}. Otwórz go, aby wybrać hasło, a potem zaloguj się ponownie.",
+    "cancelsEmailChange": "Ustawienie hasła anuluje zmianę adresu e-mail na {{email}}.",
     "send": "Wyślij link",
     "sent": "Wysłaliśmy link do ustawienia hasła na {{email}}."
   },

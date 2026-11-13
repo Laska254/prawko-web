@@ -30,6 +30,12 @@ export function SetPassword({user, onSent}: SetPasswordProps) {
         },
     });
 
+    // Setting the password through the link cancels a pending email change, as changing it does.
+    let text = t("setPassword.text", {email: user.email});
+    if (user.pendingEmail) {
+        text = `${text} ${t("setPassword.cancelsEmailChange", {email: user.pendingEmail})}`;
+    }
+
     // The last attempt's error stays while the dialog fades out, and is gone when it opens again.
     function open(): void {
         clear();
@@ -48,8 +54,7 @@ export function SetPassword({user, onSent}: SetPasswordProps) {
             <Button variant="outlined" startIcon={<Password/>} disabled={secondsLeft > 0} onClick={open}>
                 {buttonLabel()}
             </Button>
-            <ConfirmDialog open={isOpen} title={t("setPassword.title")}
-                           text={t("setPassword.text", {email: user.email})} confirmLabel={t("setPassword.send")}
+            <ConfirmDialog open={isOpen} title={t("setPassword.title")} text={text} confirmLabel={t("setPassword.send")}
                            loading={isSending} onConfirm={() => submit(undefined)} onCancel={() => setOpen(false)}>
                 {failure && <Alert severity="error" sx={{mt: 2}}>{t(failure.message)}</Alert>}
             </ConfirmDialog>
