@@ -2,9 +2,9 @@ import {useState} from "react";
 import {useSession} from "@/session/useSession.tsx";
 import {credentials, gitHubSignInDto, googleSignInDto} from "./data.tsx";
 
-// Shows the session's status, its user or whether it expired, with buttons to sign in (as `credentials`, or with
+// Shows the session's status, its user or why it ended, with buttons to sign in (as `credentials`, or with
 // `googleSignInDto` or `gitHubSignInDto`), to retry a failed session, to sign out, to clear the session and to forget
-// that it expired.
+// why it ended.
 export function ShowSession() {
     const session = useSession();
     const [isFailed, setFailed] = useState(false);
@@ -13,7 +13,7 @@ export function ShowSession() {
         <>
             <p data-testid="status">{session.status}</p>
             {session.status === "signedIn" && <p>{session.user.firstName}</p>}
-            {session.status === "signedOut" && session.expired && <p>Expired</p>}
+            {session.status === "signedOut" && session.endReason && <p>Ended: {session.endReason}</p>}
             {session.status === "error" && <button type="button" onClick={session.retry}>Retry</button>}
             <button type="button" onClick={() => session.signIn(credentials).catch(() => setFailed(true))}>
                 Sign in
@@ -27,7 +27,7 @@ export function ShowSession() {
             {isFailed && <p>Sign in failed</p>}
             <button type="button" onClick={session.signOut}>Sign out</button>
             <button type="button" onClick={session.clearSession}>Clear session</button>
-            <button type="button" onClick={session.clearExpired}>Clear expired</button>
+            <button type="button" onClick={session.clearEndReason}>Clear end reason</button>
         </>
     );
 }

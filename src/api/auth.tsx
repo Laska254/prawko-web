@@ -50,7 +50,8 @@ export async function logout(): Promise<void> {
 // Changes the password, then signs in again with the new one, as the server revokes the refresh token of every session.
 // Both under the refresh lock, so no tab refreshes with a revoked token in between. The new tokens replace the old ones
 // without clearing them first, so other tabs keep the session and take the new refresh token on their next refresh.
-// Rejects with the change's error; when signing in again fails, the session expires and the user signs in themselves.
+// Rejects with the change's error. When signing in again fails, the session ends, telling the user the password
+// changed, and they sign in with the new one themselves.
 export async function changePassword(userName: string, changePasswordDto: ChangePasswordDto): Promise<void> {
     await withLockedSession(async authorization => {
         await tokenApi.patch("/users/me/password", changePasswordDto, {headers: {Authorization: authorization}});
@@ -58,7 +59,7 @@ export async function changePassword(userName: string, changePasswordDto: Change
         try {
             saveTokens((await tokenApi.post<AuthTokensDto>("/auth", loginDto)).data);
         } catch {
-            expireSession();
+            expireSession("passwordChanged");
         }
     });
 }

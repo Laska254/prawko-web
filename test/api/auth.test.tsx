@@ -182,7 +182,7 @@ describe("auth", () => {
             expect(sessionEnded).not.toHaveBeenCalled();
         });
 
-        it("expires the session when signing in again fails", async () => {
+        it("ends the session as of the changed password when signing in again fails", async () => {
             mockChange(204);
             mockNetworkError("/auth");
 
@@ -190,7 +190,7 @@ describe("auth", () => {
 
             expect(getAccessToken()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(true);
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith("passwordChanged");
         });
     });
 
@@ -224,7 +224,7 @@ describe("auth", () => {
             expect(authorization).toBeNull();
             expect(getAccessToken()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(false);
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(null);
         });
 
         it("ends the session without refreshing it after a reload", async () => {
@@ -246,7 +246,7 @@ describe("auth", () => {
             await expect(logout()).resolves.toBeUndefined();
             expect(getAccessToken()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(false);
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(null);
         });
 
         it("sends nothing when another tab signed out first", async () => {
@@ -255,7 +255,7 @@ describe("auth", () => {
             await logout();
 
             expect(requests).toEqual([]);
-            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(false);
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(null);
         });
 
         it("waits for a refresh already sent and revokes the refresh token it stored", async () => {
