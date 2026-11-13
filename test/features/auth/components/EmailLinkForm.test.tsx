@@ -11,7 +11,7 @@ function renderForm(send: (email: string) => Promise<unknown>, defaultEmail?: st
             submitLabel="Send link"
             sentMessage="Link sent."
             send={send}
-            cooldownKey="test"
+            cooldownKey="verification"
             defaultEmail={defaultEmail}
         />
     );

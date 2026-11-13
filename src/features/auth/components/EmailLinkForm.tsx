@@ -6,7 +6,7 @@ import {EMAIL_LENGTH} from "@/api/fieldRules.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useCooldown} from "@/utils/useCooldown.tsx";
-import {COOLDOWN_MS, emailLinkCooldownKey} from "@/api/emailLinkCooldown.tsx";
+import {COOLDOWN_MS, type EmailLink, emailLinkCooldownKey} from "@/api/emailLinkCooldown.tsx";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";
 
@@ -15,7 +15,7 @@ interface EmailLinkFormProps {
     sentMessage: string;
     send: (email: string) => Promise<unknown>;
     // Forms sending the same kind of link share it, so their cooldown for an email is the same.
-    cooldownKey: string;
+    cooldownKey: EmailLink;
     defaultEmail?: string;
 }
 
