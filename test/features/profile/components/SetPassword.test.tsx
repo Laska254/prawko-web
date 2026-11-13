@@ -1,5 +1,6 @@
 import {act, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {startEmailLinkCooldown} from "@/api/emailLinkCooldown.tsx";
 import {SetPassword} from "@/features/profile/components/SetPassword.tsx";
 import {userWithoutPassword} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
@@ -46,6 +47,14 @@ describe("SetPassword", () => {
         expect(screen.getByRole("button", {name: "Send again in 60 s"})).toBeDisabled();
         act(() => vi.advanceTimersByTime(60_000));
         expect(screen.getByRole("button", {name: "Set a password"})).toBeEnabled();
+    });
+
+    it("waits out a link the forgot password page sent to the same email, ignoring case", () => {
+        startEmailLinkCooldown("passwordReset", "JAN@example.com");
+
+        renderWithProviders(<SetPassword user={userWithoutPassword} onSent={vi.fn()}/>);
+
+        expect(screen.getByRole("button", {name: "Send again in 60 s"})).toBeDisabled();
     });
 
     it("stays busy while sending", async () => {

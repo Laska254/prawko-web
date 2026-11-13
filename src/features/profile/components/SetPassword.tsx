@@ -4,12 +4,10 @@ import {Password} from "@mui/icons-material";
 import {useTranslation} from "react-i18next";
 import {forgotPassword} from "@/api/auth.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
+import {COOLDOWN_MS, emailLinkCooldownKey} from "@/api/emailLinkCooldown.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {useCooldown} from "@/utils/useCooldown.tsx";
-
-// The server sends a reset link at most once a minute per account; earlier requests are skipped without an error.
-const PASSWORD_LINK_COOLDOWN_MS = 60_000;
 
 interface SetPasswordProps {
     readonly user: UserDto;
@@ -19,10 +17,10 @@ interface SetPasswordProps {
 
 // Sends a password reset link to a user without a password, who signed up with Google or GitHub: changing a password
 // needs the current one, and the link proves the user owns the email instead. The button waits out the server's
-// cooldown, so a link it skipped isn't reported as sent.
+// cooldown, shared with the forgot password page as it is the same link, so a link it skipped isn't reported as sent.
 export function SetPassword({user, onSent}: SetPasswordProps) {
     const [isOpen, setOpen] = useState(false);
-    const {secondsLeft, start} = useCooldown(`passwordLink.${user.id}`, PASSWORD_LINK_COOLDOWN_MS);
+    const {secondsLeft, start} = useCooldown(emailLinkCooldownKey("passwordReset", user.email), COOLDOWN_MS);
     const {t} = useTranslation(["profile", "errors"]);
     const {submit, isSending, failure, clear} = useFormSubmission(() => forgotPassword({email: user.email}), {
         onSuccess: () => {
