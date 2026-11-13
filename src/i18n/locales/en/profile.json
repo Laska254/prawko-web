@@ -110,6 +110,12 @@
     "notLinked": "{{provider}} is no longer linked to your account.",
     "lastMethod": "{{provider}} is your only way to sign in, so it can't be unlinked."
   },
+  "deleteAccount": {
+    "button": "Delete account",
+    "title": "Delete your account?",
+    "text": "Your account and exam history will be deleted permanently. This can't be undone.",
+    "confirm": "Delete account"
+  },
   "passwordConfirm": {
     "label": "Current password",
     "prompt": "Enter your password to confirm.",

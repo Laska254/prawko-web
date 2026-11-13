@@ -9,6 +9,7 @@ import {useCurrentUser} from "@/session/useCurrentUser.tsx";
 import {useSignOut} from "@/session/useSignOut.tsx";
 import {ChangeEmail} from "../components/ChangeEmail.tsx";
 import {ChangePassword} from "../components/ChangePassword.tsx";
+import {DeleteAccount} from "../components/DeleteAccount.tsx";
 import {EditProfile} from "../components/EditProfile.tsx";
 import {ExamStats} from "../components/ExamStats.tsx";
 import {PendingEmailBanner} from "../components/PendingEmailBanner.tsx";
@@ -125,6 +126,9 @@ export function ProfilePage() {
                             loadingPosition="start" onClick={signOut}>
                         {t("profile.signOut")}
                     </Button>
+                    {/* Without a password, the account is deleted through an email link, which the server doesn't
+                        offer yet (Laska254/prawko-server#190). */}
+                    {user.hasPassword && <DeleteAccount/>}
                 </Stack>
             </Panel>
         </Stack>

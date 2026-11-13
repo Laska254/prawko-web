@@ -433,4 +433,22 @@ describe("ProfilePage", () => {
         await waitFor(() => expect(currentLocation().pathname).toBe("/auth"));
         expect(logouts).toEqual([{refreshToken: "refresh-token"}]);
     });
+
+    it("deletes the account and goes to /auth telling so", async () => {
+        const userEvents = userEvent.setup();
+        await renderProfile();
+        mockRequest("delete", "/users/me", {status: 204});
+
+        await userEvents.click(screen.getByRole("button", {name: "Delete account"}));
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret1{Enter}");
+
+        await waitFor(() => expect(currentLocation().pathname).toBe("/auth"));
+        expect(currentLocation().state).toEqual({notice: "accountDeleted"});
+    });
+
+    it("offers no account deletion without a password", async () => {
+        await renderProfile(userWithoutPassword);
+
+        expect(screen.queryByRole("button", {name: "Delete account"})).not.toBeInTheDocument();
+    });
 });
