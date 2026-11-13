@@ -1,8 +1,7 @@
 import {type ReactNode, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {login, loginWithGitHub, loginWithGoogle, logout} from "@/api/auth.tsx";
-import {clearTokens, endSession, isAuthenticated, onSessionEnded, onSessionStarted} from "@/api/tokens.tsx";
-import type {SessionEndReason} from "@/api/tokens.tsx";
+import {clearTokens, endSession, isAuthenticated, onSessionEnded, onSessionStarted, type SessionEndReason} from "@/api/tokens.tsx";
 import type {GitHubSignInDto} from "@/api/dto/GitHubSignInDto.tsx";
 import type {GoogleSignInDto} from "@/api/dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
