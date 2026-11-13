@@ -1,4 +1,5 @@
 import {api, createdId} from "./client.tsx";
+import {expireSession} from "./tokens.tsx";
 import type {DeleteAccountDto} from "./dto/DeleteAccountDto.tsx";
 import type {IdentityProvider} from "./dto/IdentityProvider.tsx";
 import type {LinkGitHubDto} from "./dto/LinkGitHubDto.tsx";
@@ -28,8 +29,11 @@ export async function updateUser(id: number, userUpdateDto: UserUpdateDto): Prom
     return (await api.patch<UserDto>(`/users/${id}`, userUpdateDto)).data;
 }
 
+// Ends the session once the account is gone, telling the user why they were signed out. Rejects with the request's
+// error and keeps the session.
 export async function deleteAccount(deleteAccountDto: DeleteAccountDto): Promise<void> {
     await api.delete("/users/me", {data: deleteAccountDto});
+    expireSession("accountDeleted");
 }
 
 // The Google account may have another email than the user.

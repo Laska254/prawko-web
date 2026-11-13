@@ -1,5 +1,6 @@
 import {apiUrl, mockRequest} from "@test/support/server.tsx";
-import {gitHubSignInDto, registerDto, user} from "@test/support/data.tsx";
+import {gitHubSignInDto, registerDto, tokens, user} from "@test/support/data.tsx";
+import {getRefreshToken, onSessionEnded, saveTokens} from "@/api/tokens.tsx";
 import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import {
     deleteAccount,
@@ -52,11 +53,29 @@ describe("users", () => {
         expect(requests).toEqual([{search: "", body: {firstName: "Anna"}}]);
     });
 
-    it("deletes the own account with the password", async () => {
+    it("deletes the own account with the password and ends the session as deleted", async () => {
+        saveTokens(tokens);
+        const listener = vi.fn();
+        const stopListening = onSessionEnded(listener);
         const requests = mockRequest("delete", "/users/me", {status: 204});
 
         await expect(deleteAccount({password: "secret1"})).resolves.toBeUndefined();
         expect(requests).toEqual([{search: "", body: {password: "secret1"}}]);
+        expect(getRefreshToken()).toBeNull();
+        expect(listener).toHaveBeenCalledExactlyOnceWith("accountDeleted");
+        stopListening();
+    });
+
+    it("keeps the session when deleting the account failed", async () => {
+        saveTokens(tokens);
+        const listener = vi.fn();
+        const stopListening = onSessionEnded(listener);
+        mockRequest("delete", "/users/me", {status: 400});
+
+        await expect(deleteAccount({password: "wrong"})).rejects.toMatchObject({response: {status: 400}});
+        expect(getRefreshToken()).toBe(tokens.refreshToken);
+        expect(listener).not.toHaveBeenCalled();
+        stopListening();
     });
 
     it("links a GitHub account with the current password", async () => {

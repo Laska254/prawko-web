@@ -220,7 +220,7 @@ describe("SessionProvider", () => {
         expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
     });
 
-    it.each(["expired", "passwordChanged"] as const)("signs out as %s and clears the cached data", async reason => {
+    it.each(["expired", "passwordChanged", "accountDeleted"] as const)("signs out as %s and clears the cached data", async reason => {
         saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
         const {queryClient} = renderSession();
