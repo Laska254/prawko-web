@@ -36,6 +36,21 @@
     "taken": "An account with this email already exists.",
     "tooSoon": "A link was sent less than a minute ago. Wait a moment and try again."
   },
+  "changePassword": {
+    "button": "Change password",
+    "title": "Change password",
+    "text": "You'll be signed out on your other devices.",
+    "cancelsEmailChange": "The email change to {{email}} will be cancelled.",
+    "new": "New password",
+    "newPlaceholder": "At least 7 characters",
+    "confirmation": "Confirm new password",
+    "save": "Save",
+    "length": "Password must be 7 to 63 characters.",
+    "same": "The new password must be different from the current one.",
+    "mismatch": "Passwords don't match.",
+    "changed": "Your password has been changed.",
+    "emailChangeCancelled": "The email change to {{email}} was cancelled."
+  },
   "resendEmail": {
     "button": "Resend links",
     "wait": "Resend in {{seconds}} s",

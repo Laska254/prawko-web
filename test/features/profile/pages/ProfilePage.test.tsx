@@ -354,6 +354,52 @@ describe("ProfilePage", () => {
         expect(queryClient.isFetching()).toBe(0);
     });
 
+    describe("changing the password", () => {
+        // Changes the password, after which the user is fetched again as `fetchedUser`.
+        async function changePassword(fetchedUser: UserDto) {
+            const userEvents = userEvent.setup();
+            mockPost("/auth/refresh", 200, tokens);
+            mockPost("/auth", 200, tokens);
+            mockRequest("patch", "/users/me/password", {status: 204});
+            mockRequest("get", "/users/me", {body: fetchedUser});
+
+            await userEvents.click(screen.getByRole("button", {name: "Change password"}));
+            await userEvents.type(screen.getByLabelText(/^Current password/), "secret1");
+            await userEvents.type(screen.getByLabelText(/^New password/), "secret2");
+            await userEvents.type(screen.getByLabelText(/^Confirm new password/), "secret2");
+            await userEvents.click(screen.getByRole("button", {name: "Save"}));
+            await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+            return userEvents;
+        }
+
+        it("tells the password was changed until the notice is closed", async () => {
+            await renderProfile();
+
+            const userEvents = await changePassword(user);
+
+            expect(screen.getByRole("status")).toHaveTextContent("Your password has been changed.");
+            await userEvents.click(screen.getByRole("button", {name: "Close"}));
+            expect(screen.queryByRole("status")).not.toBeInTheDocument();
+        });
+
+        it("tells the pending email change was cancelled, and drops its banner", async () => {
+            await renderProfile(changingEmailUser);
+            expect(screen.getByRole("status")).toHaveTextContent("Email change in progress");
+
+            await changePassword(user);
+
+            expect(screen.getByRole("status")).toHaveTextContent(
+                "Your password has been changed. The email change to jan.nowy@example.com was cancelled."
+            );
+        });
+
+        it("isn't offered without a password", async () => {
+            await renderProfile(userWithoutPassword);
+
+            expect(screen.queryByRole("button", {name: "Change password"})).not.toBeInTheDocument();
+        });
+    });
+
     it("opens the settings", async () => {
         const userEvents = userEvent.setup();
         await renderProfile();
