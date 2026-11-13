@@ -10,7 +10,7 @@ import {useNavigate} from "react-router";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
-import {startEmailLinkCooldown} from "../emailLinkCooldown.tsx";
+import {startEmailLinkCooldown} from "@/api/emailLinkCooldown.tsx";
 
 const FIELD_MESSAGES: FieldMessages<keyof RegisterDto, ParseKeys<"auth">> = {
     firstName: {400: "messages.firstNameLength"},

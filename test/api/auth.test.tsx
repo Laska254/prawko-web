@@ -1,9 +1,10 @@
 import {http, HttpResponse} from "msw/http";
 import {apiUrl, mockNetworkError, mockPendingRequest, mockPost, mockRequest, server} from "@test/support/server.tsx";
-import {credentials, gitHubSignInDto, googleSignInDto, tokens} from "@test/support/data.tsx";
+import {credentials, gitHubSignInDto, googleSignInDto, problem, tokens} from "@test/support/data.tsx";
 import {getAccessToken, getRefreshToken, onSessionEnded, saveTokens} from "@/api/tokens.tsx";
 import {api} from "@/api/client.tsx";
 import {
+    changePassword,
     forgotPassword,
     login,
     loginWithGitHub,
@@ -120,6 +121,79 @@ describe("auth", () => {
         });
     });
 
+    describe("changePassword", () => {
+        const changePasswordDto = {currentPassword: "secret1", newPassword: "secret2"};
+        const refreshedTokens = {accessToken: "refreshed-access-token", refreshToken: "refreshed-refresh-token",
+            expiresIn: 900};
+        const signedInTokens = {accessToken: "signed-in-access-token", refreshToken: "signed-in-refresh-token",
+            expiresIn: 900};
+        const sessionEnded = vi.fn();
+        let stopListening: () => void;
+
+        beforeEach(() => {
+            stopListening = onSessionEnded(sessionEnded);
+            mockPost("/auth/refresh", 200, refreshedTokens);
+            saveTokens(tokens);
+        });
+
+        afterEach(() => {
+            stopListening();
+            sessionEnded.mockReset();
+            vi.restoreAllMocks();
+        });
+
+        // Answers the change with `status`; returns each request's Authorization header and body.
+        function mockChange(status: number) {
+            const requests: unknown[] = [];
+            server.use(http.patch(apiUrl("/users/me/password"), async ({request}) => {
+                requests.push({authorization: request.headers.get("Authorization"), body: await request.json()});
+                if (status === 204) {
+                    return new HttpResponse(null, {status});
+                }
+                return HttpResponse.json(problem(status), {status});
+            }));
+            return requests;
+        }
+
+        it("changes the password with a new access token, then signs in again with the new one", async () => {
+            const changes = mockChange(204);
+            const logins = mockPost("/auth", 200, signedInTokens);
+            // Clearing the stored refresh token would end the session in other tabs.
+            const removeItem = vi.spyOn(Storage.prototype, "removeItem");
+
+            await expect(changePassword("jan", changePasswordDto)).resolves.toBeUndefined();
+
+            expect(changes).toEqual([{authorization: "Bearer refreshed-access-token", body: changePasswordDto}]);
+            expect(logins).toEqual([{userName: "jan", password: "secret2"}]);
+            expect(getAccessToken()).toBe("signed-in-access-token");
+            expect(getRefreshToken()).toBe("signed-in-refresh-token");
+            expect(removeItem).not.toHaveBeenCalled();
+            expect(sessionEnded).not.toHaveBeenCalled();
+        });
+
+        it("rejects with the change's error without signing in again", async () => {
+            mockChange(400);
+            const logins = mockPost("/auth", 200, signedInTokens);
+
+            await expect(changePassword("jan", changePasswordDto)).rejects.toMatchObject({response: {status: 400}});
+
+            expect(logins).toEqual([]);
+            expect(getRefreshToken()).toBe("refreshed-refresh-token");
+            expect(sessionEnded).not.toHaveBeenCalled();
+        });
+
+        it("ends the session as of the changed password when signing in again fails", async () => {
+            mockChange(204);
+            mockNetworkError("/auth");
+
+            await expect(changePassword("jan", changePasswordDto)).resolves.toBeUndefined();
+
+            expect(getAccessToken()).toBeNull();
+            expect(getRefreshToken()).toBeNull();
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith("passwordChanged");
+        });
+    });
+
     describe("logout", () => {
         const sessionEnded = vi.fn();
         let stopListening: () => void;
@@ -150,7 +224,7 @@ describe("auth", () => {
             expect(authorization).toBeNull();
             expect(getAccessToken()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(false);
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(null);
         });
 
         it("ends the session without refreshing it after a reload", async () => {
@@ -172,7 +246,7 @@ describe("auth", () => {
             await expect(logout()).resolves.toBeUndefined();
             expect(getAccessToken()).toBeNull();
             expect(getRefreshToken()).toBeNull();
-            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(false);
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(null);
         });
 
         it("sends nothing when another tab signed out first", async () => {
@@ -181,7 +255,7 @@ describe("auth", () => {
             await logout();
 
             expect(requests).toEqual([]);
-            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(false);
+            expect(sessionEnded).toHaveBeenCalledExactlyOnceWith(null);
         });
 
         it("waits for a refresh already sent and revokes the refresh token it stored", async () => {

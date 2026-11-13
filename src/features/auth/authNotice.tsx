@@ -2,7 +2,7 @@ import type {ParseKeys} from "i18next";
 import type {GenericMessageKey} from "@/api/errors.tsx";
 
 // The notices `AuthPage` shows when another page sends the user to sign in.
-export type AuthNoticeType = "verified" | "passwordReset" | "sessionExpired";
+export type AuthNoticeType = "verified" | "passwordReset" | "sessionExpired" | "passwordChanged";
 
 // A message shown on `AuthPage`, as a translation key: a notice, or why signing in failed on another page, e.g. the
 // message of the server's answer.

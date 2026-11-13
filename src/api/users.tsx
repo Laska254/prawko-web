@@ -1,5 +1,4 @@
 import {api, createdId} from "./client.tsx";
-import type {ChangePasswordDto} from "./dto/ChangePasswordDto.tsx";
 import type {DeleteAccountDto} from "./dto/DeleteAccountDto.tsx";
 import type {IdentityProvider} from "./dto/IdentityProvider.tsx";
 import type {LinkGitHubDto} from "./dto/LinkGitHubDto.tsx";
@@ -27,10 +26,6 @@ export async function getCurrentUserStats(): Promise<UserStatsDto> {
 // Admins can't change another user's email.
 export async function updateUser(id: number, userUpdateDto: UserUpdateDto): Promise<UserDto> {
     return (await api.patch<UserDto>(`/users/${id}`, userUpdateDto)).data;
-}
-
-export async function changePassword(changePasswordDto: ChangePasswordDto): Promise<void> {
-    await api.patch("/users/me/password", changePasswordDto);
 }
 
 export async function deleteAccount(deleteAccountDto: DeleteAccountDto): Promise<void> {

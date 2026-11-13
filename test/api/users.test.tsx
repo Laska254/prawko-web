@@ -2,7 +2,6 @@ import {apiUrl, mockRequest} from "@test/support/server.tsx";
 import {gitHubSignInDto, registerDto, user} from "@test/support/data.tsx";
 import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import {
-    changePassword,
     deleteAccount,
     deleteUser,
     getCurrentUser,
@@ -51,14 +50,6 @@ describe("users", () => {
 
         expect(await updateUser(1, {firstName: "Anna"})).toEqual({...user, firstName: "Anna"});
         expect(requests).toEqual([{search: "", body: {firstName: "Anna"}}]);
-    });
-
-    it("changes the password", async () => {
-        const changePasswordDto = {currentPassword: "secret1", newPassword: "secret2"};
-        const requests = mockRequest("patch", "/users/me/password", {status: 204});
-
-        await expect(changePassword(changePasswordDto)).resolves.toBeUndefined();
-        expect(requests).toEqual([{search: "", body: changePasswordDto}]);
     });
 
     it("deletes the own account with the password", async () => {

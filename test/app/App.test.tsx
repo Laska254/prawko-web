@@ -5,7 +5,7 @@ import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {tokens, user} from "@test/support/data.tsx";
 import {startedState, startSignIn} from "@test/support/gitHubSignIn.tsx";
 import {renderWithoutRouter} from "@test/support/render.tsx";
-import {mockPost, mockRequest} from "@test/support/server.tsx";
+import {mockNetworkError, mockPost, mockRequest} from "@test/support/server.tsx";
 
 // Pages are lazy, so tests wait for the page's content before checking it.
 function renderAt(path: string) {
@@ -166,6 +166,36 @@ describe("App", () => {
         expect(window.location.pathname).toBe("/auth");
         expect(screen.getByRole("alert")).toHaveTextContent("Your session has expired. Sign in again to continue.");
         expect(refreshes).toHaveLength(1);
+
+        await act(() => new Promise(resolve => {
+            window.addEventListener("popstate", resolve, {once: true});
+            window.history.back();
+        }));
+
+        await waitFor(() => expect(window.location.pathname).toBe("/auth"));
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("tells the user their password changed once when signing in again with the new one fails", async () => {
+        signIn();
+        mockPost("/auth/refresh", 200, tokens);
+        mockRequest("patch", "/users/me/password", {status: 204});
+        mockNetworkError("/auth");
+        // Home comes first, so back goes to a signed-in page of this test.
+        window.history.pushState({}, "", "/");
+        renderAt("/profile");
+        const userEvents = userEvent.setup();
+        await userEvents.click(await screen.findByRole("button", {name: "Change password"}));
+        await userEvents.type(screen.getByLabelText(/^Current password/), "secret1");
+        await userEvents.type(screen.getByLabelText(/^New password/), "secret2");
+        await userEvents.type(screen.getByLabelText(/^Confirm new password/), "secret2");
+
+        await userEvents.click(screen.getByRole("button", {name: "Save"}));
+
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/auth");
+        expect(screen.getByRole("alert")).toHaveTextContent("Your password has been changed. Sign in with the new one.");
 
         await act(() => new Promise(resolve => {
             window.addEventListener("popstate", resolve, {once: true});

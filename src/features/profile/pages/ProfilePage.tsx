@@ -1,3 +1,4 @@
+import {useState} from "react";
 import {Alert, Box, Button, Stack, Typography} from "@mui/material";
 import {Logout, Settings} from "@mui/icons-material";
 import type {ParseKeys} from "i18next";
@@ -7,9 +8,11 @@ import {Panel} from "@/components/layout/Panel.tsx";
 import {useCurrentUser} from "@/session/useCurrentUser.tsx";
 import {useSignOut} from "@/session/useSignOut.tsx";
 import {ChangeEmail} from "../components/ChangeEmail.tsx";
+import {ChangePassword} from "../components/ChangePassword.tsx";
 import {EditProfile} from "../components/EditProfile.tsx";
 import {ExamStats} from "../components/ExamStats.tsx";
 import {PendingEmailBanner} from "../components/PendingEmailBanner.tsx";
+import {SetPassword} from "../components/SetPassword.tsx";
 import {SignInMethods} from "../components/SignInMethods.tsx";
 import {useProfilePageState} from "../hooks/useProfilePageState.tsx";
 import {useRefetchUserOnFocus} from "../hooks/useRefetchUserOnFocus.tsx";
@@ -33,6 +36,37 @@ function AccountValue({value}: AccountValueProps) {
     return <Typography component="dd" fontWeight={600} sx={{overflowWrap: "anywhere"}}>{value}</Typography>;
 }
 
+// What an action did, shown above the profile until closed: the password changed, with the email whose pending change
+// it cancelled (`null` without one), or the link to set a password sent to `email`.
+type ProfileNotice =
+    | {readonly kind: "passwordChanged"; readonly cancelledEmail: string | null}
+    | {readonly kind: "passwordLinkSent"; readonly email: string};
+
+interface NoticeAlertProps {
+    readonly notice: ProfileNotice;
+    readonly onClose: () => void;
+}
+
+function NoticeAlert({notice, onClose}: NoticeAlertProps) {
+    const {t} = useTranslation("profile");
+
+    function message(): string {
+        switch (notice.kind) {
+            case "passwordChanged":
+                if (notice.cancelledEmail) {
+                    return `${t("changePassword.changed")} ${t("changePassword.emailChangeCancelled", {
+                        email: notice.cancelledEmail,
+                    })}`;
+                }
+                return t("changePassword.changed");
+            case "passwordLinkSent":
+                return t("setPassword.sent", {email: notice.email});
+        }
+    }
+
+    return <Alert severity="success" role="status" onClose={onClose}>{message()}</Alert>;
+}
+
 export function ProfilePage() {
     const {t} = useTranslation("profile");
     const user = useCurrentUser();
@@ -41,6 +75,17 @@ export function ProfilePage() {
     const {signOut, isSigningOut} = useSignOut();
     // Set when the user comes back from GitHub's page after asking to link it.
     const {gitHubLink, failure, dropGitHubLink} = useProfilePageState();
+    const [notice, setNotice] = useState<ProfileNotice | null>(null);
+    // Changing a password needs the current one; a user without one sets it through a reset link.
+    let passwordAction = (
+        <SetPassword user={user} onSent={email => setNotice({kind: "passwordLinkSent", email})}/>
+    );
+    if (user.hasPassword) {
+        passwordAction = (
+            <ChangePassword user={user}
+                            onChanged={cancelledEmail => setNotice({kind: "passwordChanged", cancelledEmail})}/>
+        );
+    }
     const fields: readonly AccountField[] = [
         {label: "profile.firstName", value: user.firstName},
         {label: "profile.lastName", value: user.lastName},
@@ -52,6 +97,7 @@ export function ProfilePage() {
         <Stack spacing={3}>
             <Typography variant="h4" component="h1" fontWeight={700}>{t("profile.title")}</Typography>
             {failure && <Alert severity="error">{t(failure)}</Alert>}
+            {notice && <NoticeAlert notice={notice} onClose={() => setNotice(null)}/>}
             <PendingEmailBanner user={user}/>
             <Panel p={3} spacing={2}>
                 <Typography variant="h6" component="h2" fontWeight={700}>{t("profile.account")}</Typography>
@@ -71,6 +117,7 @@ export function ProfilePage() {
                 <Stack direction="row" flexWrap="wrap" gap={2}>
                     <EditProfile user={user}/>
                     <ChangeEmail user={user}/>
+                    {passwordAction}
                     <Button component={Link} to="/settings" variant="outlined" startIcon={<Settings/>}>
                         {t("profile.settings")}
                     </Button>

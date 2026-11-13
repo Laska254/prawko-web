@@ -36,6 +36,29 @@
     "taken": "Konto z tym adresem e-mail już istnieje.",
     "tooSoon": "Link został wysłany niecałą minutę temu. Odczekaj chwilę i spróbuj ponownie."
   },
+  "changePassword": {
+    "button": "Zmień hasło",
+    "title": "Zmień hasło",
+    "text": "Sesje na Twoich innych urządzeniach zostaną zakończone.",
+    "cancelsEmailChange": "Zmiana adresu e-mail na {{email}} zostanie anulowana.",
+    "new": "Nowe hasło",
+    "newPlaceholder": "Co najmniej 7 znaków",
+    "confirmation": "Potwierdź nowe hasło",
+    "save": "Zapisz",
+    "length": "Hasło musi mieć od 7 do 63 znaków.",
+    "same": "Nowe hasło musi się różnić od obecnego.",
+    "mismatch": "Hasła nie są takie same.",
+    "changed": "Twoje hasło zostało zmienione.",
+    "emailChangeCancelled": "Zmiana adresu e-mail na {{email}} została anulowana."
+  },
+  "setPassword": {
+    "button": "Ustaw hasło",
+    "wait": "Wyślij ponownie za {{seconds}} s",
+    "title": "Ustawić hasło?",
+    "text": "Wyślemy link na {{email}}. Otwórz go, aby wybrać hasło, a potem zaloguj się ponownie.",
+    "send": "Wyślij link",
+    "sent": "Wysłaliśmy link do ustawienia hasła na {{email}}."
+  },
   "resendEmail": {
     "button": "Wyślij linki ponownie",
     "wait": "Wyślij ponownie za {{seconds}} s",
