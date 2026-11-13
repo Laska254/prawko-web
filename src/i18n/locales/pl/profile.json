@@ -112,9 +112,11 @@
   },
   "deleteAccount": {
     "button": "Usuń konto",
+    "wait": "Wyślij ponownie za {{seconds}} s",
     "title": "Usunąć konto?",
-    "text": "Twoje konto i historia egzaminów zostaną trwale usunięte. Tej operacji nie można cofnąć.",
-    "confirm": "Usuń konto"
+    "text": "Twoje konto i historia egzaminów zostaną trwale usunięte, czego nie można cofnąć. Wyślemy link na {{email}}, aby to potwierdzić.",
+    "send": "Wyślij link",
+    "sent": "Wysłaliśmy link do potwierdzenia usunięcia konta na {{email}}. Konto zostanie usunięte dopiero po potwierdzeniu w tym linku."
   },
   "passwordConfirm": {
     "label": "Obecne hasło",

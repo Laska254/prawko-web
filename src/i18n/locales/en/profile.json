@@ -112,9 +112,11 @@
   },
   "deleteAccount": {
     "button": "Delete account",
+    "wait": "Send again in {{seconds}} s",
     "title": "Delete your account?",
-    "text": "Your account and exam history will be deleted permanently. This can't be undone.",
-    "confirm": "Delete account"
+    "text": "Your account and exam history will be deleted permanently, which can't be undone. We'll send a link to {{email}} to confirm it.",
+    "send": "Send link",
+    "sent": "We sent a link to confirm deleting your account to {{email}}. Your account is deleted only once you confirm it there."
   },
   "passwordConfirm": {
     "label": "Current password",
