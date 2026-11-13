@@ -7,8 +7,8 @@
 * `/exam` exam (placeholder)
 * `/history` past exams (placeholder)
 * `/profile` account data, edit name and username, change email (pending change with resend and cancel), change
-  password (or send a link to set one without a password), sign-in methods (link and unlink Google and GitHub), exam
-  statistics, settings link and sign out
+  password (or send a link to set one without a password), delete the account (confirmed by an emailed link), sign-in
+  methods (link and unlink Google and GitHub), exam statistics, settings link and sign out
 * `/settings` preferences (placeholder)
 * `/auth/github/callback` finishes signing in with GitHub
 * `/auth/github/callback/link` hands GitHub's code to the profile to link the account (signed in)
@@ -40,7 +40,7 @@ See the server's [API](https://github.com/Laska254/prawko-server/blob/main/docs/
     + `DELETE /me/identities/{provider}` unlink a provider account
     + `PATCH /{id}` update a user
     + `PATCH /me/password` change password
-    + `DELETE /me` delete own account
+    + `POST /me/deletion` request deleting own account (link sent by email)
     + `GET` list users (admin)
     + `GET /{id}` get a user (admin)
     + `DELETE /{id}` delete a user (admin)
