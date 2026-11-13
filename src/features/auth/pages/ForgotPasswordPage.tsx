@@ -22,7 +22,7 @@ export function ForgotPasswordPage() {
                     submitLabel={t("forgotPassword.submit")}
                     sentMessage={t("forgotPassword.sent")}
                     send={email => forgotPassword({email})}
-                    cooldownKey="passwordReset"
+                    linkType="passwordReset"
                 />
                 <Link component={RouterLink} to="/auth" underline="hover" fontWeight={600} alignSelf="flex-start">
                     {t("backToSignIn")}

@@ -7,7 +7,7 @@ describe("isAdmin", () => {
         ["a signed in user", false, {status: "signedIn", user}],
         ["a loading session", false, {status: "loading"}],
         ["a failed session", false, {status: "error", retry: () => {}}],
-        ["a guest", false, {status: "signedOut", expired: false}],
+        ["a guest", false, {status: "signedOut", endReason: null}],
     ])("for %s is %s", (_, expected, session) => {
         expect(isAdmin(session)).toBe(expected);
     });

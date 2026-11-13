@@ -153,6 +153,7 @@ describe("AuthPage", () => {
         ["verified", "Your email is verified. You can sign in with it now.", "SuccessOutlinedIcon"],
         ["passwordReset", "Your password has been changed. You can sign in now.", "SuccessOutlinedIcon"],
         ["sessionExpired", "Your session has expired. Sign in again to continue.", "InfoOutlinedIcon"],
+        ["passwordChanged", "Your password has been changed. Sign in with the new one.", "SuccessOutlinedIcon"],
     ])("shows the %s notice until the user switches forms", async (notice, message, icon) => {
         const user = userEvent.setup();
         renderWithProviders(<AuthPage/>, {route: "/auth", state: {notice}});

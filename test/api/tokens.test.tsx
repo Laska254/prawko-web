@@ -54,7 +54,7 @@ describe("tokens", () => {
 
         expect(getAccessToken()).toBeNull();
         expect(getRefreshToken()).toBeNull();
-        expect(listener).toHaveBeenCalledExactlyOnceWith(false);
+        expect(listener).toHaveBeenCalledExactlyOnceWith(null);
         stopListening();
     });
 
@@ -67,7 +67,19 @@ describe("tokens", () => {
 
         expect(getAccessToken()).toBeNull();
         expect(getRefreshToken()).toBeNull();
-        expect(listener).toHaveBeenCalledExactlyOnceWith(true);
+        expect(listener).toHaveBeenCalledExactlyOnceWith("expired");
+        stopListening();
+    });
+
+    it("tells the listeners why the server no longer accepts the session", () => {
+        const listener = vi.fn();
+        const stopListening = onSessionEnded(listener);
+        saveTokens(tokens);
+
+        expireSession("passwordChanged");
+
+        expect(getRefreshToken()).toBeNull();
+        expect(listener).toHaveBeenCalledExactlyOnceWith("passwordChanged");
         stopListening();
     });
 
@@ -106,12 +118,12 @@ describe("tokens", () => {
             window.dispatchEvent(new StorageEvent("storage", {...event, storageArea: localStorage}));
         }
 
-        it("ends the session, not knowing whether it expired, when the refresh token is removed", () => {
+        it("ends the session, not knowing why, when the refresh token is removed", () => {
             changeInAnotherTab(() => localStorage.removeItem("refreshToken"),
                 {key: "refreshToken", oldValue: "refresh-token"});
 
             expect(getAccessToken()).toBeNull();
-            expect(listener).toHaveBeenCalledExactlyOnceWith(false);
+            expect(listener).toHaveBeenCalledExactlyOnceWith(null);
             expect(startedListener).not.toHaveBeenCalled();
         });
 

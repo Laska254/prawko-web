@@ -1,9 +1,9 @@
-import {screen} from "@testing-library/react";
+import {act, screen} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {Route, Routes} from "react-router";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
-import {saveTokens} from "@/api/tokens.tsx";
+import {expireSession, saveTokens} from "@/api/tokens.tsx";
 import {tokens, user} from "@test/support/data.tsx";
 import {mockPendingRequest, mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
@@ -61,5 +61,17 @@ describe("RequireAuth", () => {
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {notice: "sessionExpired"}});
+    });
+
+    it("redirects to /auth with the password changed notice when signing in again with the new one failed", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        renderRoutes();
+        expect(await screen.findByText("Home")).toBeInTheDocument();
+
+        act(() => expireSession("passwordChanged"));
+
+        expect(await screen.findByTestId("location")).toBeInTheDocument();
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {notice: "passwordChanged"}});
     });
 });

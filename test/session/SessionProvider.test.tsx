@@ -203,7 +203,7 @@ describe("SessionProvider", () => {
         renderSession();
 
         await waitFor(() => expect(status()).toBe("signedOut"));
-        expect(screen.getByText("Expired")).toBeInTheDocument();
+        expect(screen.getByText("Ended: expired")).toBeInTheDocument();
         expect(getRefreshToken()).toBeNull();
     });
 
@@ -216,37 +216,37 @@ describe("SessionProvider", () => {
         act(() => endSession());
 
         expect(status()).toBe("signedOut");
-        expect(screen.queryByText("Expired")).not.toBeInTheDocument();
+        expect(screen.queryByText(/^Ended/)).not.toBeInTheDocument();
         expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
     });
 
-    it("signs out as expired and clears the cached data when the API client expires the session", async () => {
+    it.each(["expired", "passwordChanged"] as const)("signs out as %s and clears the cached data", async reason => {
         saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
         const {queryClient} = renderSession();
         expect(await screen.findByText("Jan")).toBeInTheDocument();
 
-        act(() => expireSession());
+        act(() => expireSession(reason));
 
         expect(status()).toBe("signedOut");
-        expect(screen.getByText("Expired")).toBeInTheDocument();
+        expect(screen.getByText(`Ended: ${reason}`)).toBeInTheDocument();
         expect(queryClient.getQueryData(userKeys.me())).toBeUndefined();
     });
 
-    it("stays signed out but isn't expired once it forgets the expiry", async () => {
+    it("stays signed out but forgets why the session ended", async () => {
         saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
         renderSession();
         expect(await screen.findByText("Jan")).toBeInTheDocument();
         act(() => expireSession());
 
-        await userEvent.setup().click(screen.getByRole("button", {name: "Clear expired"}));
+        await userEvent.setup().click(screen.getByRole("button", {name: "Clear end reason"}));
 
         expect(status()).toBe("signedOut");
-        expect(screen.queryByText("Expired")).not.toBeInTheDocument();
+        expect(screen.queryByText(/^Ended/)).not.toBeInTheDocument();
     });
 
-    it("isn't expired once the next session ends by signing out", async () => {
+    it("forgets why the last session ended once the next one ends by signing out", async () => {
         saveTokens(tokens);
         mockRequest("get", "/users/me", {body: user});
         mockPost("/auth", 200, tokens);
@@ -261,7 +261,7 @@ describe("SessionProvider", () => {
         await userEvents.click(screen.getByRole("button", {name: "Sign out"}));
 
         expect(status()).toBe("signedOut");
-        expect(screen.queryByText("Expired")).not.toBeInTheDocument();
+        expect(screen.queryByText(/^Ended/)).not.toBeInTheDocument();
     });
 
     it("takes the stored session and loads its user when another tab signed in again before this one heard of the removal", async () => {

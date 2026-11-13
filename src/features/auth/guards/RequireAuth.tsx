@@ -3,12 +3,13 @@ import {useTranslation} from "react-i18next";
 import {PageError} from "@/components/feedback/PageError.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
 import {useSession} from "@/session/useSession.tsx";
-import {authNoticeState} from "../authNotice.tsx";
+import type {SessionEndReason} from "@/api/tokens.tsx";
+import {authNoticeState, SESSION_END_NOTICES} from "../authNotice.tsx";
 
-// An expired session tells the sign in page why the user is back there.
-function signedOutState(expired: boolean) {
-    if (expired) {
-        return authNoticeState("sessionExpired");
+// A session the server ended tells the sign in page why the user is back there.
+function signedOutState(endReason: SessionEndReason | null) {
+    if (endReason) {
+        return authNoticeState(SESSION_END_NOTICES[endReason]);
     }
 }
 
@@ -24,6 +25,6 @@ export function RequireAuth() {
         case "signedIn":
             return <Outlet/>;
         case "signedOut":
-            return <Navigate to="/auth" replace state={signedOutState(session.expired)}/>;
+            return <Navigate to="/auth" replace state={signedOutState(session.endReason)}/>;
     }
 }

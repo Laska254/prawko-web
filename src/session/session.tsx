@@ -2,16 +2,17 @@ import {createContext} from "react";
 import type {GitHubSignInDto} from "@/api/dto/GitHubSignInDto.tsx";
 import type {GoogleSignInDto} from "@/api/dto/GoogleSignInDto.tsx";
 import type {LoginDto} from "@/api/dto/LoginDto.tsx";
+import type {SessionEndReason} from "@/api/tokens.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 
 // Who is signed in. `loading` while the stored tokens' user is fetched; `error` when that failed with no answer
 // or a server error (a `401` that a refresh can't fix ends the session in the API client instead), but not when
-// fetching it again fails, which keeps the user loaded before. `expired` when this tab's session ended as the server
-// no longer accepted it, not as the user signed out.
+// fetching it again fails, which keeps the user loaded before. `endReason` when this tab's session ended as the server
+// no longer accepted it, `null` when the user signed out, or another tab ended it without saying why.
 export type SessionState =
     | {readonly status: "loading"}
     | {readonly status: "signedIn"; readonly user: UserDto}
-    | {readonly status: "signedOut"; readonly expired: boolean}
+    | {readonly status: "signedOut"; readonly endReason: SessionEndReason | null}
     | {readonly status: "error"; readonly retry: () => void};
 
 // Checking `status` narrows the state, e.g. to read `user` once it's `signedIn`.
@@ -26,8 +27,8 @@ export type Session = SessionState & {
     readonly signOut: () => Promise<void>;
     // Forgets the session in this browser without telling the server, e.g. after the server revoked it.
     readonly clearSession: () => void;
-    // Forgets that the session expired, once the user was told, so `expired` doesn't tell them again.
-    readonly clearExpired: () => void;
+    // Forgets why the session ended, once the user was told, so `endReason` doesn't tell them again.
+    readonly clearEndReason: () => void;
 };
 
 export const SessionContext = createContext<Session | null>(null);
