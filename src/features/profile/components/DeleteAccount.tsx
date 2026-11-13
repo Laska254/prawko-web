@@ -16,7 +16,7 @@ const COOLDOWN_MS = 60_000;
 // The server reports a missing password like a wrong one.
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     400: "passwordConfirm.wrong",
-    429: "changeEmail.tooSoon",
+    429: "linkTooSoon",
 };
 
 interface DeleteAccountProps {

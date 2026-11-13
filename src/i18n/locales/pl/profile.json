@@ -1,4 +1,5 @@
 {
+  "linkTooSoon": "Link został wysłany niecałą minutę temu. Odczekaj chwilę i spróbuj ponownie.",
   "profile": {
     "title": "Profil",
     "account": "Konto",
@@ -33,8 +34,7 @@
     "passwordTitle": "Zmienić e-mail?",
     "passwordText": "Linki zostaną wysłane na {{email}} i na Twój obecny adres.",
     "invalid": "Podaj prawidłowy adres e-mail.",
-    "taken": "Konto z tym adresem e-mail już istnieje.",
-    "tooSoon": "Link został wysłany niecałą minutę temu. Odczekaj chwilę i spróbuj ponownie."
+    "taken": "Konto z tym adresem e-mail już istnieje."
   },
   "changePassword": {
     "button": "Zmień hasło",

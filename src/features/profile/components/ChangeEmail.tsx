@@ -25,7 +25,7 @@ const FIELD_MESSAGES: FieldMessages<"email", ParseKeys<"profile">> = {
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     400: "passwordConfirm.wrong",
     409: "edit.changedMeanwhile",
-    429: "changeEmail.tooSoon",
+    429: "linkTooSoon",
 };
 
 interface ChangeEmailProps {
