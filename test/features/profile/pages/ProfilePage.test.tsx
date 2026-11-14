@@ -433,4 +433,19 @@ describe("ProfilePage", () => {
         await waitFor(() => expect(currentLocation().pathname).toBe("/auth"));
         expect(logouts).toEqual([{refreshToken: "refresh-token"}]);
     });
+
+    it("tells the link to confirm deleting the account was sent until the notice is closed", async () => {
+        const userEvents = userEvent.setup();
+        await renderProfile();
+        mockRequest("post", "/users/me/deletion", {status: 204});
+
+        await userEvents.click(screen.getByRole("button", {name: "Delete account"}));
+        await userEvents.type(screen.getByLabelText(/Current password/), "secret1{Enter}");
+
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+        expect(screen.getByRole("status")).toHaveTextContent("We sent a link to confirm deleting your account to "
+            + "jan@example.com. Your account is deleted only once you confirm it there.");
+        await userEvents.click(screen.getByRole("button", {name: "Close"}));
+        expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
 });

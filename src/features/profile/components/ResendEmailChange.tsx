@@ -4,12 +4,12 @@ import {useQueryClient} from "@tanstack/react-query";
 import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
-import type {StatusMessages} from "@/api/errors.tsx";
+import {isTooManyRequests, type StatusMessages} from "@/api/errors.tsx";
 import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {updateUser} from "@/api/users.tsx";
 import {currentUserQuery} from "@/session/currentUserQuery.tsx";
 import {useCooldown} from "@/utils/useCooldown.tsx";
-import {EMAIL_CHANGE_COOLDOWN_MS, emailChangeCooldownKey, isTooSoon} from "../emailChangeCooldown.tsx";
+import {EMAIL_CHANGE_COOLDOWN_MS, emailChangeCooldownKey} from "../emailChangeCooldown.tsx";
 import {PasswordConfirmDialog} from "./PasswordConfirmDialog.tsx";
 
 // The pending email is checked for conflicts again, as another user may have taken it since.
@@ -21,7 +21,7 @@ const FIELD_MESSAGES: FieldMessages<"email", ParseKeys<"profile">> = {
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     400: "passwordConfirm.wrong",
     409: "edit.changedMeanwhile",
-    429: "changeEmail.tooSoon",
+    429: "linkTooSoon",
 };
 
 interface ResendEmailChangeProps {
@@ -49,7 +49,8 @@ export function ResendEmailChange({user, pendingEmail}: ResendEmailChangeProps) 
                 setOpen(false);
             },
             onError: error => {
-                if (isTooSoon(error)) {
+                // A `429` says the links were sent less than the cooldown ago, e.g. from another tab.
+                if (isTooManyRequests(error)) {
                     start();
                 }
             },

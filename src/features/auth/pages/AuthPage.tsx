@@ -11,6 +11,7 @@ const NOTICES: Record<AuthNoticeType, AuthNotice> = {
     passwordReset: {message: "notices.passwordReset", severity: "success"},
     sessionExpired: {message: "notices.sessionExpired", severity: "info"},
     passwordChanged: {message: "notices.passwordChanged", severity: "success"},
+    accountDeleted: {message: "notices.accountDeleted", severity: "success"},
 };
 
 function noticeOf(state: AuthPageState | null): AuthNotice | undefined {

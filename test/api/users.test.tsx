@@ -2,7 +2,6 @@ import {apiUrl, mockRequest} from "@test/support/server.tsx";
 import {gitHubSignInDto, registerDto, user} from "@test/support/data.tsx";
 import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import {
-    deleteAccount,
     deleteUser,
     getCurrentUser,
     getCurrentUserStats,
@@ -11,6 +10,7 @@ import {
     linkGitHub,
     linkGoogle,
     register,
+    requestAccountDeletion,
     unlinkIdentity,
     updateUser,
 } from "@/api/users.tsx";
@@ -52,10 +52,10 @@ describe("users", () => {
         expect(requests).toEqual([{search: "", body: {firstName: "Anna"}}]);
     });
 
-    it("deletes the own account with the password", async () => {
-        const requests = mockRequest("delete", "/users/me", {status: 204});
+    it("requests the own account's deletion with the password", async () => {
+        const requests = mockRequest("post", "/users/me/deletion", {status: 204});
 
-        await expect(deleteAccount({password: "secret1"})).resolves.toBeUndefined();
+        await expect(requestAccountDeletion({password: "secret1"})).resolves.toBeUndefined();
         expect(requests).toEqual([{search: "", body: {password: "secret1"}}]);
     });
 

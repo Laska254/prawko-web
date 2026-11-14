@@ -6,14 +6,14 @@ import type {ParseKeys} from "i18next";
 import {useTranslation} from "react-i18next";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import type {UserUpdateDto} from "@/api/dto/UserUpdateDto.tsx";
-import type {StatusMessages} from "@/api/errors.tsx";
+import {isTooManyRequests, type StatusMessages} from "@/api/errors.tsx";
 import {EMAIL_LENGTH} from "@/api/fieldRules.tsx";
 import {type FieldMessages, useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {updateUser} from "@/api/users.tsx";
 import {ConfirmDialog} from "@/components/feedback/ConfirmDialog.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {currentUserQuery} from "@/session/currentUserQuery.tsx";
-import {isTooSoon, startEmailChangeCooldown} from "../emailChangeCooldown.tsx";
+import {startEmailChangeCooldown} from "../emailChangeCooldown.tsx";
 import {PasswordConfirmDialog} from "./PasswordConfirmDialog.tsx";
 
 const FIELD_MESSAGES: FieldMessages<"email", ParseKeys<"profile">> = {
@@ -25,7 +25,7 @@ const FIELD_MESSAGES: FieldMessages<"email", ParseKeys<"profile">> = {
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"profile">> = {
     400: "passwordConfirm.wrong",
     409: "edit.changedMeanwhile",
-    429: "changeEmail.tooSoon",
+    429: "linkTooSoon",
 };
 
 interface ChangeEmailProps {
@@ -61,7 +61,7 @@ export function ChangeEmail({user}: ChangeEmailProps) {
                 if (error.kind === "validation") {
                     setConfirming(false);
                 }
-                if (isTooSoon(error)) {
+                if (isTooManyRequests(error)) {
                     startEmailChangeCooldown(user.id);
                 }
             },

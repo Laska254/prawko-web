@@ -29,9 +29,10 @@ export function isAuthenticated(): boolean {
     return getRefreshToken() !== null;
 }
 
-// Why the server no longer accepts a session, which ended without the user asking: it `expired`, or the password
-// changed (`passwordChanged`) and signing in again with the new one failed.
-export type SessionEndReason = "expired" | "passwordChanged";
+// Why the server no longer accepts a session, which ended without the user signing out: it `expired`, the password
+// changed (`passwordChanged`) and signing in again with the new one failed, or the user deleted their account
+// (`accountDeleted`).
+export type SessionEndReason = "expired" | "passwordChanged" | "accountDeleted";
 
 // `reason` is `null` when the user ended the session, or this tab doesn't know why it ended.
 type SessionEndedListener = (reason: SessionEndReason | null) => void;

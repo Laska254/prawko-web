@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {Alert, type AlertColor, Stack} from "@mui/material";
 import {useTranslation} from "react-i18next";
-import {errorMessage, type GenericMessageKey, toApiError} from "@/api/errors.tsx";
+import {errorMessage, type GenericMessageKey, isTooManyRequests, toApiError} from "@/api/errors.tsx";
 import {EMAIL_LENGTH} from "@/api/fieldRules.tsx";
 import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
@@ -44,7 +44,7 @@ export function EmailLinkForm({submitLabel, sentMessage, send, linkType, default
             })
             .catch(caught => {
                 const error = toApiError(caught);
-                if (error.kind === "http" && error.status === 429) {
+                if (isTooManyRequests(error)) {
                     start();
                 }
                 setErrorKey(errorMessage(error));
