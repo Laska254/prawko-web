@@ -124,5 +124,6 @@ describe("LoginForm opened from a signed-in page", () => {
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation()).toEqual({pathname: "/profile", search: "?tab=account", state: null});
+        expect(screen.getByTestId("location")).toHaveAttribute("data-navigation-type", "REPLACE");
     });
 });

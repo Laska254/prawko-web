@@ -108,6 +108,27 @@ describe("App", () => {
         expect(window.location.pathname).toBe("/profile");
     });
 
+    it("replaces sign in with the deletion dialog, so going back doesn't open the dialog again", async () => {
+        window.history.pushState({}, "", "/");
+        renderAt("/account/delete");
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        const {length} = window.history;
+        mockPost("/auth", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+        mockRequest("get", "/users/me/stats", {status: 404});
+        const userEvents = userEvent.setup();
+        await userEvents.type(screen.getByRole("textbox", {name: "Login"}), credentials.userName);
+        await userEvents.type(screen.getByLabelText(/^Password/), credentials.password);
+        await userEvents.click(screen.getByRole("button", {name: "Sign in"}));
+        expect(await screen.findByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+        expect(window.history.length).toBe(length);
+
+        act(() => window.history.back());
+
+        await waitFor(() => expect(window.location.pathname).toBe("/"));
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    });
+
     it("goes on to the deletion dialog after signing in with GitHub from /account/delete", async () => {
         const state = await startedState("/account/delete");
         mockPost("/auth/github", 200, tokens);

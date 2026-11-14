@@ -54,6 +54,7 @@ describe("GoogleSignIn", () => {
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation().pathname).toBe("/account/delete");
+        expect(screen.getByTestId("location")).toHaveAttribute("data-navigation-type", "REPLACE");
     });
 
     it("blocks the button and shows progress while sending", async () => {

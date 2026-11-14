@@ -32,7 +32,8 @@ export function GoogleSignIn({clientId, formType, setUnavailable}: GoogleSignInP
     const {signInWithGoogle} = useSession();
     const {submit, isSending, failure, clear} = useFormSubmission(signInWithGoogle, {
         statusMessages: STATUS_MESSAGES,
-        onSuccess: () => navigate(returnPath),
+        // Replaces sign in, so going back doesn't land on it and get sent to the return path again.
+        onSuccess: () => navigate(returnPath, {replace: true}),
     });
     const {t} = useTranslation(["auth", "errors"]);
 
