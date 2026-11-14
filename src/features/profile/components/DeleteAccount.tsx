@@ -23,14 +23,16 @@ interface DeleteAccountProps {
     readonly user: UserDto;
     // Called once the link was sent, with the email it went to.
     readonly onSent: (email: string) => void;
+    // Opens the dialog right away, unless the cooldown is running, as the button then waits it out.
+    readonly initiallyOpen?: boolean;
 }
 
 // Asks for the account's deletion, with the password when the user has one. The server emails a link, and the account
 // is deleted only once it's confirmed there, so the session goes on until then. The button waits out the server's
 // cooldown.
-export function DeleteAccount({user, onSent}: DeleteAccountProps) {
-    const [isOpen, setOpen] = useState(false);
+export function DeleteAccount({user, onSent, initiallyOpen = false}: DeleteAccountProps) {
     const {secondsLeft, start} = useCooldown(`accountDeletion.${user.id}`, COOLDOWN_MS);
+    const [isOpen, setOpen] = useState(() => initiallyOpen && secondsLeft === 0);
     const {t} = useTranslation(["profile", "errors"]);
     const {submit, isSending, failure, clear} = useFormSubmission(requestAccountDeletion, {
         statusMessages: STATUS_MESSAGES,

@@ -8,15 +8,16 @@ import {mockRequest} from "@test/support/server.tsx";
 import {ShowSession} from "@test/support/ShowSession.tsx";
 
 // Shows the session's status on the home page too, to check the redirect once the session is in that status.
-function renderRoutes() {
+function renderRoutes(state?: unknown) {
     renderWithProviders(
         <Routes>
             <Route element={<RequireGuest/>}>
                 <Route path="/auth" element={<p>Auth</p>}/>
             </Route>
             <Route path="/" element={<><p>Home</p><ShowSession/></>}/>
+            <Route path="/profile" element={<p>Profile</p>}/>
         </Routes>,
-        {route: "/auth"}
+        {route: "/auth", state}
     );
 }
 
@@ -52,5 +53,14 @@ describe("RequireGuest", () => {
         await waitForStatus(expected);
 
         expect(screen.getByText("Home")).toBeInTheDocument();
+    });
+
+    it("redirects to the page the user was sent to sign in from", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+
+        renderRoutes({from: "/profile"});
+
+        expect(await screen.findByText("Profile")).toBeInTheDocument();
     });
 });

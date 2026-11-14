@@ -27,9 +27,17 @@ export interface GitHubAuthorization {
     readonly redirectUri: string;
 }
 
+// The authorization GitHub's answer belongs to, and the app's page to go to once it's handled, if the page that started
+// it gave one.
+export interface TakenGitHubAuthorization {
+    readonly authorization: GitHubAuthorization;
+    readonly returnPath?: string;
+}
+
 // What this tab keeps of the authorization it started: `state` tells GitHub's answer to it from a forged link.
 interface StartedAuthorization extends GitHubAuthorization {
     readonly state: string;
+    readonly returnPath?: string;
 }
 
 // Whether an authorization can start: outside a secure context (HTTPS or localhost), browsers have no `crypto.subtle`.
@@ -38,8 +46,9 @@ export function isGitHubAuthorizationSupported(): boolean {
 }
 
 // Leaves the app for GitHub's consent page, which sends the user back to `redirectPath` of this origin. GitHub accepts
-// only a callback URL of the app's settings, matched exactly.
-export async function startGitHubAuthorization(clientId: string, redirectPath: string): Promise<void> {
+// only a callback URL of the app's settings, matched exactly. `returnPath` is kept for that page to go on to.
+export async function startGitHubAuthorization(clientId: string, redirectPath: string,
+                                               returnPath?: string): Promise<void> {
     const state = randomString(STATE_BYTES);
     const codeVerifier = randomString(CODE_VERIFIER_BYTES);
     const redirectUri = `${window.location.origin}${redirectPath}`;
@@ -52,22 +61,22 @@ export async function startGitHubAuthorization(clientId: string, redirectPath: s
         code_challenge_method: "S256",
     });
     // In `sessionStorage`, as the page is left and this tab comes back to it.
-    const started: StartedAuthorization = {state, codeVerifier, redirectUri};
+    const started: StartedAuthorization = {state, codeVerifier, redirectUri, returnPath};
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(started));
     window.location.assign(`${AUTHORIZE_URL}?${params}`);
 }
 
 // The authorization this tab started, if `state` is that authorization's; `null` for any other link, which may be
 // forged. Either way the authorization can't be used again.
-export function takeGitHubAuthorization(state: string | null): GitHubAuthorization | null {
+export function takeGitHubAuthorization(state: string | null): TakenGitHubAuthorization | null {
     const stored = sessionStorage.getItem(STORAGE_KEY);
     sessionStorage.removeItem(STORAGE_KEY);
     if (stored === null) {
         return null;
     }
-    const {state: startedState, codeVerifier, redirectUri}: StartedAuthorization = JSON.parse(stored);
+    const {state: startedState, codeVerifier, redirectUri, returnPath}: StartedAuthorization = JSON.parse(stored);
     if (state !== startedState) {
         return null;
     }
-    return {codeVerifier, redirectUri};
+    return {authorization: {codeVerifier, redirectUri}, returnPath};
 }

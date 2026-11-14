@@ -4,7 +4,7 @@ import {Link, Route, Routes} from "react-router";
 import {saveTokens} from "@/api/tokens.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
-import type {ProfilePageState} from "@/features/profile/gitHubLink.tsx";
+import type {ProfilePageState} from "@/features/profile/profilePageState.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
 import {
@@ -206,6 +206,12 @@ describe("ProfilePage", () => {
 
         expect(await screen.findByRole("button", {name: "Continue with GitHub"})).toBeInTheDocument();
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("opens the account's deletion dialog when the navigation state asks for it", async () => {
+        await renderProfile(user, {deleteAccount: true});
+
+        expect(screen.getByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
     });
 
     it("drops the navigation state once read, so a reload doesn't send GitHub's code again", async () => {

@@ -9,7 +9,7 @@ import {ThemeModeSwitch} from "@/components/ThemeModeSwitch.tsx";
 import type {SessionState} from "@/session/session.tsx";
 import {useSession} from "@/session/useSession.tsx";
 
-// Like `RequireGuest`, a user still loading (or failed to load) goes home, where `RequireAuth` shows that.
+// A user still loading (or failed to load) goes home, where `RequireAuth` shows that.
 function backLink({status}: SessionState): {readonly to: string; readonly label: ParseKeys<"app">} {
     if (status === "signedOut") {
         return {to: "/auth", label: "notFound.backToSignIn"};

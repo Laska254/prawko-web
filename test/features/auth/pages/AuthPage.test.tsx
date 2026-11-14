@@ -202,6 +202,13 @@ describe("AuthPage", () => {
         expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: null});
     });
 
+    it("keeps the page to go back to after signing in when clearing the notice", () => {
+        renderAtRoute(<><AuthPage/><ShowLocation/></>, "/auth", {notice: "sessionExpired", from: "/history"});
+
+        expect(screen.getByRole("alert")).toHaveTextContent("Your session has expired. Sign in again to continue.");
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {from: "/history"}});
+    });
+
     it("leaves the navigation state alone without a notice", () => {
         renderAtRoute(<><AuthPage/><ShowLocation/></>, "/auth", {other: true});
 

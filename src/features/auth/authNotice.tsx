@@ -16,10 +16,11 @@ export const SESSION_END_NOTICES: Record<SessionEndReason, AuthNoticeType> = {
 // message of the server's answer.
 export type AuthMessage = ParseKeys<"auth"> | GenericMessageKey;
 
-// What another page can hand to `AuthPage` through the navigation state.
+// What another page can hand to `AuthPage` through the navigation state, and the path to go back to after signing in.
 export interface AuthPageState {
     readonly notice?: AuthNoticeType;
     readonly failure?: AuthMessage;
+    readonly from?: string;
 }
 
 // Navigation state for `/auth` that shows the notice; typed, so a misspelt notice doesn't compile.
