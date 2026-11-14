@@ -23,6 +23,31 @@ describe("GitHubButton", () => {
         expect(takeGitHubAuthorization(searchParams.get("state"))).not.toBeNull();
     });
 
+    it("stores the page to go on to with what it started", async () => {
+        const assign = vi.fn();
+        vi.stubGlobal("location", {...window.location, assign});
+        renderWithProviders(<GitHubButton clientId="client-id" redirectPath="/back" returnPath="/profile"/>);
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Continue with GitHub"}));
+
+        await waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
+        const {searchParams} = new URL(assign.mock.calls[0][0]);
+        expect(takeGitHubAuthorization(searchParams.get("state"))?.returnPath).toBe("/profile");
+    });
+
+    it("runs what it's given before leaving", async () => {
+        const assign = vi.fn();
+        vi.stubGlobal("location", {...window.location, assign});
+        const onStart = vi.fn();
+        renderWithProviders(<GitHubButton clientId="client-id" redirectPath="/back" onStart={onStart}/>);
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Continue with GitHub"}));
+
+        await waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
+        expect(onStart).toHaveBeenCalledTimes(1);
+        expect(onStart).toHaveBeenCalledBefore(assign);
+    });
+
     it("is in the app's language", async () => {
         renderWithProviders(<GitHubButton clientId="client-id" redirectPath="/back"/>);
 

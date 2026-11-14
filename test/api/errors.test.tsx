@@ -3,7 +3,7 @@ import {delay, http, HttpResponse} from "msw";
 import i18n from "i18next";
 import {problem} from "@test/support/data.tsx";
 import {apiUrl, server} from "@test/support/server.tsx";
-import {type ApiError, errorMessage, toApiError} from "@/api/errors.tsx";
+import {type ApiError, errorMessage, isTooManyRequests, toApiError} from "@/api/errors.tsx";
 
 // Sends a request answered by `resolver` and returns what it rejected with.
 async function rejectionOf(resolver: () => Response | Promise<Response>, timeout = 0): Promise<unknown> {
@@ -101,5 +101,19 @@ describe("errorMessage", () => {
 
     it("falls back to the generic message for other statuses", () => {
         expect(errorMessage({kind: "http", status: 500}, {401: "Wrong password."})).toBe("errors:unexpected");
+    });
+});
+
+describe("isTooManyRequests", () => {
+    it("is true for a 429", () => {
+        expect(isTooManyRequests({kind: "http", status: 429})).toBe(true);
+    });
+
+    it.each<ApiError>([
+        {kind: "http", status: 400},
+        {kind: "validation", status: 429, fields: {}},
+        {kind: "network"},
+    ])("is false for another $kind error", error => {
+        expect(isTooManyRequests(error)).toBe(false);
     });
 });

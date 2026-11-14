@@ -113,3 +113,17 @@ describe("LoginForm", () => {
         expect(currentLocation().pathname).toBe("/auth/password/forgot");
     });
 });
+
+describe("LoginForm opened from a signed-in page", () => {
+    it("signs in and goes back to that page", async () => {
+        mockPost("/auth", 200, tokens);
+        mockRequest("get", "/users/me", {body: signedInUser});
+        renderAtRoute(<LoginForm/>, "/auth", {from: "/profile?tab=account"});
+
+        await signIn(userEvent.setup());
+
+        expect(await screen.findByTestId("location")).toBeInTheDocument();
+        expect(currentLocation()).toEqual({pathname: "/profile", search: "?tab=account", state: null});
+        expect(screen.getByTestId("location")).toHaveAttribute("data-navigation-type", "REPLACE");
+    });
+});

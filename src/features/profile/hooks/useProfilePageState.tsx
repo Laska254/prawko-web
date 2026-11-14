@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {useLocation, useNavigate} from "react-router";
-import type {ProfilePageState} from "../gitHubLink.tsx";
+import type {ProfilePageState} from "../profilePageState.tsx";
 
 interface ProfilePageStateHandle extends ProfilePageState {
     // Drops GitHub's code once it's used up or the user cancelled, so linking GitHub again later doesn't send it.

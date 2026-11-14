@@ -2,13 +2,15 @@
 
 ## Pages
 
-* `/auth` sign in and create an account
+* `/auth` sign in and create an account; signing in goes back to the signed-in page that sent the user here, also when
+  the server ended the session there but not after signing out there, else home; leaving for a password reset or a new
+  verification link loses the way back, so signing in afterwards goes home
 * `/` home page
 * `/exam` exam (placeholder)
 * `/history` past exams (placeholder)
 * `/profile` account data, edit name and username, change email (pending change with resend and cancel), change
-  password (or send a link to set one without a password), sign-in methods (link and unlink Google and GitHub), exam
-  statistics, settings link and sign out
+  password (or send a link to set one without a password), delete the account (confirmed by an emailed link), sign-in
+  methods (link and unlink Google and GitHub), exam statistics, settings link and sign out
 * `/settings` preferences (placeholder)
 * `/auth/github/callback` finishes signing in with GitHub
 * `/auth/github/callback/link` hands GitHub's code to the profile to link the account (signed in)
@@ -16,6 +18,9 @@
 * `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
 * `/auth/password/reset` set a new password
+* `/account/delete` delete the account (the link of the store listing): opens `/profile` with the deletion dialog, after
+  signing in when signed out
+* `/account/delete/confirm` confirm deleting the account from the emailed link
 * any other path: 404 page, with a link home (or to sign in when signed out)
 
 ## Used endpoints
@@ -40,7 +45,8 @@ See the server's [API](https://github.com/Laska254/prawko-server/blob/main/docs/
     + `DELETE /me/identities/{provider}` unlink a provider account
     + `PATCH /{id}` update a user
     + `PATCH /me/password` change password
-    + `DELETE /me` delete own account
+    + `POST /me/deletion` request deleting own account (link sent by email)
+    + `POST /deletion/confirm` delete the account with the emailed link's token
     + `GET` list users (admin)
     + `GET /{id}` get a user (admin)
     + `DELETE /{id}` delete a user (admin)

@@ -154,6 +154,7 @@ describe("AuthPage", () => {
         ["passwordReset", "Your password has been changed. You can sign in now.", "SuccessOutlinedIcon"],
         ["sessionExpired", "Your session has expired. Sign in again to continue.", "InfoOutlinedIcon"],
         ["passwordChanged", "Your password has been changed. Sign in with the new one.", "SuccessOutlinedIcon"],
+        ["accountDeleted", "Your account and exam history have been deleted.", "SuccessOutlinedIcon"],
     ])("shows the %s notice until the user switches forms", async (notice, message, icon) => {
         const user = userEvent.setup();
         renderWithProviders(<AuthPage/>, {route: "/auth", state: {notice}});
@@ -199,6 +200,13 @@ describe("AuthPage", () => {
 
         expect(screen.getByRole("alert")).toHaveTextContent("Your session has expired. Sign in again to continue.");
         expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: null});
+    });
+
+    it("keeps the page to go back to after signing in when clearing the notice", () => {
+        renderAtRoute(<><AuthPage/><ShowLocation/></>, "/auth", {notice: "sessionExpired", from: "/history"});
+
+        expect(screen.getByRole("alert")).toHaveTextContent("Your session has expired. Sign in again to continue.");
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {from: "/history"}});
     });
 
     it("leaves the navigation state alone without a notice", () => {

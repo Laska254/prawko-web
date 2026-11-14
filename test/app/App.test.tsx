@@ -2,7 +2,7 @@ import {act, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {App} from "@/app/App.tsx";
 import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
-import {tokens, user} from "@test/support/data.tsx";
+import {credentials, tokens, user} from "@test/support/data.tsx";
 import {startedState, startSignIn} from "@test/support/gitHubSignIn.tsx";
 import {renderWithoutRouter} from "@test/support/render.tsx";
 import {mockNetworkError, mockPost, mockRequest} from "@test/support/server.tsx";
@@ -79,6 +79,65 @@ describe("App", () => {
         expect(window.location.pathname).toBe("/profile");
         expect(window.location.search).toBe("");
         expect(window.history.length).toBe(length);
+    });
+
+    it("opens the profile with the account's deletion dialog from /account/delete, replacing the link", async () => {
+        signIn();
+
+        renderAt("/account/delete");
+        const {length} = window.history;
+
+        expect(await screen.findByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/profile");
+        expect(window.history.length).toBe(length);
+    });
+
+    it("sends a guest from /account/delete to sign in, and on to the deletion dialog after signing in", async () => {
+        renderAt("/account/delete");
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/auth");
+        mockPost("/auth", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const userEvents = userEvent.setup();
+
+        await userEvents.type(screen.getByRole("textbox", {name: "Login"}), credentials.userName);
+        await userEvents.type(screen.getByLabelText(/^Password/), credentials.password);
+        await userEvents.click(screen.getByRole("button", {name: "Sign in"}));
+
+        expect(await screen.findByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/profile");
+    });
+
+    it("replaces sign in with the deletion dialog, so going back doesn't open the dialog again", async () => {
+        window.history.pushState({}, "", "/");
+        renderAt("/account/delete");
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        const {length} = window.history;
+        mockPost("/auth", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+        mockRequest("get", "/users/me/stats", {status: 404});
+        const userEvents = userEvent.setup();
+        await userEvents.type(screen.getByRole("textbox", {name: "Login"}), credentials.userName);
+        await userEvents.type(screen.getByLabelText(/^Password/), credentials.password);
+        await userEvents.click(screen.getByRole("button", {name: "Sign in"}));
+        expect(await screen.findByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+        expect(window.history.length).toBe(length);
+
+        act(() => window.history.back());
+
+        await waitFor(() => expect(window.location.pathname).toBe("/"));
+        await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    });
+
+    it("goes on to the deletion dialog after signing in with GitHub from /account/delete", async () => {
+        const state = await startedState("/account/delete");
+        mockPost("/auth/github", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+
+        renderAt(`/auth/github/callback?code=code&state=${state}`);
+
+        expect(await screen.findByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/profile");
     });
 
     it("replaces the GitHub callback with the sign in page when signing in fails", async () => {
@@ -228,6 +287,7 @@ describe("App", () => {
             ["/auth/verify/sent", "Check your email"],
             ["/auth/password/forgot", "Forgot password?"],
             ["/auth/password/reset", "Invalid reset link"],
+            ["/account/delete/confirm", "Invalid link"],
         ])("shows %s", async (path, heading) => {
             if (isSignedIn) {
                 signIn();
@@ -252,6 +312,22 @@ describe("App", () => {
             await userEvents.click(screen.getByRole("button", {name: "Set new password"}));
 
             expect(await screen.findByText("Your password has been changed. You can sign in now.")).toBeInTheDocument();
+            expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+            expect(window.location.pathname).toBe("/auth");
+            expect(getRefreshToken()).toBeNull();
+        });
+
+        it("deletes the account and goes to sign in signed out", async () => {
+            if (isSignedIn) {
+                signIn();
+            }
+            mockPost("/users/deletion/confirm", 200, {id: user.id});
+            const userEvents = userEvent.setup();
+            renderAt("/account/delete/confirm?token=token");
+
+            await userEvents.click(await screen.findByRole("button", {name: "Delete account"}));
+
+            expect(await screen.findByText("Your account and exam history have been deleted.")).toBeInTheDocument();
             expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
             expect(window.location.pathname).toBe("/auth");
             expect(getRefreshToken()).toBeNull();

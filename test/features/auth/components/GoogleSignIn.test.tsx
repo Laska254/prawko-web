@@ -11,16 +11,17 @@ const {idToken} = googleSignInDto;
 
 const setUnavailable = vi.fn();
 
-function renderGoogleSignIn() {
-    return renderAtRoute(<GoogleSignIn clientId={CLIENT_ID} formType="login" setUnavailable={setUnavailable}/>, "/auth");
+function renderGoogleSignIn(state?: unknown) {
+    return renderAtRoute(<GoogleSignIn clientId={CLIENT_ID} formType="login" setUnavailable={setUnavailable}/>, "/auth",
+        state);
 }
 
 function findButton() {
     return screen.findByRole("button", {name: "Continue with Google"});
 }
 
-async function renderLoaded() {
-    renderGoogleSignIn();
+async function renderLoaded(state?: unknown) {
+    renderGoogleSignIn(state);
     const google = loadGoogleScript();
     await findButton();
     return google;
@@ -42,6 +43,18 @@ describe("GoogleSignIn", () => {
         expect(currentLocation().pathname).toBe("/");
         expect(requests).toEqual([googleSignInDto]);
         expect(getRefreshToken()).toBe(tokens.refreshToken);
+    });
+
+    it("signs in and goes back to the signed-in page the user came from", async () => {
+        mockPost("/auth/google", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const {sendCredential} = await renderLoaded({from: "/account/delete"});
+
+        await sendCredential(idToken);
+
+        expect(await screen.findByTestId("location")).toBeInTheDocument();
+        expect(currentLocation().pathname).toBe("/account/delete");
+        expect(screen.getByTestId("location")).toHaveAttribute("data-navigation-type", "REPLACE");
     });
 
     it("blocks the button and shows progress while sending", async () => {

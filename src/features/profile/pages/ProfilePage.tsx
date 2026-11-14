@@ -9,6 +9,7 @@ import {useCurrentUser} from "@/session/useCurrentUser.tsx";
 import {useSignOut} from "@/session/useSignOut.tsx";
 import {ChangeEmail} from "../components/ChangeEmail.tsx";
 import {ChangePassword} from "../components/ChangePassword.tsx";
+import {DeleteAccount} from "../components/DeleteAccount.tsx";
 import {EditProfile} from "../components/EditProfile.tsx";
 import {ExamStats} from "../components/ExamStats.tsx";
 import {PendingEmailBanner} from "../components/PendingEmailBanner.tsx";
@@ -37,10 +38,11 @@ function AccountValue({value}: AccountValueProps) {
 }
 
 // What an action did, shown above the profile until closed: the password changed, with the email whose pending change
-// it cancelled (`null` without one), or the link to set a password sent to `email`.
+// it cancelled (`null` without one), or the link to set a password or confirm the account's deletion sent to `email`.
 type ProfileNotice =
     | {readonly kind: "passwordChanged"; readonly cancelledEmail: string | null}
-    | {readonly kind: "passwordLinkSent"; readonly email: string};
+    | {readonly kind: "passwordLinkSent"; readonly email: string}
+    | {readonly kind: "deletionLinkSent"; readonly email: string};
 
 interface NoticeAlertProps {
     readonly notice: ProfileNotice;
@@ -61,6 +63,8 @@ function NoticeAlert({notice, onClose}: NoticeAlertProps) {
                 return t("changePassword.changed");
             case "passwordLinkSent":
                 return t("setPassword.sent", {email: notice.email});
+            case "deletionLinkSent":
+                return t("deleteAccount.sent", {email: notice.email});
         }
     }
 
@@ -73,8 +77,8 @@ export function ProfilePage() {
     // The pending email change follows the links opened in another tab, window or device.
     useRefetchUserOnFocus();
     const {signOut, isSigningOut} = useSignOut();
-    // Set when the user comes back from GitHub's page after asking to link it.
-    const {gitHubLink, failure, dropGitHubLink} = useProfilePageState();
+    // Set when the user comes back from GitHub's page after asking to link it, or opens `/account/delete`.
+    const {gitHubLink, failure, deleteAccount, dropGitHubLink} = useProfilePageState();
     const [notice, setNotice] = useState<ProfileNotice | null>(null);
     // Changing a password needs the current one; a user without one sets it through a reset link.
     let passwordAction = (
@@ -125,6 +129,8 @@ export function ProfilePage() {
                             loadingPosition="start" onClick={signOut}>
                         {t("profile.signOut")}
                     </Button>
+                    <DeleteAccount user={user} onSent={email => setNotice({kind: "deletionLinkSent", email})}
+                                   initiallyOpen={deleteAccount}/>
                 </Stack>
             </Panel>
         </Stack>

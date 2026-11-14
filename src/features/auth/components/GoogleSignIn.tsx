@@ -8,6 +8,7 @@ import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {GoogleButton} from "@/components/google/GoogleButton.tsx";
 import {useSession} from "@/session/useSession.tsx";
 import type {FormType} from "../formConfig.tsx";
+import {useReturnPath} from "../hooks/useReturnPath.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     401: "messages.googleInvalid",
@@ -27,10 +28,12 @@ interface GoogleSignInProps {
 export function GoogleSignIn({clientId, formType, setUnavailable}: GoogleSignInProps) {
     const [prevFormType, setPrevFormType] = useState(formType);
     const navigate = useNavigate();
+    const returnPath = useReturnPath();
     const {signInWithGoogle} = useSession();
     const {submit, isSending, failure, clear} = useFormSubmission(signInWithGoogle, {
         statusMessages: STATUS_MESSAGES,
-        onSuccess: () => navigate("/"),
+        // Replaces sign in, so going back doesn't land on it and get sent to the return path again.
+        onSuccess: () => navigate(returnPath, {replace: true}),
     });
     const {t} = useTranslation(["auth", "errors"]);
 

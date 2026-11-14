@@ -11,7 +11,16 @@ const NOTICES: Record<AuthNoticeType, AuthNotice> = {
     passwordReset: {message: "notices.passwordReset", severity: "success"},
     sessionExpired: {message: "notices.sessionExpired", severity: "info"},
     passwordChanged: {message: "notices.passwordChanged", severity: "success"},
+    accountDeleted: {message: "notices.accountDeleted", severity: "success"},
 };
+
+// The state without its notice or failure: where to go back to after signing in stays.
+function withoutNotice({from}: AuthPageState): AuthPageState | null {
+    if (from) {
+        return {from};
+    }
+    return null;
+}
 
 function noticeOf(state: AuthPageState | null): AuthNotice | undefined {
     if (state?.failure) {
@@ -32,7 +41,7 @@ export function AuthPage() {
     // cleared from it.
     useEffect(() => {
         if (noticeOf(location.state)) {
-            navigate(".", {replace: true, state: null});
+            navigate(".", {replace: true, state: withoutNotice(location.state)});
         }
     }, [location.state, navigate]);
 

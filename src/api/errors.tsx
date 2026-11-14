@@ -49,6 +49,11 @@ export function toApiError(error: unknown): ApiError {
     return {kind: "http", status, problem: data};
 }
 
+// A `429`: the server limits how often the request can be made, e.g. a link sent less than its cooldown ago.
+export function isTooManyRequests(error: ApiError): boolean {
+    return error.kind === "http" && error.status === 429;
+}
+
 // Messages are translation keys (`K`), which the caller translates: api/ can't import i18n/.
 
 // The client's message per response status. The server's own texts can't be shown.

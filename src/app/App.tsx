@@ -1,9 +1,10 @@
 import {Suspense} from "react";
-import {BrowserRouter, Route, Routes} from "react-router";
+import {BrowserRouter, Navigate, Route, Routes} from "react-router";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {RequireGuest} from "@/features/auth/guards/RequireGuest.tsx";
 import {GITHUB_CALLBACK_PATH} from "@/features/auth/gitHubCallback.tsx";
 import {GITHUB_LINK_CALLBACK_PATH} from "@/features/profile/gitHubLink.tsx";
+import type {ProfilePageState} from "@/features/profile/profilePageState.tsx";
 import {PageLoading} from "@/components/feedback/PageLoading.tsx";
 import {PageErrorBoundary} from "@/components/feedback/PageErrorBoundary.tsx";
 import {SignedInLayout} from "./layout/SignedInLayout.tsx";
@@ -27,7 +28,11 @@ const VerificationSentPage = lazyPage(() => import("@/features/auth/pages/Verifi
 const ForgotPasswordPage = lazyPage(() => import("@/features/auth/pages/ForgotPasswordPage.tsx"),
     "ForgotPasswordPage");
 const ResetPasswordPage = lazyPage(() => import("@/features/auth/pages/ResetPasswordPage.tsx"), "ResetPasswordPage");
+const ConfirmAccountDeletionPage = lazyPage(() => import("@/features/auth/pages/ConfirmAccountDeletionPage.tsx"),
+    "ConfirmAccountDeletionPage");
 const NotFoundPage = lazyPage(() => import("./pages/NotFoundPage.tsx"), "NotFoundPage");
+
+const DELETE_ACCOUNT_STATE: ProfilePageState = {deleteAccount: true};
 
 export function App() {
     return (
@@ -45,17 +50,22 @@ export function App() {
                                 <Route path="/settings" element={<SettingsPage/>}/>
                                 <Route path={GITHUB_LINK_CALLBACK_PATH} element={<LinkGitHubCallbackPage/>}/>
                             </Route>
+                            {/* The account deletion link of the app's store listing: the profile with its dialog open. */}
+                            <Route path="/account/delete"
+                                   element={<Navigate to="/profile" replace state={DELETE_ACCOUNT_STATE}/>}/>
                         </Route>
-                        {/* Guests: signed-in users go home. */}
+                        {/* Guests: signed-in users go back to the page that sent them here, or home. */}
                         <Route element={<RequireGuest/>}>
                             <Route path="/auth" element={<AuthPage/>}/>
-                            <Route path={GITHUB_CALLBACK_PATH} element={<GitHubCallbackPage/>}/>
                         </Route>
-                        {/* Public: email verification, password recovery and 404, signed in or not. */}
+                        {/* Signing in with GitHub, which sends a signed-in visitor home itself. */}
+                        <Route path={GITHUB_CALLBACK_PATH} element={<GitHubCallbackPage/>}/>
+                        {/* Public: email links, password recovery and 404, signed in or not. */}
                         <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
                         <Route path="/auth/verify/sent" element={<VerificationSentPage/>}/>
                         <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
                         <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
+                        <Route path="/account/delete/confirm" element={<ConfirmAccountDeletionPage/>}/>
                         <Route path="*" element={<NotFoundPage/>}/>
                     </Routes>
                 </Suspense>

@@ -1,4 +1,5 @@
 {
+  "linkTooSoon": "A link was sent less than a minute ago. Wait a moment and try again.",
   "profile": {
     "title": "Profile",
     "account": "Account",
@@ -33,8 +34,7 @@
     "passwordTitle": "Change your email?",
     "passwordText": "Links will be sent to {{email}} and to your current address.",
     "invalid": "Enter a valid email address.",
-    "taken": "An account with this email already exists.",
-    "tooSoon": "A link was sent less than a minute ago. Wait a moment and try again."
+    "taken": "An account with this email already exists."
   },
   "changePassword": {
     "button": "Change password",
@@ -109,6 +109,14 @@
     "confirm": "Unlink",
     "notLinked": "{{provider}} is no longer linked to your account.",
     "lastMethod": "{{provider}} is your only way to sign in, so it can't be unlinked."
+  },
+  "deleteAccount": {
+    "button": "Delete account",
+    "wait": "Send again in {{seconds}} s",
+    "title": "Delete your account?",
+    "text": "Your account and exam history will be deleted permanently, which can't be undone. We'll send a link to {{email}} to confirm it.",
+    "send": "Send link",
+    "sent": "We sent a link to confirm deleting your account to {{email}}. Your account is deleted only once you confirm it there."
   },
   "passwordConfirm": {
     "label": "Current password",

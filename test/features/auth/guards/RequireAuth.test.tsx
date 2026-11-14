@@ -3,19 +3,21 @@ import userEvent from "@testing-library/user-event";
 import {Route, Routes} from "react-router";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
-import {expireSession, saveTokens} from "@/api/tokens.tsx";
+import {endSession, expireSession, saveTokens} from "@/api/tokens.tsx";
 import {tokens, user} from "@test/support/data.tsx";
 import {mockPendingRequest, mockPost, mockRequest} from "@test/support/server.tsx";
 import {ShowLocation} from "@test/support/ShowLocation.tsx";
 
-function renderRoutes() {
+function renderRoutes(route = "/") {
     renderWithProviders(
         <Routes>
             <Route element={<RequireAuth/>}>
                 <Route path="/" element={<p>Home</p>}/>
+                <Route path="/profile" element={<p>Profile</p>}/>
             </Route>
             <Route path="/auth" element={<ShowLocation/>}/>
-        </Routes>
+        </Routes>,
+        {route}
     );
 }
 
@@ -46,9 +48,25 @@ describe("RequireAuth", () => {
         expect(await screen.findByText("Home")).toBeInTheDocument();
     });
 
-    it("redirects to /auth when signed out", () => {
-        renderRoutes();
+    it("redirects to /auth when signed out, to come back to the page after signing in", () => {
+        renderRoutes("/profile?tab=account#delete");
 
+        expect(currentLocation()).toEqual({
+            pathname: "/auth",
+            search: "",
+            state: {from: "/profile?tab=account#delete"},
+        });
+    });
+
+    it("redirects to /auth without the page once the user signed out on it", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        renderRoutes("/profile");
+        expect(await screen.findByText("Profile")).toBeInTheDocument();
+
+        act(() => endSession());
+
+        expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: null});
     });
 
@@ -60,7 +78,7 @@ describe("RequireAuth", () => {
         renderRoutes();
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
-        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {notice: "sessionExpired"}});
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {notice: "sessionExpired", from: "/"}});
     });
 
     it("redirects to /auth with the password changed notice when signing in again with the new one failed", async () => {
@@ -72,6 +90,6 @@ describe("RequireAuth", () => {
         act(() => expireSession("passwordChanged"));
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
-        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {notice: "passwordChanged"}});
+        expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: {notice: "passwordChanged", from: "/"}});
     });
 });
