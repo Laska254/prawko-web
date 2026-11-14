@@ -3,7 +3,6 @@ import {Alert, Button, Link, Stack, Typography} from "@mui/material";
 import {DeleteForever} from "@mui/icons-material";
 import {useTranslation} from "react-i18next";
 import {Link as RouterLink, useNavigate, useSearchParams} from "react-router";
-import {isAuthenticated} from "@/api/tokens.tsx";
 import type {ConfirmAccountDeletionDto} from "@/api/dto/ConfirmAccountDeletionDto.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {confirmAccountDeletion} from "@/api/users.tsx";
@@ -67,8 +66,8 @@ export function ConfirmAccountDeletionPage() {
     const [otherAccountDeleted, setOtherAccountDeleted] = useState(false);
     const confirm = (dto: ConfirmAccountDeletionDto) => confirmAccountDeletion(dto, signedInUserId(session));
     const {submit, isSending, failure} = useFormSubmission(confirm, {
-        onSuccess: () => {
-            if (isAuthenticated()) {
+        onSuccess: otherAccount => {
+            if (otherAccount) {
                 setOtherAccountDeleted(true);
                 return;
             }

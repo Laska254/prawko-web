@@ -38,15 +38,20 @@ export async function requestAccountDeletion(deleteAccountDto: DeleteAccountDto)
 
 // Deletes the account of the emailed link, signed in or not, as the link may be opened on another device. The server
 // ends that account's sessions, so the session here ends too, telling the user why, when it was that account's:
-// `signedInUserId` is the user signed in here, `null` while not loaded, which is most likely that account too. Another
-// user's link opened in this browser (e.g. a shared computer) keeps the session. Rejects with the request's error and
-// keeps the session.
+// `signedInUserId` is the user signed in here, `null` while not loaded, which is most likely that account too. Resolves
+// to `true` when it was another user's link opened in this browser (e.g. a shared computer), which keeps the session.
+// Rejects with the request's error and keeps the session.
 export async function confirmAccountDeletion(confirmAccountDeletionDto: ConfirmAccountDeletionDto,
-                                             signedInUserId: number | null): Promise<void> {
+                                             signedInUserId: number | null): Promise<boolean> {
     const deleted = (await api.post<DeletedAccountDto>("/users/deletion/confirm", confirmAccountDeletionDto)).data;
-    if (isAuthenticated() && (signedInUserId === null || signedInUserId === deleted.id)) {
-        expireSession("accountDeleted");
+    if (!isAuthenticated()) {
+        return false;
     }
+    if (signedInUserId !== null && signedInUserId !== deleted.id) {
+        return true;
+    }
+    expireSession("accountDeleted");
+    return false;
 }
 
 // The Google account may have another email than the user.

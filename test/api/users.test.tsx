@@ -67,7 +67,7 @@ describe("users", () => {
         const stopListening = onSessionEnded(listener);
         const requests = mockRequest("post", "/users/deletion/confirm", {body: {id: user.id}});
 
-        await expect(confirmAccountDeletion({token: "token"}, user.id)).resolves.toBeUndefined();
+        await expect(confirmAccountDeletion({token: "token"}, user.id)).resolves.toBe(false);
         expect(requests).toEqual([{search: "", body: {token: "token"}}]);
         expect(getRefreshToken()).toBeNull();
         expect(listener).toHaveBeenCalledExactlyOnceWith("accountDeleted");
@@ -80,7 +80,7 @@ describe("users", () => {
         const stopListening = onSessionEnded(listener);
         mockRequest("post", "/users/deletion/confirm", {body: {id: user.id}});
 
-        await expect(confirmAccountDeletion({token: "token"}, null)).resolves.toBeUndefined();
+        await expect(confirmAccountDeletion({token: "token"}, null)).resolves.toBe(false);
         expect(getRefreshToken()).toBeNull();
         expect(listener).toHaveBeenCalledExactlyOnceWith("accountDeleted");
         stopListening();
@@ -92,7 +92,7 @@ describe("users", () => {
         const stopListening = onSessionEnded(listener);
         mockRequest("post", "/users/deletion/confirm", {body: {id: user.id + 1}});
 
-        await expect(confirmAccountDeletion({token: "token"}, user.id)).resolves.toBeUndefined();
+        await expect(confirmAccountDeletion({token: "token"}, user.id)).resolves.toBe(true);
         expect(getRefreshToken()).toBe(tokens.refreshToken);
         expect(listener).not.toHaveBeenCalled();
         stopListening();
@@ -103,7 +103,7 @@ describe("users", () => {
         const stopListening = onSessionEnded(listener);
         mockRequest("post", "/users/deletion/confirm", {body: {id: user.id}});
 
-        await expect(confirmAccountDeletion({token: "token"}, null)).resolves.toBeUndefined();
+        await expect(confirmAccountDeletion({token: "token"}, null)).resolves.toBe(false);
         expect(listener).not.toHaveBeenCalled();
         stopListening();
     });
