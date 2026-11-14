@@ -228,6 +228,7 @@ describe("App", () => {
             ["/auth/verify/sent", "Check your email"],
             ["/auth/password/forgot", "Forgot password?"],
             ["/auth/password/reset", "Invalid reset link"],
+            ["/account/delete/confirm", "Invalid link"],
         ])("shows %s", async (path, heading) => {
             if (isSignedIn) {
                 signIn();
@@ -252,6 +253,22 @@ describe("App", () => {
             await userEvents.click(screen.getByRole("button", {name: "Set new password"}));
 
             expect(await screen.findByText("Your password has been changed. You can sign in now.")).toBeInTheDocument();
+            expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+            expect(window.location.pathname).toBe("/auth");
+            expect(getRefreshToken()).toBeNull();
+        });
+
+        it("deletes the account and goes to sign in signed out", async () => {
+            if (isSignedIn) {
+                signIn();
+            }
+            mockPost("/users/deletion/confirm");
+            const userEvents = userEvent.setup();
+            renderAt("/account/delete/confirm?token=token");
+
+            await userEvents.click(await screen.findByRole("button", {name: "Delete account"}));
+
+            expect(await screen.findByText("Your account and exam history have been deleted.")).toBeInTheDocument();
             expect(screen.getByRole("heading", {name: "Sign in"})).toBeInTheDocument();
             expect(window.location.pathname).toBe("/auth");
             expect(getRefreshToken()).toBeNull();
