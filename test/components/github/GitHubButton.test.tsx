@@ -35,7 +35,7 @@ describe("GitHubButton", () => {
         expect(takeGitHubAuthorization(searchParams.get("state"))?.returnPath).toBe("/profile");
     });
 
-    it("runs what it's given to run as it leaves", async () => {
+    it("runs what it's given before leaving", async () => {
         const assign = vi.fn();
         vi.stubGlobal("location", {...window.location, assign});
         const onStart = vi.fn();
@@ -45,6 +45,7 @@ describe("GitHubButton", () => {
 
         await waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
         expect(onStart).toHaveBeenCalledTimes(1);
+        expect(onStart).toHaveBeenCalledBefore(assign);
     });
 
     it("is in the app's language", async () => {
