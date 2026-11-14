@@ -1,11 +1,13 @@
 import {screen, waitFor} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import i18n from "i18next";
+import {takeGitHubAuthorization} from "@/components/github/gitHubAuthorization.tsx";
 import {ProviderSignIn} from "@/features/auth/components/ProviderSignIn.tsx";
 import {failGoogleScript, googleScripts, loadGoogleScript} from "@test/support/googleScript.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 
-function renderProviders() {
-    return renderWithProviders(<ProviderSignIn formType="login"/>);
+function renderProviders(state?: unknown) {
+    return renderWithProviders(<ProviderSignIn formType="login"/>, {route: "/auth", state});
 }
 
 function gitHubButton() {
@@ -15,6 +17,7 @@ function gitHubButton() {
 describe("ProviderSignIn", () => {
     afterEach(() => {
         vi.unstubAllEnvs();
+        vi.unstubAllGlobals();
         vi.restoreAllMocks();
     });
 
@@ -46,6 +49,22 @@ describe("ProviderSignIn", () => {
         expect(googleScripts()).toHaveLength(0);
         expect(gitHubButton()!.compareDocumentPosition(screen.getByRole("separator")))
             .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it.each([
+        ["the page the sign in page goes back to", {from: "/account/delete"}, "/account/delete"],
+        ["home without one", undefined, "/"],
+    ])("starts GitHub's sign in going on to %s", async (_, state, returnPath) => {
+        vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
+        const assign = vi.fn();
+        vi.stubGlobal("location", {...window.location, assign});
+        renderProviders(state);
+
+        await userEvent.setup().click(gitHubButton()!);
+
+        await waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
+        const {searchParams} = new URL(assign.mock.calls[0][0]);
+        expect(takeGitHubAuthorization(searchParams.get("state"))?.returnPath).toBe(returnPath);
     });
 
     it("shows both buttons over one divider, Google's first", async () => {

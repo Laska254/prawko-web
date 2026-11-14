@@ -5,6 +5,7 @@ import {GitHubButton} from "@/components/github/GitHubButton.tsx";
 import {isGitHubAuthorizationSupported} from "@/components/github/gitHubAuthorization.tsx";
 import type {FormType} from "../formConfig.tsx";
 import {GITHUB_CALLBACK_PATH} from "../gitHubCallback.tsx";
+import {useReturnPath} from "../hooks/useReturnPath.tsx";
 import {GoogleSignIn} from "./GoogleSignIn.tsx";
 
 interface ProviderSignInProps {
@@ -15,6 +16,7 @@ interface ProviderSignInProps {
 // can't work here; the divider only shows with a provider above it.
 export function ProviderSignIn({formType}: ProviderSignInProps) {
     const [isGoogleUnavailable, setGoogleUnavailable] = useState(false);
+    const returnPath = useReturnPath();
     const {t} = useTranslation("auth");
     const googleClientId: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const gitHubClientId: string | undefined = import.meta.env.VITE_GITHUB_CLIENT_ID;
@@ -30,7 +32,9 @@ export function ProviderSignIn({formType}: ProviderSignInProps) {
             {showsGoogle && (
                 <GoogleSignIn clientId={googleClientId} formType={formType} setUnavailable={setGoogleUnavailable}/>
             )}
-            {showsGitHub && <GitHubButton clientId={gitHubClientId} redirectPath={GITHUB_CALLBACK_PATH}/>}
+            {showsGitHub && (
+                <GitHubButton clientId={gitHubClientId} redirectPath={GITHUB_CALLBACK_PATH} returnPath={returnPath}/>
+            )}
             <Divider>{t("providers.or")}</Divider>
         </Stack>
     );

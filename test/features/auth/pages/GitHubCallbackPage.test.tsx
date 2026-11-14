@@ -15,7 +15,7 @@ function renderCallback(params: Record<string, string> = {}) {
     return renderWithProviders(
         <Routes>
             <Route path="/auth/github/callback" element={<GitHubCallbackPage/>}/>
-            <Route path="/auth" element={<AuthPage/>}/>
+            <Route path="/auth" element={<><AuthPage/><ShowLocation/></>}/>
             <Route path="*" element={<ShowLocation/>}/>
         </Routes>,
         {route: `/auth/github/callback?${new URLSearchParams(params)}`}
@@ -44,6 +44,25 @@ describe("GitHubCallbackPage", () => {
         expect(currentLocation().pathname).toBe("/");
         expect(requests).toEqual([{code, codeVerifier: expect.stringMatching(/^[\w-]{43}$/), redirectUri}]);
         expect(getRefreshToken()).toBe(tokens.refreshToken);
+    });
+
+    it("goes on to the page the sign in was started for", async () => {
+        mockPost("/auth/github", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+
+        renderCallback({code, state: await startedState("/account/delete")});
+
+        expect(await screen.findByTestId("location")).toBeInTheDocument();
+        expect(currentLocation().pathname).toBe("/account/delete");
+    });
+
+    it("goes back to sign in still going on to that page after a failure", async () => {
+        mockProblem("/auth/github", 401);
+
+        renderCallback({code, state: await startedState("/account/delete")});
+
+        await expectFailureOnAuthPage("Signing in with GitHub failed. Please try again.");
+        await waitFor(() => expect(currentLocation().state).toEqual({from: "/account/delete"}));
     });
 
     it("shows progress while sending", async () => {

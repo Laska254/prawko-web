@@ -21,9 +21,9 @@ export function LinkGitHubCallbackPage() {
             navigate("/profile", {replace: true, state});
         }
 
-        const authorization = takeGitHubAuthorization(searchParams.get("state"));
+        const taken = takeGitHubAuthorization(searchParams.get("state"));
         const code = searchParams.get("code");
-        if (!authorization) {
+        if (!taken) {
             goToProfile({failure: "link.gitHubInvalid"});
         } else if (searchParams.get("error") === "access_denied") {
             // The user said no on GitHub's page, so there's nothing to tell.
@@ -31,7 +31,7 @@ export function LinkGitHubCallbackPage() {
         } else if (!code) {
             goToProfile({failure: "link.gitHubInvalid"});
         } else {
-            goToProfile({gitHubLink: {code, ...authorization}});
+            goToProfile({gitHubLink: {code, ...taken.authorization}});
         }
     }, [searchParams, navigate]);
 

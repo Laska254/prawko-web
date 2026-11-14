@@ -18,7 +18,8 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
 };
 
 // Where GitHub sends the user back to, with a `code` or, if consent was denied or the request was refused, an `error`.
-// Every way out replaces this page, so going back doesn't send the used code again.
+// Every way out replaces this page, so going back doesn't send the used code again. Signing in goes on to the page the
+// sign in page was going back to, and a failure takes that page back there.
 export function GitHubCallbackPage() {
     const [searchParams] = useSearchParams();
     // A code works once and the started authorization is removed on reading, so the effect running again mustn't do
@@ -32,21 +33,22 @@ export function GitHubCallbackPage() {
         if (isHandledRef.current) return;
         isHandledRef.current = true;
 
+        const taken = takeGitHubAuthorization(searchParams.get("state"));
+        const code = searchParams.get("code");
+
         function fail(message: AuthMessage): void {
-            navigate("/auth", {replace: true, state: authFailureState(message)});
+            navigate("/auth", {replace: true, state: {...authFailureState(message), from: taken?.returnPath}});
         }
 
-        const authorization = takeGitHubAuthorization(searchParams.get("state"));
-        const code = searchParams.get("code");
-        if (!authorization) {
+        if (!taken) {
             fail("messages.gitHubInvalid");
         } else if (searchParams.get("error") === "access_denied") {
             fail("messages.gitHubDenied");
         } else if (!code) {
             fail("messages.gitHubInvalid");
         } else {
-            signInWithGitHub({code, ...authorization})
-                .then(() => navigate("/", {replace: true}))
+            signInWithGitHub({code, ...taken.authorization})
+                .then(() => navigate(taken.returnPath ?? "/", {replace: true}))
                 .catch(caught => fail(errorMessage(toApiError(caught), STATUS_MESSAGES)));
         }
     }, [searchParams, navigate, signInWithGitHub]);

@@ -31,7 +31,7 @@ describe("gitHubAuthorization", () => {
         const {searchParams} = await startSignIn();
 
         expect(searchParams.get("code_challenge")).toBe(CHALLENGE);
-        expect(takeGitHubAuthorization(searchParams.get("state"))?.codeVerifier).toBe(VERIFIER);
+        expect(takeGitHubAuthorization(searchParams.get("state"))?.authorization.codeVerifier).toBe(VERIFIER);
     });
 
     it("uses a different state and verifier for each sign in", async () => {
@@ -56,11 +56,20 @@ describe("gitHubAuthorization", () => {
         const {searchParams} = await startSignIn();
         const state = searchParams.get("state");
 
-        expect(takeGitHubAuthorization(state)).toEqual({
-            codeVerifier: expect.stringMatching(/^[\w-]{43}$/),
-            redirectUri: "http://localhost:3000/auth/github/callback",
+        expect(takeGitHubAuthorization(state)).toStrictEqual({
+            authorization: {
+                codeVerifier: expect.stringMatching(/^[\w-]{43}$/),
+                redirectUri: "http://localhost:3000/auth/github/callback",
+            },
+            returnPath: undefined,
         });
         expect(takeGitHubAuthorization(state)).toBeNull();
+    });
+
+    it("gives back the page to go on to that the sign in was started with", async () => {
+        const {searchParams} = await startSignIn("client-id", "/auth/github/callback", "/account/delete");
+
+        expect(takeGitHubAuthorization(searchParams.get("state"))?.returnPath).toBe("/account/delete");
     });
 
     it("gives nothing for another state, and ends the started sign in", async () => {
@@ -85,7 +94,7 @@ describe("gitHubAuthorization", () => {
         const {searchParams} = await startSignIn("client-id", "/auth/github/callback/link");
 
         expect(searchParams.get("redirect_uri")).toBe(`${window.location.origin}/auth/github/callback/link`);
-        expect(takeGitHubAuthorization(searchParams.get("state"))?.redirectUri)
+        expect(takeGitHubAuthorization(searchParams.get("state"))?.authorization.redirectUri)
             .toBe(`${window.location.origin}/auth/github/callback/link`);
     });
 });
