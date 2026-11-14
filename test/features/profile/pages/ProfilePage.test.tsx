@@ -4,7 +4,7 @@ import {Link, Route, Routes} from "react-router";
 import {saveTokens} from "@/api/tokens.tsx";
 import type {UserDto} from "@/api/dto/UserDto.tsx";
 import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
-import type {ProfilePageState} from "@/features/profile/gitHubLink.tsx";
+import type {ProfilePageState} from "@/features/profile/profilePageState.tsx";
 import {RequireAuth} from "@/features/auth/guards/RequireAuth.tsx";
 import {ProfilePage} from "@/features/profile/pages/ProfilePage.tsx";
 import {
