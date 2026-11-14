@@ -10,6 +10,7 @@ import {FormTextField} from "@/components/form/FormTextField.tsx";
 import {PasswordField} from "@/components/form/PasswordField.tsx";
 import {SubmitButton} from "@/components/form/SubmitButton.tsx";
 import {useSession} from "@/session/useSession.tsx";
+import {useReturnPath} from "../hooks/useReturnPath.tsx";
 
 const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
     401: "messages.wrongCredentials",
@@ -30,11 +31,12 @@ export function LoginForm() {
     const passwordRef = useRef<HTMLInputElement>(null);
     const [email, setEmail] = useState<string>();
     const navigate = useNavigate();
+    const returnPath = useReturnPath();
     const {signIn} = useSession();
     const {submit, isSending, fieldErrors, failure} = useFormSubmission(signIn, {
         fieldMessages: FIELD_MESSAGES,
         statusMessages: STATUS_MESSAGES,
-        onSuccess: () => navigate("/"),
+        onSuccess: () => navigate(returnPath),
     });
     const {t} = useTranslation(["auth", "errors"]);
 
