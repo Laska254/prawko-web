@@ -1,6 +1,6 @@
 import {screen, waitFor} from "@testing-library/react";
 import {Route, Routes} from "react-router";
-import {getRefreshToken} from "@/api/tokens.tsx";
+import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {AuthPage} from "@/features/auth/pages/AuthPage.tsx";
 import {GitHubCallbackPage} from "@/features/auth/pages/GitHubCallbackPage.tsx";
 import {gitHubSignInDto, tokens, user} from "@test/support/data.tsx";
@@ -63,6 +63,18 @@ describe("GitHubCallbackPage", () => {
 
         await expectFailureOnAuthPage("Signing in with GitHub failed. Please try again.");
         await waitFor(() => expect(currentLocation().state).toEqual({from: "/account/delete"}));
+    });
+
+    it("sends a signed in visitor home without sending the code", async () => {
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const requests = mockPost("/auth/github", 200, tokens);
+
+        renderCallback({code, state: await startedState("/account/delete")});
+
+        expect(await screen.findByTestId("location")).toBeInTheDocument();
+        expect(currentLocation().pathname).toBe("/");
+        expect(requests).toEqual([]);
     });
 
     it("shows progress while sending", async () => {

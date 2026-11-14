@@ -57,8 +57,9 @@ export function App() {
                         {/* Guests: signed-in users go home. */}
                         <Route element={<RequireGuest/>}>
                             <Route path="/auth" element={<AuthPage/>}/>
-                            <Route path={GITHUB_CALLBACK_PATH} element={<GitHubCallbackPage/>}/>
                         </Route>
+                        {/* Signing in with GitHub, which sends a signed-in visitor home itself. */}
+                        <Route path={GITHUB_CALLBACK_PATH} element={<GitHubCallbackPage/>}/>
                         {/* Public: email links, password recovery and 404, signed in or not. */}
                         <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
                         <Route path="/auth/verify/sent" element={<VerificationSentPage/>}/>

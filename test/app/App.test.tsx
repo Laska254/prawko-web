@@ -108,6 +108,17 @@ describe("App", () => {
         expect(window.location.pathname).toBe("/profile");
     });
 
+    it("goes on to the deletion dialog after signing in with GitHub from /account/delete", async () => {
+        const state = await startedState("/account/delete");
+        mockPost("/auth/github", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+
+        renderAt(`/auth/github/callback?code=code&state=${state}`);
+
+        expect(await screen.findByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/profile");
+    });
+
     it("replaces the GitHub callback with the sign in page when signing in fails", async () => {
         const state = await startedState();
         mockPost("/auth/github", 401);

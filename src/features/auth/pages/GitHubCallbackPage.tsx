@@ -19,19 +19,26 @@ const STATUS_MESSAGES: StatusMessages<ParseKeys<"auth">> = {
 
 // Where GitHub sends the user back to, with a `code` or, if consent was denied or the request was refused, an `error`.
 // Every way out replaces this page, so going back doesn't send the used code again. Signing in goes on to the page the
-// sign in page was going back to, and a failure takes that page back there.
+// sign in page was going back to, and a failure takes that page back there. A visitor already signed in goes home. The
+// page checks that itself instead of sitting under `RequireGuest`, whose redirect home would win over the return path
+// once this page's own sign in updates the session.
 export function GitHubCallbackPage() {
     const [searchParams] = useSearchParams();
     // A code works once and the started authorization is removed on reading, so the effect running again mustn't do
     // this again.
     const isHandledRef = useRef(false);
     const navigate = useNavigate();
-    const {signInWithGitHub} = useSession();
+    const {status, signInWithGitHub} = useSession();
     const {t} = useTranslation("auth");
 
     useEffect(() => {
         if (isHandledRef.current) return;
         isHandledRef.current = true;
+
+        if (status !== "signedOut") {
+            navigate("/", {replace: true});
+            return;
+        }
 
         const taken = takeGitHubAuthorization(searchParams.get("state"));
         const code = searchParams.get("code");
@@ -51,7 +58,7 @@ export function GitHubCallbackPage() {
                 .then(() => navigate(taken.returnPath ?? "/", {replace: true}))
                 .catch(caught => fail(errorMessage(toApiError(caught), STATUS_MESSAGES)));
         }
-    }, [searchParams, navigate, signInWithGitHub]);
+    }, [searchParams, navigate, status, signInWithGitHub]);
 
     return (
         <AuthPageLayout>
