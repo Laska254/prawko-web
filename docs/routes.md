@@ -3,7 +3,8 @@
 ## Pages
 
 * `/auth` sign in and create an account; signing in goes back to the signed-in page that sent the user here, also when
-  the server ended the session there but not after signing out there, else home
+  the server ended the session there but not after signing out there, else home; leaving for a password reset or a new
+  verification link loses the way back, so signing in afterwards goes home
 * `/` home page
 * `/exam` exam (placeholder)
 * `/history` past exams (placeholder)
