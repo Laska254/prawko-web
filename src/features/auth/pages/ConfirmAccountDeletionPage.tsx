@@ -1,9 +1,13 @@
+import {useState} from "react";
 import {Alert, Button, Link, Stack, Typography} from "@mui/material";
 import {DeleteForever} from "@mui/icons-material";
 import {useTranslation} from "react-i18next";
 import {Link as RouterLink, useNavigate, useSearchParams} from "react-router";
+import {isAuthenticated} from "@/api/tokens.tsx";
+import type {ConfirmAccountDeletionDto} from "@/api/dto/ConfirmAccountDeletionDto.tsx";
 import {useFormSubmission} from "@/api/useFormSubmission.tsx";
 import {confirmAccountDeletion} from "@/api/users.tsx";
+import type {SessionState} from "@/session/session.tsx";
 import {useSession} from "@/session/useSession.tsx";
 import {AuthPageLayout} from "../components/AuthPageLayout.tsx";
 import {AuthCard} from "../components/AuthCard.tsx";
@@ -22,6 +26,14 @@ function Message({title, text}: MessageProps) {
             <Typography color="text.secondary">{text}</Typography>
         </Stack>
     );
+}
+
+// `null` signed out, or while the signed-in user loads.
+function signedInUserId(session: SessionState): number | null {
+    if (session.status === "signedIn") {
+        return session.user.id;
+    }
+    return null;
 }
 
 // A new link is sent from the profile, so signed-in users go there; a guest signs in first.
@@ -49,13 +61,33 @@ export function ConfirmAccountDeletionPage() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get("token");
     const navigate = useNavigate();
+    const session = useSession();
     const {t} = useTranslation(["auth", "errors"]);
-    // A session here has ended by now, so `/auth` lets the user in.
-    const {submit, isSending, failure} = useFormSubmission(confirmAccountDeletion, {
-        onSuccess: () => navigate("/auth", {replace: true, state: authNoticeState("accountDeleted")}),
+    // Another user's account, deleted from this browser while signed in.
+    const [otherAccountDeleted, setOtherAccountDeleted] = useState(false);
+    const confirm = (dto: ConfirmAccountDeletionDto) => confirmAccountDeletion(dto, signedInUserId(session));
+    const {submit, isSending, failure} = useFormSubmission(confirm, {
+        onSuccess: () => {
+            if (isAuthenticated()) {
+                setOtherAccountDeleted(true);
+                return;
+            }
+            // Signed out, or the session here has ended by now, so `/auth` lets the user in.
+            navigate("/auth", {replace: true, state: authNoticeState("accountDeleted")});
+        },
     });
 
     function content() {
+        if (otherAccountDeleted) {
+            return (
+                <>
+                    <Message title={t("confirmDeletion.deletedTitle")} text={t("confirmDeletion.deletedText")}/>
+                    <Link component={RouterLink} to="/" underline="hover" fontWeight={600} alignSelf="flex-start">
+                        {t("confirmDeletion.toHome")}
+                    </Link>
+                </>
+            );
+        }
         if (!token || (failure && isInvalidToken(failure.error))) {
             return (
                 <>

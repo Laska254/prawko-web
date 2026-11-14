@@ -2,11 +2,25 @@ import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
 import {ConfirmAccountDeletionPage} from "@/features/auth/pages/ConfirmAccountDeletionPage.tsx";
+import {currentUserQuery} from "@/session/currentUserQuery.tsx";
 import {tokens, user as sampleUser} from "@test/support/data.tsx";
 import {currentLocation, renderAtRoute} from "@test/support/render.tsx";
-import {mockNetworkError, mockPendingPost, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
+import {mockNetworkError, mockPendingRequest, mockPost, mockProblem, mockRequest} from "@test/support/server.tsx";
 
 const PATH = "/users/deletion/confirm";
+
+// Answers the confirmation with the deleted account's ID, the sample user's unless given.
+function mockDeleted(id = sampleUser.id): unknown[] {
+    return mockPost(PATH, 200, {id});
+}
+
+// Signs in as the sample user and waits for the session to load.
+async function renderSignedIn() {
+    saveTokens(tokens);
+    mockRequest("get", "/users/me", {body: sampleUser});
+    const {queryClient} = renderPage();
+    await waitFor(() => expect(queryClient.getQueryData(currentUserQuery.queryKey)).toEqual(sampleUser));
+}
 
 function renderPage(route = "/account/delete/confirm?token=token") {
     return renderAtRoute(<ConfirmAccountDeletionPage/>, route);
@@ -15,7 +29,7 @@ function renderPage(route = "/account/delete/confirm?token=token") {
 describe("ConfirmAccountDeletionPage", () => {
     it("deletes the account only once confirmed and goes to sign in with a notice", async () => {
         const user = userEvent.setup();
-        const requests = mockPost(PATH);
+        const requests = mockDeleted();
         renderPage();
 
         expect(screen.getByRole("heading", {name: "Delete your account?"})).toBeInTheDocument();
@@ -31,10 +45,8 @@ describe("ConfirmAccountDeletionPage", () => {
 
     it("ends the session signed in", async () => {
         const user = userEvent.setup();
-        saveTokens(tokens);
-        mockRequest("get", "/users/me", {body: sampleUser});
-        mockPost(PATH);
-        renderPage();
+        mockDeleted();
+        await renderSignedIn();
 
         await user.click(screen.getByRole("button", {name: "Delete account"}));
 
@@ -45,7 +57,7 @@ describe("ConfirmAccountDeletionPage", () => {
 
     it("disables the button while deleting", async () => {
         const user = userEvent.setup();
-        const request = mockPendingPost(PATH);
+        const request = mockPendingRequest("post", PATH, {body: {id: sampleUser.id}});
         renderPage();
 
         await user.click(screen.getByRole("button", {name: "Delete account"}));
@@ -112,12 +124,28 @@ describe("ConfirmAccountDeletionPage", () => {
             .toHaveTextContent("Can't reach the server. Check your connection and try again.");
         expect(getRefreshToken()).toBe(tokens.refreshToken);
 
-        const requests = mockPost(PATH);
+        const requests = mockDeleted();
         await user.click(screen.getByRole("button", {name: "Delete account"}));
 
         expect(await screen.findByTestId("location")).toBeInTheDocument();
         expect(currentLocation()).toMatchObject({pathname: "/auth", state: {notice: "accountDeleted"}});
         expect(requests).toEqual([{token: "token"}]);
+    });
+
+    it("keeps the session and says so when another user's account was deleted", async () => {
+        const user = userEvent.setup();
+        mockDeleted(sampleUser.id + 1);
+        await renderSignedIn();
+
+        await user.click(screen.getByRole("button", {name: "Delete account"}));
+
+        expect(await screen.findByRole("heading", {name: "Account deleted"})).toBeInTheDocument();
+        expect(screen.getByText("The account this link was sent for and its exam history have been deleted. "
+            + "You're still signed in to your own account.")).toBeInTheDocument();
+        expect(screen.queryByRole("button", {name: "Delete account"})).not.toBeInTheDocument();
+        expect(getRefreshToken()).toBe(tokens.refreshToken);
+        await user.click(screen.getByRole("link", {name: "Go home"}));
+        expect(currentLocation().pathname).toBe("/");
     });
 
     it("keeps the account home", async () => {

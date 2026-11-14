@@ -262,7 +262,7 @@ describe("App", () => {
             if (isSignedIn) {
                 signIn();
             }
-            mockPost("/users/deletion/confirm");
+            mockPost("/users/deletion/confirm", 200, {id: user.id});
             const userEvents = userEvent.setup();
             renderAt("/account/delete/confirm?token=token");
 
