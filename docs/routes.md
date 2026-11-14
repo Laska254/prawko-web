@@ -2,7 +2,8 @@
 
 ## Pages
 
-* `/auth` sign in and create an account
+* `/auth` sign in and create an account; signing in goes back to the signed-in page that sent the user here, also when
+  the server ended the session there but not after signing out there, else home
 * `/` home page
 * `/exam` exam (placeholder)
 * `/history` past exams (placeholder)
