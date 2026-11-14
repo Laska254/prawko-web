@@ -2,7 +2,7 @@ import {act, screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {App} from "@/app/App.tsx";
 import {getRefreshToken, saveTokens} from "@/api/tokens.tsx";
-import {tokens, user} from "@test/support/data.tsx";
+import {credentials, tokens, user} from "@test/support/data.tsx";
 import {startedState, startSignIn} from "@test/support/gitHubSignIn.tsx";
 import {renderWithoutRouter} from "@test/support/render.tsx";
 import {mockNetworkError, mockPost, mockRequest} from "@test/support/server.tsx";
@@ -79,6 +79,33 @@ describe("App", () => {
         expect(window.location.pathname).toBe("/profile");
         expect(window.location.search).toBe("");
         expect(window.history.length).toBe(length);
+    });
+
+    it("opens the profile with the account's deletion dialog from /account/delete, replacing the link", async () => {
+        signIn();
+
+        renderAt("/account/delete");
+        const {length} = window.history;
+
+        expect(await screen.findByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/profile");
+        expect(window.history.length).toBe(length);
+    });
+
+    it("sends a guest from /account/delete to sign in, and on to the deletion dialog after signing in", async () => {
+        renderAt("/account/delete");
+        expect(await screen.findByRole("heading", {name: "Sign in"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/auth");
+        mockPost("/auth", 200, tokens);
+        mockRequest("get", "/users/me", {body: user});
+        const userEvents = userEvent.setup();
+
+        await userEvents.type(screen.getByRole("textbox", {name: "Login"}), credentials.userName);
+        await userEvents.type(screen.getByLabelText(/^Password/), credentials.password);
+        await userEvents.click(screen.getByRole("button", {name: "Sign in"}));
+
+        expect(await screen.findByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+        expect(window.location.pathname).toBe("/profile");
     });
 
     it("replaces the GitHub callback with the sign in page when signing in fails", async () => {

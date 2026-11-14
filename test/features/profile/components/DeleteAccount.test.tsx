@@ -6,6 +6,7 @@ import {DeleteAccount} from "@/features/profile/components/DeleteAccount.tsx";
 import {problem, tokens, user, userWithoutPassword} from "@test/support/data.tsx";
 import {renderWithProviders} from "@test/support/render.tsx";
 import {mockRequest} from "@test/support/server.tsx";
+import {startCooldown} from "@/utils/useCooldown.tsx";
 
 const PATH = "/users/me/deletion";
 
@@ -27,6 +28,21 @@ describe("DeleteAccount", () => {
 
     afterEach(() => {
         vi.useRealTimers();
+    });
+
+    it("opens the dialog right away when asked to", () => {
+        renderWithProviders(<DeleteAccount user={user} onSent={vi.fn()} initiallyOpen/>);
+
+        expect(screen.getByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+    });
+
+    it("doesn't open the dialog right away while the button waits for the cooldown", () => {
+        startCooldown(`accountDeletion.${user.id}`, 60_000);
+
+        renderWithProviders(<DeleteAccount user={user} onSent={vi.fn()} initiallyOpen/>);
+
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(screen.getByRole("button", {name: "Send again in 60 s"})).toBeDisabled();
     });
 
     it("asks for the password, sends the link with it, keeps the session and waits a minute", async () => {

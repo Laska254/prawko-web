@@ -208,6 +208,12 @@ describe("ProfilePage", () => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
+    it("opens the account's deletion dialog when the navigation state asks for it", async () => {
+        await renderProfile(user, {deleteAccount: true});
+
+        expect(screen.getByRole("dialog", {name: "Delete your account?"})).toBeInTheDocument();
+    });
+
     it("drops the navigation state once read, so a reload doesn't send GitHub's code again", async () => {
         vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
         saveTokens(tokens);

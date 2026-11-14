@@ -16,6 +16,8 @@
 * `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
 * `/auth/password/reset` set a new password
+* `/account/delete` delete the account (the link of the store listing): opens `/profile` with the deletion dialog, after
+  signing in when signed out
 * `/account/delete/confirm` confirm deleting the account from the emailed link
 * any other path: 404 page, with a link home (or to sign in when signed out)
 
