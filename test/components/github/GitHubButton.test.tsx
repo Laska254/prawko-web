@@ -35,6 +35,18 @@ describe("GitHubButton", () => {
         expect(takeGitHubAuthorization(searchParams.get("state"))?.returnPath).toBe("/profile");
     });
 
+    it("runs what it's given to run as it leaves", async () => {
+        const assign = vi.fn();
+        vi.stubGlobal("location", {...window.location, assign});
+        const onStart = vi.fn();
+        renderWithProviders(<GitHubButton clientId="client-id" redirectPath="/back" onStart={onStart}/>);
+
+        await userEvent.setup().click(screen.getByRole("button", {name: "Continue with GitHub"}));
+
+        await waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
+        expect(onStart).toHaveBeenCalledTimes(1);
+    });
+
     it("is in the app's language", async () => {
         renderWithProviders(<GitHubButton clientId="client-id" redirectPath="/back"/>);
 

@@ -1,13 +1,21 @@
 import {screen, waitFor} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import i18n from "i18next";
+import {Route, Routes} from "react-router";
 import {takeGitHubAuthorization} from "@/components/github/gitHubAuthorization.tsx";
 import {ProviderSignIn} from "@/features/auth/components/ProviderSignIn.tsx";
 import {failGoogleScript, googleScripts, loadGoogleScript} from "@test/support/googleScript.tsx";
-import {renderWithProviders} from "@test/support/render.tsx";
+import {currentLocation, renderWithProviders} from "@test/support/render.tsx";
+import {ShowLocation} from "@test/support/ShowLocation.tsx";
 
+// Under the sign in page's route, which `navigate(".")` resolves against.
 function renderProviders(state?: unknown) {
-    return renderWithProviders(<ProviderSignIn formType="login"/>, {route: "/auth", state});
+    return renderWithProviders(
+        <Routes>
+            <Route path="/auth" element={<><ProviderSignIn formType="login"/><ShowLocation/></>}/>
+        </Routes>,
+        {route: "/auth", state}
+    );
 }
 
 function gitHubButton() {
@@ -66,6 +74,18 @@ describe("ProviderSignIn", () => {
         const {searchParams} = new URL(assign.mock.calls[0][0]);
         expect(takeGitHubAuthorization(searchParams.get("state"))?.returnPath).toBe(returnPath);
     });
+
+    it("drops the return path from the sign in page's entry as it leaves for GitHub, so back after signing in goes home",
+        async () => {
+            vi.stubEnv("VITE_GITHUB_CLIENT_ID", "client-id");
+            vi.stubGlobal("location", {...window.location, assign: vi.fn()});
+            renderProviders({from: "/account/delete"});
+
+            await userEvent.setup().click(gitHubButton()!);
+
+            await waitFor(() => expect(currentLocation()).toEqual({pathname: "/auth", search: "", state: null}));
+            expect(screen.getByTestId("location")).toHaveAttribute("data-navigation-type", "REPLACE");
+        });
 
     it("shows both buttons over one divider, Google's first", async () => {
         vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");

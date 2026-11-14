@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {Divider, Stack} from "@mui/material";
 import {useTranslation} from "react-i18next";
+import {useNavigate} from "react-router";
 import {GitHubButton} from "@/components/github/GitHubButton.tsx";
 import {isGitHubAuthorizationSupported} from "@/components/github/gitHubAuthorization.tsx";
 import type {FormType} from "../formConfig.tsx";
@@ -17,6 +18,7 @@ interface ProviderSignInProps {
 export function ProviderSignIn({formType}: ProviderSignInProps) {
     const [isGoogleUnavailable, setGoogleUnavailable] = useState(false);
     const returnPath = useReturnPath();
+    const navigate = useNavigate();
     const {t} = useTranslation("auth");
     const googleClientId: string | undefined = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const gitHubClientId: string | undefined = import.meta.env.VITE_GITHUB_CLIENT_ID;
@@ -27,13 +29,20 @@ export function ProviderSignIn({formType}: ProviderSignInProps) {
         return null;
     }
 
+    // The return path travels with GitHub's authorization, so this page's entry drops it: once signed in, going back
+    // here then goes home instead of to the return path again.
+    function forgetReturnPath() {
+        navigate(".", {replace: true, state: null});
+    }
+
     return (
         <Stack spacing={2}>
             {showsGoogle && (
                 <GoogleSignIn clientId={googleClientId} formType={formType} setUnavailable={setGoogleUnavailable}/>
             )}
             {showsGitHub && (
-                <GitHubButton clientId={gitHubClientId} redirectPath={GITHUB_CALLBACK_PATH} returnPath={returnPath}/>
+                <GitHubButton clientId={gitHubClientId} redirectPath={GITHUB_CALLBACK_PATH} returnPath={returnPath}
+                              onStart={forgetReturnPath}/>
             )}
             <Divider>{t("providers.or")}</Divider>
         </Stack>
