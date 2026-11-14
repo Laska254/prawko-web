@@ -27,6 +27,8 @@ const VerificationSentPage = lazyPage(() => import("@/features/auth/pages/Verifi
 const ForgotPasswordPage = lazyPage(() => import("@/features/auth/pages/ForgotPasswordPage.tsx"),
     "ForgotPasswordPage");
 const ResetPasswordPage = lazyPage(() => import("@/features/auth/pages/ResetPasswordPage.tsx"), "ResetPasswordPage");
+const ConfirmAccountDeletionPage = lazyPage(() => import("@/features/auth/pages/ConfirmAccountDeletionPage.tsx"),
+    "ConfirmAccountDeletionPage");
 const NotFoundPage = lazyPage(() => import("./pages/NotFoundPage.tsx"), "NotFoundPage");
 
 export function App() {
@@ -51,11 +53,12 @@ export function App() {
                             <Route path="/auth" element={<AuthPage/>}/>
                             <Route path={GITHUB_CALLBACK_PATH} element={<GitHubCallbackPage/>}/>
                         </Route>
-                        {/* Public: email verification, password recovery and 404, signed in or not. */}
+                        {/* Public: email links, password recovery and 404, signed in or not. */}
                         <Route path="/auth/verify" element={<VerifyEmailPage/>}/>
                         <Route path="/auth/verify/sent" element={<VerificationSentPage/>}/>
                         <Route path="/auth/password/forgot" element={<ForgotPasswordPage/>}/>
                         <Route path="/auth/password/reset" element={<ResetPasswordPage/>}/>
+                        <Route path="/account/delete/confirm" element={<ConfirmAccountDeletionPage/>}/>
                         <Route path="*" element={<NotFoundPage/>}/>
                     </Routes>
                 </Suspense>
