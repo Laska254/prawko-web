@@ -16,6 +16,7 @@
 * `/auth/verify/sent` verification link sent after registration
 * `/auth/password/forgot` request a password reset link
 * `/auth/password/reset` set a new password
+* `/account/delete/confirm` confirm deleting the account from the emailed link
 * any other path: 404 page, with a link home (or to sign in when signed out)
 
 ## Used endpoints
@@ -41,6 +42,7 @@ See the server's [API](https://github.com/Laska254/prawko-server/blob/main/docs/
     + `PATCH /{id}` update a user
     + `PATCH /me/password` change password
     + `POST /me/deletion` request deleting own account (link sent by email)
+    + `POST /deletion/confirm` delete the account with the emailed link's token
     + `GET` list users (admin)
     + `GET /{id}` get a user (admin)
     + `DELETE /{id}` delete a user (admin)
