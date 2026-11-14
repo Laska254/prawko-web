@@ -54,7 +54,7 @@ export function App() {
                             <Route path="/account/delete"
                                    element={<Navigate to="/profile" replace state={DELETE_ACCOUNT_STATE}/>}/>
                         </Route>
-                        {/* Guests: signed-in users go home. */}
+                        {/* Guests: signed-in users go back to the page that sent them here, or home. */}
                         <Route element={<RequireGuest/>}>
                             <Route path="/auth" element={<AuthPage/>}/>
                         </Route>
