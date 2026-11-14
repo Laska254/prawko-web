@@ -59,8 +59,10 @@ describe("ConfirmAccountDeletionPage", () => {
     it.each([
         ["without details", undefined],
         ["with field details", {token: "Token must not be blank."}],
-    ])("points to the profile for a new link on a 400 %s", async (_, details) => {
+    ])("points to the profile for a new link on a 400 %s signed in", async (_, details) => {
         const user = userEvent.setup();
+        saveTokens(tokens);
+        mockRequest("get", "/users/me", {body: sampleUser});
         mockProblem(PATH, 400, details);
         renderPage();
 
@@ -70,8 +72,22 @@ describe("ConfirmAccountDeletionPage", () => {
         expect(screen.getByText("This link is invalid or has expired. Ask for a new one from your profile."))
             .toBeInTheDocument();
         expect(screen.queryByRole("button", {name: "Delete account"})).not.toBeInTheDocument();
-        await user.click(screen.getByRole("link", {name: "Go to profile"}));
+        await user.click(await screen.findByRole("link", {name: "Go to profile"}));
         expect(currentLocation().pathname).toBe("/profile");
+        expect(getRefreshToken()).toBe(tokens.refreshToken);
+    });
+
+    it("points to sign in on a 400 signed out", async () => {
+        const user = userEvent.setup();
+        mockProblem(PATH, 400);
+        renderPage();
+
+        await user.click(screen.getByRole("button", {name: "Delete account"}));
+
+        expect(await screen.findByRole("heading", {name: "Invalid link"})).toBeInTheDocument();
+        expect(screen.queryByRole("link", {name: "Go to profile"})).not.toBeInTheDocument();
+        await user.click(screen.getByRole("link", {name: "Back to sign in"}));
+        expect(currentLocation().pathname).toBe("/auth");
     });
 
     it("shows an invalid link without a token and sends nothing", () => {
