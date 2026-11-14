@@ -1,5 +1,8 @@
 import {api, createdId} from "./client.tsx";
+import {expireSession, isAuthenticated} from "./tokens.tsx";
+import type {ConfirmAccountDeletionDto} from "./dto/ConfirmAccountDeletionDto.tsx";
 import type {DeleteAccountDto} from "./dto/DeleteAccountDto.tsx";
+import type {DeletedAccountDto} from "./dto/DeletedAccountDto.tsx";
 import type {IdentityProvider} from "./dto/IdentityProvider.tsx";
 import type {LinkGitHubDto} from "./dto/LinkGitHubDto.tsx";
 import type {LinkGoogleDto} from "./dto/LinkGoogleDto.tsx";
@@ -31,6 +34,24 @@ export async function updateUser(id: number, userUpdateDto: UserUpdateDto): Prom
 // Sends a link to the user's email; the account is deleted only once it's opened and confirmed.
 export async function requestAccountDeletion(deleteAccountDto: DeleteAccountDto): Promise<void> {
     await api.post("/users/me/deletion", deleteAccountDto);
+}
+
+// Deletes the account of the emailed link, signed in or not, as the link may be opened on another device. The server
+// ends that account's sessions, so the session here ends too, telling the user why, when it was that account's:
+// `signedInUserId` is the user signed in here, `null` while not loaded, which is most likely that account too. Resolves
+// to `true` when it was another user's link opened in this browser (e.g. a shared computer), which keeps the session.
+// Rejects with the request's error and keeps the session.
+export async function confirmAccountDeletion(confirmAccountDeletionDto: ConfirmAccountDeletionDto,
+                                             signedInUserId: number | null): Promise<boolean> {
+    const deleted = (await api.post<DeletedAccountDto>("/users/deletion/confirm", confirmAccountDeletionDto)).data;
+    if (!isAuthenticated()) {
+        return false;
+    }
+    if (signedInUserId !== null && signedInUserId !== deleted.id) {
+        return true;
+    }
+    expireSession("accountDeleted");
+    return false;
 }
 
 // The Google account may have another email than the user.

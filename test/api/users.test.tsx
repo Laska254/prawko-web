@@ -1,7 +1,9 @@
 import {apiUrl, mockRequest} from "@test/support/server.tsx";
-import {gitHubSignInDto, registerDto, user} from "@test/support/data.tsx";
+import {gitHubSignInDto, registerDto, tokens, user} from "@test/support/data.tsx";
+import {getRefreshToken, onSessionEnded, saveTokens} from "@/api/tokens.tsx";
 import type {UserStatsDto} from "@/api/dto/UserStatsDto.tsx";
 import {
+    confirmAccountDeletion,
     deleteUser,
     getCurrentUser,
     getCurrentUserStats,
@@ -57,6 +59,65 @@ describe("users", () => {
 
         await expect(requestAccountDeletion({password: "secret1"})).resolves.toBeUndefined();
         expect(requests).toEqual([{search: "", body: {password: "secret1"}}]);
+    });
+
+    it("confirms the account's deletion and ends the session as deleted when it was the signed-in one", async () => {
+        saveTokens(tokens);
+        const listener = vi.fn();
+        const stopListening = onSessionEnded(listener);
+        const requests = mockRequest("post", "/users/deletion/confirm", {body: {id: user.id}});
+
+        await expect(confirmAccountDeletion({token: "token"}, user.id)).resolves.toBe(false);
+        expect(requests).toEqual([{search: "", body: {token: "token"}}]);
+        expect(getRefreshToken()).toBeNull();
+        expect(listener).toHaveBeenCalledExactlyOnceWith("accountDeleted");
+        stopListening();
+    });
+
+    it("ends the session when confirming the deletion before the signed-in user loaded", async () => {
+        saveTokens(tokens);
+        const listener = vi.fn();
+        const stopListening = onSessionEnded(listener);
+        mockRequest("post", "/users/deletion/confirm", {body: {id: user.id}});
+
+        await expect(confirmAccountDeletion({token: "token"}, null)).resolves.toBe(false);
+        expect(getRefreshToken()).toBeNull();
+        expect(listener).toHaveBeenCalledExactlyOnceWith("accountDeleted");
+        stopListening();
+    });
+
+    it("keeps the session when confirming another user's deletion", async () => {
+        saveTokens(tokens);
+        const listener = vi.fn();
+        const stopListening = onSessionEnded(listener);
+        mockRequest("post", "/users/deletion/confirm", {body: {id: user.id + 1}});
+
+        await expect(confirmAccountDeletion({token: "token"}, user.id)).resolves.toBe(true);
+        expect(getRefreshToken()).toBe(tokens.refreshToken);
+        expect(listener).not.toHaveBeenCalled();
+        stopListening();
+    });
+
+    it("confirms the account's deletion signed out without ending a session", async () => {
+        const listener = vi.fn();
+        const stopListening = onSessionEnded(listener);
+        mockRequest("post", "/users/deletion/confirm", {body: {id: user.id}});
+
+        await expect(confirmAccountDeletion({token: "token"}, null)).resolves.toBe(false);
+        expect(listener).not.toHaveBeenCalled();
+        stopListening();
+    });
+
+    it("keeps the session when confirming the deletion failed", async () => {
+        saveTokens(tokens);
+        const listener = vi.fn();
+        const stopListening = onSessionEnded(listener);
+        mockRequest("post", "/users/deletion/confirm", {status: 400});
+
+        await expect(confirmAccountDeletion({token: "token"}, user.id)).rejects.toMatchObject({response: {status: 400}});
+        expect(getRefreshToken()).toBe(tokens.refreshToken);
+        expect(listener).not.toHaveBeenCalled();
+        stopListening();
     });
 
     it("links a GitHub account with the current password", async () => {
